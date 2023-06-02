@@ -27,7 +27,7 @@ jobs:
         cache: 'npm'
     - run: npm ci
     - run: npm run build
-    - run: npm test -- --browsers=ChromeHeadless --watch=false --code-coverage
+    - run: npm test -- --no-watch --no-progress
     - uses: actions/upload-artifact@v3
       with:
         name: dist
