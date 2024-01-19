@@ -18,7 +18,7 @@ jobs:
       with:
         cache: 'npm'
     - run: npm ci
-    - run: npm run build
+    - run: npm run build -- --configuration production --base-href /${{ github.event.repository.name }}/
     # - run: npm test -- --no-watch --no-progress --browsers=ChromeHeadless 
     - uses: actions/upload-artifact@v3
       with:
@@ -45,7 +45,9 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
-          path: './${{ github.event.repository.name }}'
+          path: '.'
+      - name: 404 GitHub Pages
+        run: cp index.html 404.html
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v2
