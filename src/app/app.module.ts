@@ -7,8 +7,9 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { UsageComponent } from './usage/usage.component';
 import { UsageTableComponent } from './usage-table/usage-table.component';
 import { FileUploadComponent } from './file-upload/file-upload.component';
-import { ChartPieOwnerComponent } from './chart-pie-owner/chart-pie-owner.component';
+import { ChartPieUserComponent } from './chart-pie-user/chart-pie-user.component';
 import { ChartLineUsageTimeComponent } from './chart-line-usage-time/chart-line-usage-time.component';
+import { TableWorkflowUsageComponent } from './table-workflow-usage/table-workflow-usage.component';
 
 import { HighchartsChartModule } from 'highcharts-angular';
 
@@ -18,8 +19,9 @@ import { HighchartsChartModule } from 'highcharts-angular';
     UsageComponent,
     UsageTableComponent,
     FileUploadComponent,
-    ChartPieOwnerComponent,
-    ChartLineUsageTimeComponent
+    ChartPieUserComponent,
+    ChartLineUsageTimeComponent,
+    TableWorkflowUsageComponent
   ],
   imports: [
     BrowserModule,

@@ -1,2 +1,5 @@
-  <input type="file" #fileInput name="fileUpload" (change)="onFileSelected($event)" style="display: none;">
-  <button mat-button color="primary" (click)="fileInput.click()">Browse</button>
+<input type="file" #fileInput name="fileUpload" (change)="onFileSelected($event)" style="display: none;">
+<button mat-fab extended (click)="fileInput.click()">
+  <mat-icon>upload_file</mat-icon>
+  Choose File
+</button>

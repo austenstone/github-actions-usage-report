@@ -2,7 +2,7 @@ import { Input } from '@angular/core';
 import {AfterViewInit, Component, ViewChild} from '@angular/core';
 import {MatPaginator, MatPaginatorModule} from '@angular/material/paginator';
 import {MatTableDataSource, MatTableModule} from '@angular/material/table';
-import { UsageReportLine } from 'github-usage-report/types';
+import { UsageReport, UsageReportLine } from 'github-usage-report/types';
 
 /**
  * @title Table with pagination

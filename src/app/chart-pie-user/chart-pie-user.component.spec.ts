@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ChartPieOwnerComponent } from './chart-pie-owner.component';
+import { ChartPieUserComponent } from './chart-pie-user.component';
 
 describe('ChartPieOwnerComponent', () => {
-  let component: ChartPieOwnerComponent;
-  let fixture: ComponentFixture<ChartPieOwnerComponent>;
+  let component: ChartPieUserComponent;
+  let fixture: ComponentFixture<ChartPieUserComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ ChartPieOwnerComponent ]
+      declarations: [ ChartPieUserComponent ]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(ChartPieOwnerComponent);
+    fixture = TestBed.createComponent(ChartPieUserComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

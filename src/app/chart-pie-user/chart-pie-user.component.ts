@@ -3,11 +3,11 @@ import { UsageReportLine } from 'github-usage-report/types';
 import * as Highcharts from 'highcharts';
 
 @Component({
-  selector: 'app-chart-pie-owner',
-  templateUrl: './chart-pie-owner.component.html',
-  styleUrls: ['./chart-pie-owner.component.scss']
+  selector: 'app-chart-pie-user',
+  templateUrl: './chart-pie-user.component.html',
+  styleUrls: ['./chart-pie-user.component.scss']
 })
-export class ChartPieOwnerComponent {
+export class ChartPieUserComponent {
   @Input() data!: UsageReportLine[];
   Highcharts: typeof Highcharts = Highcharts;
   options: Highcharts.Options = {
@@ -15,7 +15,7 @@ export class ChartPieOwnerComponent {
       type: 'pie'
     },
     title: {
-      text: 'Usage by Owner'
+      text: 'Usage by username'
     },
     tooltip: {
       pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
@@ -38,9 +38,9 @@ export class ChartPieOwnerComponent {
       type: 'pie', // Add the type property
       name: 'Usage',
       data: this.data.reduce((acc, line) => {
-        const index = acc.findIndex((item) => item[0] === line.owner);
+        const index = acc.findIndex((item) => item[0] === line.username);
         if (index === -1) {
-          acc.push([line.owner, line.quantity]);
+          acc.push([line.username, line.quantity]);
         } else {
           acc[index][1] += line.quantity;
         }
