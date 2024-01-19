@@ -1,12 +1,6 @@
-<p>usage works!</p>
-
-<button>Sign in with Github</button>
-
-<button mat-button>Basic</button>
-
-
 <ng-container *ngIf="usage">
   <app-chart-pie-owner [data]="usage.lines"></app-chart-pie-owner>
+  <app-chart-line-usage-time [data]="usage"></app-chart-line-usage-time>
   <!-- <app-usage-table [data]="usage.lines"></app-usage-table> -->
 </ng-container>
 

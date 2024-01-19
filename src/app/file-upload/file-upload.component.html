@@ -1,1 +1,2 @@
-<input type="file" id="fileUpload" name="fileUpload" (change)="onFileSelected($event)">
+  <input type="file" #fileInput name="fileUpload" (change)="onFileSelected($event)" style="display: none;">
+  <button mat-button color="primary" (click)="fileInput.click()">Browse</button>

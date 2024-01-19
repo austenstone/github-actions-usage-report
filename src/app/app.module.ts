@@ -8,6 +8,7 @@ import { UsageComponent } from './usage/usage.component';
 import { UsageTableComponent } from './usage-table/usage-table.component';
 import { FileUploadComponent } from './file-upload/file-upload.component';
 import { ChartPieOwnerComponent } from './chart-pie-owner/chart-pie-owner.component';
+import { ChartLineUsageTimeComponent } from './chart-line-usage-time/chart-line-usage-time.component';
 
 import { HighchartsChartModule } from 'highcharts-angular';
 
@@ -17,7 +18,8 @@ import { HighchartsChartModule } from 'highcharts-angular';
     UsageComponent,
     UsageTableComponent,
     FileUploadComponent,
-    ChartPieOwnerComponent
+    ChartPieOwnerComponent,
+    ChartLineUsageTimeComponent
   ],
   imports: [
     BrowserModule,
