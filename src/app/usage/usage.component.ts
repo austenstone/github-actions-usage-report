@@ -1,4 +1,6 @@
 import { Component } from '@angular/core';
+import { UsageReport } from 'github-usage-report/types';
+import { readGithubUsageReport } from 'github-usage-report/usage-report';
 
 @Component({
   selector: 'app-usage',
@@ -6,5 +8,15 @@ import { Component } from '@angular/core';
   styleUrls: ['./usage.component.scss']
 })
 export class UsageComponent {
+  usage: UsageReport | null = null;
 
+  ngOnInit() {
+    const oldUsage = localStorage.getItem('usage');
+    this.usage = oldUsage ? JSON.parse(oldUsage) : null;
+  }
+
+  async onFileText(fileText: string) {
+    const usage = await readGithubUsageReport(fileText);
+    this.usage = usage;
+  }
 }

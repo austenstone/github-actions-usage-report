@@ -1,1 +1,14 @@
 <p>usage works!</p>
+
+<button>Sign in with Github</button>
+
+<button mat-button>Basic</button>
+
+
+<ng-container *ngIf="usage">
+  <app-chart-pie-owner [data]="usage.lines"></app-chart-pie-owner>
+  <!-- <app-usage-table [data]="usage.lines"></app-usage-table> -->
+</ng-container>
+
+<app-file-upload (fileText)="onFileText($event)"></app-file-upload>
+
