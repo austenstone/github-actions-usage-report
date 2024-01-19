@@ -1,7 +1,9 @@
-<app-file-upload (fileText)="onFileText($event)"></app-file-upload>
+<app-file-upload [text]="status" (fileText)="onFileText($event)"></app-file-upload>
 
 <ng-container *ngIf="usage">
+  <app-chart-bar-top-time [data]="usage"></app-chart-bar-top-time>
   <app-chart-pie-user [data]="usage.lines"></app-chart-pie-user>
+  <app-chart-line-usage-daily [data]="usage"></app-chart-line-usage-daily>
   <app-chart-line-usage-time [data]="usage"></app-chart-line-usage-time>
   <!-- <app-usage-table [data]="usage.lines"></app-usage-table> -->
   <app-table-workflow-usage [data]="usage"></app-table-workflow-usage>

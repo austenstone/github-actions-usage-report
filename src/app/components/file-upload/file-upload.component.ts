@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 
 @Component({
   selector: 'app-file-upload',
@@ -6,6 +6,7 @@ import { Component, ElementRef, EventEmitter, Output, ViewChild } from '@angular
   styleUrls: ['./file-upload.component.scss']
 })
 export class FileUploadComponent {
+  @Input() text: string = 'Choose File';
   @Output() fileText = new EventEmitter<string>();
   @ViewChild('fileUpload', { static: false }) fileUpload!: ElementRef; // Add this line
 
@@ -16,7 +17,7 @@ export class FileUploadComponent {
   onFileSelected(event: Event) {
     const fileInput = event.target as HTMLInputElement;
     const file: File | null = fileInput.files ? fileInput.files[0] : null;
-  
+
     if (file) {
       const reader = new FileReader();
       reader.onload = () => {

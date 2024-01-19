@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component } from '@angular/core';
 import { UsageReport } from 'github-usage-report/types';
 import { readGithubUsageReport } from 'github-usage-report/usage-report';
+import { UsageReportService } from 'src/app/usage-report.service';
 
 @Component({
   selector: 'app-usage',
@@ -9,17 +10,18 @@ import { readGithubUsageReport } from 'github-usage-report/usage-report';
 })
 export class UsageComponent {
   usage: UsageReport | null = null;
+  status: 'Choose File' | 'Parsing File...' = 'Choose File';
 
-  constructor(private cdr: ChangeDetectorRef) { } // inject ChangeDetectorRef
+  constructor(
+    private cdr: ChangeDetectorRef,
+    private usageReportService: UsageReportService
+  ) { }
 
   ngOnInit() {
-    const oldUsage = localStorage.getItem('usage');
-    this.usage = oldUsage ? JSON.parse(oldUsage) : null;
   }
 
   async onFileText(fileText: string) {
-    const usage = await readGithubUsageReport(fileText);
-    this.usage = usage;
-    this.cdr.detectChanges(); // manually trigger change detection
+    this.usage = await this.usageReportService.setUsageReportData(fileText);
+    this.cdr.detectChanges();
   }
 }

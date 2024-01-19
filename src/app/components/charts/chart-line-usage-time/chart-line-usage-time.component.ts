@@ -8,12 +8,14 @@ import * as Highcharts from 'highcharts';
   styleUrl: './chart-line-usage-time.component.scss'
 })
 export class ChartLineUsageTimeComponent {
-
   @Input() data!: UsageReport;
   Highcharts: typeof Highcharts = Highcharts;
   options: Highcharts.Options = {
     chart: {
-      type: 'line'
+      type: 'spline',
+      zooming: {
+        type: 'x'
+      }
     },
     title: {
       text: 'Actions Usage Over Time'
@@ -38,7 +40,7 @@ export class ChartLineUsageTimeComponent {
         }
     },
     series: [{
-      type: 'line', // Add the type property
+      type: 'spline', // Add the type property
       name: 'Usage',
       data: [
       ]
@@ -50,7 +52,7 @@ export class ChartLineUsageTimeComponent {
     this.data.lines = this.data.lines.filter((line) => line.unitType === 'minute');
     let minutes = 0;
     this.options.series = [{
-      type: 'line',
+      type: 'spline',
       name: 'Usage',
       data: this.data.lines.reduce((acc, line) => {
         minutes += line.quantity;
@@ -58,6 +60,7 @@ export class ChartLineUsageTimeComponent {
         return acc;
       }, [] as [Date, number][])
     }];
+    console.log((this.options.series[0] as any).data[0]);
     this.options.subtitle = {
       text: `${this.data.days} days between ${this.data.startDate.toLocaleDateString('en-US')} and ${this.data.endDate.toLocaleDateString('en-US')}`,
     }

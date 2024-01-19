@@ -4,14 +4,16 @@ import { MaterialModule } from '../material.module';
 
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { UsageComponent } from './usage/usage.component';
-import { UsageTableComponent } from './usage-table/usage-table.component';
-import { FileUploadComponent } from './file-upload/file-upload.component';
-import { ChartPieUserComponent } from './chart-pie-user/chart-pie-user.component';
-import { ChartLineUsageTimeComponent } from './chart-line-usage-time/chart-line-usage-time.component';
-import { TableWorkflowUsageComponent } from './table-workflow-usage/table-workflow-usage.component';
+import { UsageComponent } from './components/usage/usage.component';
+import { UsageTableComponent } from './components/usage-table/usage-table.component';
+import { FileUploadComponent } from './components/file-upload/file-upload.component';
+import { ChartPieUserComponent } from './components/charts/chart-pie-user/chart-pie-user.component';
+import { ChartLineUsageTimeComponent } from './components/charts/chart-line-usage-time/chart-line-usage-time.component';
+import { TableWorkflowUsageComponent } from './components/table-workflow-usage/table-workflow-usage.component';
 
 import { HighchartsChartModule } from 'highcharts-angular';
+import { ChartBarTopTimeComponent } from './components/charts/chart-bar-top-time/chart-bar-top-time.component';
+import { ChartLineUsageDailyComponent } from './components/charts/chart-line-usage-daily/chart-line-usage-daily.component';
 
 @NgModule({
   declarations: [
@@ -21,6 +23,8 @@ import { HighchartsChartModule } from 'highcharts-angular';
     FileUploadComponent,
     ChartPieUserComponent,
     ChartLineUsageTimeComponent,
+    ChartLineUsageDailyComponent,
+    ChartBarTopTimeComponent,
     TableWorkflowUsageComponent
   ],
   imports: [

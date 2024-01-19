@@ -33,7 +33,6 @@ export class UsageTableComponent implements AfterViewInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   ngOnInit() {
-    console.log(this.data);
     this.dataSource.data = this.data.slice(undefined, 10000);
   }
 
