@@ -18,7 +18,7 @@ export class ChartPieUserComponent {
       text: 'Usage by username'
     },
     tooltip: {
-      pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+      pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b><br>Minutes: <b>{point.y}</b>'
     },
     series: [{
       type: 'pie', // Add the type property

@@ -1,4 +1,5 @@
-import { ChangeDetectorRef, Component } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { ChangeDetectorRef, Component, isDevMode } from '@angular/core';
 import { UsageReport } from 'github-usage-report/types';
 import { readGithubUsageReport } from 'github-usage-report/usage-report';
 import { UsageReportService } from 'src/app/usage-report.service';
@@ -14,10 +15,19 @@ export class UsageComponent {
 
   constructor(
     private cdr: ChangeDetectorRef,
-    private usageReportService: UsageReportService
+    private usageReportService: UsageReportService,
+    private httpClient: HttpClient
   ) { }
 
   ngOnInit() {
+    if (isDevMode()) {
+      this.httpClient.get('assets/github-usage-report.csv', { responseType: 'text' }).subscribe((data) => {
+        this.usageReportService.setUsageReportData(data).then((usage) => {
+          this.usage = usage;
+          this.cdr.detectChanges();
+        });
+      });
+    }
   }
 
   async onFileText(fileText: string) {

@@ -2,7 +2,10 @@
 
 <ng-container *ngIf="usage">
   <app-chart-bar-top-time [data]="usage"></app-chart-bar-top-time>
-  <app-chart-pie-user [data]="usage.lines"></app-chart-pie-user>
+  <div style="display: flex; flex: 1 1 0px; flex-wrap: wrap; align-items: center; justify-content: center;">
+    <app-chart-pie-user [data]="usage.lines"></app-chart-pie-user>
+    <app-chart-pie-sku [data]="usage.lines"></app-chart-pie-sku>
+  </div>
   <app-chart-line-usage-daily [data]="usage"></app-chart-line-usage-daily>
   <app-chart-line-usage-time [data]="usage"></app-chart-line-usage-time>
   <!-- <app-usage-table [data]="usage.lines"></app-usage-table> -->

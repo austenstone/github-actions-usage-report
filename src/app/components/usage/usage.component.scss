@@ -1,0 +1,7 @@
+// make the host component style with 100%
+:host {
+  display: block;
+  width: 100%;
+  max-width: 1250px;
+  overflow-x: auto;
+}

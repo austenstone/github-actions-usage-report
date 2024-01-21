@@ -14,6 +14,8 @@ import { TableWorkflowUsageComponent } from './components/table-workflow-usage/t
 import { HighchartsChartModule } from 'highcharts-angular';
 import { ChartBarTopTimeComponent } from './components/charts/chart-bar-top-time/chart-bar-top-time.component';
 import { ChartLineUsageDailyComponent } from './components/charts/chart-line-usage-daily/chart-line-usage-daily.component';
+import { HttpClientModule } from '@angular/common/http';
+import { ChartPieSkuComponent } from './components/charts/chart-pie-sku/chart-pie-sku.component';
 
 @NgModule({
   declarations: [
@@ -25,13 +27,15 @@ import { ChartLineUsageDailyComponent } from './components/charts/chart-line-usa
     ChartLineUsageTimeComponent,
     ChartLineUsageDailyComponent,
     ChartBarTopTimeComponent,
-    TableWorkflowUsageComponent
+    TableWorkflowUsageComponent,
+    ChartPieSkuComponent
   ],
   imports: [
     BrowserModule,
     MaterialModule,
     BrowserAnimationsModule,
-    HighchartsChartModule
+    HighchartsChartModule,
+    HttpClientModule
   ],
   providers: [],
   bootstrap: [AppComponent]
