@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { UsageReport } from 'github-usage-report/types';
+import { UsageReport, UsageReportLine } from 'github-usage-report/types';
 import * as Highcharts from 'highcharts';
 
 @Component({
@@ -8,7 +8,7 @@ import * as Highcharts from 'highcharts';
   styleUrl: './chart-bar-top-time.component.scss'
 })
 export class ChartBarTopTimeComponent {
-  @Input() data!: UsageReport;
+  @Input() data!: UsageReportLine[];
   Highcharts: typeof Highcharts = Highcharts;
   options: Highcharts.Options = {
     chart: {
@@ -43,12 +43,12 @@ export class ChartBarTopTimeComponent {
   updateFromInput: boolean = false;
 
   ngOnChanges() {
-    this.data.lines = this.data.lines.filter((line) => line.unitType === 'minute');
+    this.data = this.data.filter((line) => line.unitType === 'minute');
     let minutes = 0;
     this.options.series = [{
       type: 'bar',
       name: 'Usage',
-      data: this.data.lines.reduce((acc, line) => {
+      data: this.data.reduce((acc, line) => {
         const existingItem = acc.find((a) => a.name === line.repositorySlug);
         if (existingItem) {
           existingItem.y += line.quantity;

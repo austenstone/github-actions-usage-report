@@ -3,5 +3,11 @@
   display: block;
   width: 100%;
   max-width: 1250px;
-  overflow-x: auto;
+}
+
+form {
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 999;
 }

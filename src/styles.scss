@@ -1,4 +1,17 @@
-@import './material.theme.scss';
+@use '@angular/material' as mat;
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap');
+
+$typography: mat.define-typography-config(
+  $font-family: '"Noto Sans", sans-serif'
+);
+
+@include mat.typography-hierarchy($typography);
+
+$app-theme: mat.define-light-theme((
+  typography: $typography
+));
+
+@include mat.all-component-themes($app-theme);
 
 html,
 body {
@@ -27,23 +40,30 @@ body {
   height: 100%;
 }
 
+.flex-center-column {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
 .container {
   margin: 0 10px;
   padding: 0 10px;
+  height: 100%;
 }
 
-.header {
-  display: flex;
-  align-items: center;
-  vertical-align: middle;
-  margin: 0 0 56px;
-  padding: 10px;
-  align-items: center;
-  h1 {
-    margin: 0 !important;
-    padding: 0;
-  }
-  .logo {
-    margin-right: 10px;
-  }
+h1 {
+  margin: 0 !important;
+  padding: 0;
+}
+.logo {
+  margin-top: 3rem;
+}
+
+.hide {
+  display: none !important;
+}
+
+.full-width {
+  width: 100%;
 }

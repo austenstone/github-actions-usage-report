@@ -9,7 +9,9 @@ $dark-theme: mat.define-dark-theme((
    accent: mat.define-palette(mat.$blue-grey-palette),
  ),
   // Only include `typography` and `density` in the default dark theme.
-  typography: mat.define-typography-config(),
+  typography: mat.define-typography-config(
+    $font-family: 'Noto Sans',
+  ),
   density: 0,
 ));
 
@@ -19,16 +21,25 @@ $light-theme: mat.define-light-theme((
    primary: mat.define-palette(mat.$indigo-palette),
    accent: mat.define-palette(mat.$pink-palette),
  ),
+ typography: mat.define-typography-config(
+    $font-family: 'Noto Sans',
+  ),
 ));
 
-// Apply the dark theme by default
+// // Apply the dark theme by default
 // @include mat.core-theme($dark-theme);
 // @include mat.button-theme($dark-theme);
 
-// Apply the light theme only when the user prefers light themes.
-@media (prefers-color-scheme: light) {
- // Use the `-color` mixins to only apply color styles without reapplying the same
- // typography and density styles.
- @include mat.core-color($light-theme);
- @include mat.button-color($light-theme);
-}
+// // Apply the light theme only when the user prefers light themes.
+// @media (prefers-color-scheme: light) {
+//  // Use the `-color` mixins to only apply color styles without reapplying the same
+//  // typography and density styles.
+//  @include mat.core-color($light-theme);
+//  @include mat.button-color($light-theme);
+// }
+
+@include mat.core-theme($light-theme);
+@include mat.core-color($light-theme);
+@include mat.button-color($light-theme);
+
+@include mat.all-component-themes($light-theme);

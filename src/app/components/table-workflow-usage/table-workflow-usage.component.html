@@ -1,7 +1,7 @@
 <h1>Workflow Usage</h1>
 
 <div class="table-responsive">
-  <mat-form-field>
+  <mat-form-field [class.hide]="dataSource.data.length <= 1">
     <mat-label>Filter</mat-label>
     <input matInput (keyup)="applyFilter($event)" placeholder="Ex. .github/workflows/build.yml	" #input>
   </mat-form-field>

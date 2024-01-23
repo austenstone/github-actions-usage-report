@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { UsageReport } from 'github-usage-report/types';
+import { UsageReport, UsageReportLine } from 'github-usage-report/types';
 import * as Highcharts from 'highcharts';
 
 @Component({
@@ -8,7 +8,7 @@ import * as Highcharts from 'highcharts';
   styleUrl: './chart-line-usage-daily.component.scss'
 })
 export class ChartLineUsageDailyComponent {
-  @Input() data!: UsageReport;
+  @Input() data!: UsageReportLine[];
   Highcharts: typeof Highcharts = Highcharts;
   options: Highcharts.Options = {
     chart: {
@@ -49,8 +49,8 @@ export class ChartLineUsageDailyComponent {
   updateFromInput: boolean = false;
 
   ngOnChanges() {
-    this.data.lines = this.data.lines.filter((line) => line.unitType === 'minute');
-    const daily = this.data.lines.reduce((acc, line) => {
+    this.data = this.data.filter((line) => line.unitType === 'minute');
+    const daily = this.data.reduce((acc, line) => {
       const date = new Date(line.date);
       const day = date.toISOString().split('T')[0]; // get the day in YYYY-MM-DD format
     
@@ -70,7 +70,7 @@ export class ChartLineUsageDailyComponent {
     }];
   
     this.options.subtitle = {
-      text: `${this.data.days} days between ${this.data.startDate.toLocaleDateString('en-US')} and ${this.data.endDate.toLocaleDateString('en-US')}`,
+      // text: `${this.data.days} days between ${this.data.startDate.toLocaleDateString('en-US')} and ${this.data.endDate.toLocaleDateString('en-US')}`,
     }
     this.updateFromInput = true;
   }

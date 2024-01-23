@@ -16,6 +16,7 @@ import { ChartBarTopTimeComponent } from './components/charts/chart-bar-top-time
 import { ChartLineUsageDailyComponent } from './components/charts/chart-line-usage-daily/chart-line-usage-daily.component';
 import { HttpClientModule } from '@angular/common/http';
 import { ChartPieSkuComponent } from './components/charts/chart-pie-sku/chart-pie-sku.component';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -35,7 +36,9 @@ import { ChartPieSkuComponent } from './components/charts/chart-pie-sku/chart-pi
     MaterialModule,
     BrowserAnimationsModule,
     HighchartsChartModule,
-    HttpClientModule
+    HttpClientModule,
+    FormsModule,
+    ReactiveFormsModule
   ],
   providers: [],
   bootstrap: [AppComponent]

@@ -1,14 +1,56 @@
-<app-file-upload [text]="status" (fileText)="onFileText($event)"></app-file-upload>
+<div class="flex-center-horizontally full-width">
+  <app-file-upload [text]="status" (fileText)="onFileText($event)"></app-file-upload>
+</div>
+
+<mat-progress-bar *ngIf="progress" mode="determinate" [value]="progress"></mat-progress-bar>
 
 <ng-container *ngIf="usage">
-  <app-chart-bar-top-time [data]="usage"></app-chart-bar-top-time>
+  <form>
+    <mat-form-field appearance="fill">
+      <mat-label>Choose a date range</mat-label>
+      <mat-date-range-input [rangePicker]="picker" [formGroup]="range" [min]="minDate" [max]="maxDate">
+        <input matStartDate placeholder="Start date" formControlName="start">
+        <input matEndDate placeholder="End date" formControlName="end">
+      </mat-date-range-input>
+      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-date-range-picker #picker></mat-date-range-picker>
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Workflow</mat-label>
+      <input type="text" placeholder="build.yml" aria-label="Number" matInput [formControl]="workflowControl"
+        [matAutocomplete]="auto" name="workflow">
+      <mat-autocomplete #auto="matAutocomplete">
+        @for (option of filteredWorkflows | async; track option) {
+        <mat-option [value]="option">{{option}}</mat-option>
+        }
+      </mat-autocomplete>
+      @if (workflowControl.value) {
+      <button matSuffix mat-icon-button aria-label="Clear" (click)="workflowControl.setValue('')">
+        <mat-icon>close</mat-icon>
+      </button>
+      }
+    </mat-form-field>
+  </form>
+
+  <app-chart-bar-top-time [data]="usageLines"></app-chart-bar-top-time>
   <div style="display: flex; flex: 1 1 0px; flex-wrap: wrap; align-items: center; justify-content: center;">
-    <app-chart-pie-user [data]="usage.lines"></app-chart-pie-user>
-    <app-chart-pie-sku [data]="usage.lines"></app-chart-pie-sku>
+    <app-chart-pie-user [data]="usageLines"></app-chart-pie-user>
+    <app-chart-pie-sku [data]="usageLines"></app-chart-pie-sku>
   </div>
-  <app-chart-line-usage-daily [data]="usage"></app-chart-line-usage-daily>
-  <app-chart-line-usage-time [data]="usage"></app-chart-line-usage-time>
-  <!-- <app-usage-table [data]="usage.lines"></app-usage-table> -->
-  <app-table-workflow-usage [data]="usage"></app-table-workflow-usage>
+  <app-chart-line-usage-daily [data]="usageLines"></app-chart-line-usage-daily>
+  <app-chart-line-usage-time [data]="usageLines"></app-chart-line-usage-time>
+  <!-- <app-usage-table [data]="usageLines"></app-usage-table> -->
+  <app-table-workflow-usage [data]="usageLines"></app-table-workflow-usage>
 </ng-container>
 
+<ng-container *ngIf="!usage && !progress">
+  <div class="flex-center-column full-width" style="text-align: center;">
+    <p>This application helps you visualize your <a target="_blank"
+        href="https://docs.github.com/en/billing/managing-billing-for-github-actions/viewing-your-github-actions-usage">GitHub
+        Usage Report</a>.<br> All processing is done client side and your usage report never leaves your computer.</p>
+    <p>To get started go get your usage report and then select it by clicking "Choose File" above.</p>
+    <button mat-raised-button color="primary" (click)="navigateToBilling()">
+      Take me to Github Billing & Plans
+    </button>
+  </div>
+</ng-container>

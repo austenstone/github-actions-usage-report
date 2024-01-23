@@ -44,7 +44,7 @@ export class TableWorkflowUsageComponent {
     },
   ];
   displayedColumns = this.columns.map(c => c.columnDef);
-  @Input() data!: UsageReport;
+  @Input() data!: UsageReportLine[];
   dataSource: MatTableDataSource<UsageReportLine> = new MatTableDataSource<any>(); // Initialize the dataSource property
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -54,8 +54,10 @@ export class TableWorkflowUsageComponent {
     private usageReportService: UsageReportService,
   ) { }
 
-  ngOnInit() {
-    const workflowUsage = this.data.lines.filter(a => a.actionsWorkflow).reduce((acc, line) => {
+  ngOnInit() { }
+
+  ngOnChanges() {
+    const workflowUsage = this.data.filter(a => a.actionsWorkflow).reduce((acc, line) => {
       const workflowEntry = acc.find(a => a.workflow === line.actionsWorkflow);
       const date = new Date(line.date);
       const month: string = date.toLocaleString('default', { month: 'long' });
@@ -98,7 +100,7 @@ export class TableWorkflowUsageComponent {
       });
     });
 
-    this.dataSource = new MatTableDataSource(workflowUsage);
+    this.dataSource? this.dataSource.data = workflowUsage : this.dataSource = new MatTableDataSource();
   }
 
   ngAfterViewInit() {

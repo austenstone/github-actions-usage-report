@@ -14,18 +14,18 @@ Highcharts.setOptions({
   title: {
     style: {
       color: '#000',
-      font: '24px Roboto, sans-serif'
+      font: '24px Noto Sans, sans-serif'
     }
   },
   subtitle: {
     style: {
       color: '#666666',
-      font: '14px Roboto, sans-serif'
+      font: '14px Noto Sans, sans-serif'
     }
   },
   legend: {
     itemStyle: {
-      font: '9pt Roboto, sans-serif',
+      font: '9pt Noto Sans, sans-serif',
       color: 'black'
     },
     itemHoverStyle: {
