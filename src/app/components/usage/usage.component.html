@@ -32,15 +32,8 @@
     </mat-form-field>
   </form>
 
-  <app-chart-bar-top-time [data]="usageLines"></app-chart-bar-top-time>
-  <div style="display: flex; flex: 1 1 0px; flex-wrap: wrap; align-items: center; justify-content: center;">
-    <app-chart-pie-user [data]="usageLines"></app-chart-pie-user>
-    <app-chart-pie-sku [data]="usageLines"></app-chart-pie-sku>
-  </div>
-  <app-chart-line-usage-daily [data]="usageLines"></app-chart-line-usage-daily>
-  <app-chart-line-usage-time [data]="usageLines"></app-chart-line-usage-time>
-  <!-- <app-usage-table [data]="usageLines"></app-usage-table> -->
-  <app-table-workflow-usage [data]="usageLines"></app-table-workflow-usage>
+  <app-actions [data]="usageLines"></app-actions>
+  <app-shared-storage [data]="usageLinesSharedStorage"></app-shared-storage>
 </ng-container>
 
 <ng-container *ngIf="!usage && !progress">

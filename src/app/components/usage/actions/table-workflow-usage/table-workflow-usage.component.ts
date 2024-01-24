@@ -35,13 +35,23 @@ export class TableWorkflowUsageComponent {
     {
       columnDef: 'avgTime',
       header: 'Average time',
-      cell: (workflowItem: any) => `${workflowItem.avgTime.toFixed(2)}`,
+      cell: (workflowItem: any) => `${durationPipe.transform(workflowItem.avgTime)}`,
+    },
+    {
+      columnDef: 'avgCost',
+      header: 'Average cost',
+      cell: (workflowItem: any) => `$${workflowItem.avgCost.toFixed(2)}`,
+    },
+    {
+      columnDef: 'cost',
+      header: 'Total cost',
+      cell: (workflowItem: any) => `$${workflowItem.cost.toFixed(2)}`,
     },
     {
       columnDef: 'total',
       header: 'Total minutes',
-      cell: (workflowItem: any) => `${workflowItem.total}`,
-    },
+        cell: (workflowItem: any) => Math.floor(workflowItem.total),
+      },
   ];
   displayedColumns = this.columns.map(c => c.columnDef);
   @Input() data!: UsageReportLine[];
@@ -72,12 +82,10 @@ export class TableWorkflowUsageComponent {
           this.columns.push({
             columnDef: month,
             header: month,
-            cell: (cost: any) => `${cost[month]}`,
+            cell: (workflowItem: any) => `${workflowItem[month]}`,
           });
           this.displayedColumns = this.columns.map(c => c.columnDef);
         }
-        workflowEntry.avgTime = workflowEntry.total / workflowEntry.runs;
-        workflowEntry.runs++;
       } else {
         acc.push({
           workflow: line.actionsWorkflow,
@@ -85,6 +93,9 @@ export class TableWorkflowUsageComponent {
           total: line.quantity || 0,
           runs: 1,
           runner: this.usageReportService.formatSku(line.sku),
+          pricePerUnit: line.pricePerUnit || 0,
+          cost: line.quantity * line.pricePerUnit || 0,
+          avgCost: line.quantity * line.pricePerUnit || 0,
           avgTime: line.quantity || 0,
           [month]: line.quantity || 0
         });
@@ -98,6 +109,10 @@ export class TableWorkflowUsageComponent {
           workflowItem[column.columnDef] = 0;
         }
       });
+      workflowItem.avgTime = workflowItem.total / workflowItem.runs;
+      workflowItem.cost = workflowItem.total * workflowItem.pricePerUnit;
+      workflowItem.avgCost = workflowItem.avgTime * workflowItem.pricePerUnit;
+      workflowItem.runs = workflowItem.runs;
     });
 
     this.dataSource? this.dataSource.data = workflowUsage : this.dataSource = new MatTableDataSource();
@@ -117,3 +132,24 @@ export class TableWorkflowUsageComponent {
     }
   }
 }
+
+import { Pipe, PipeTransform } from '@angular/core';
+
+@Pipe({
+  name: 'duration'
+})
+export class DurationPipe implements PipeTransform {
+
+  transform(value: number): string {
+    if (value < 60) {
+      return `${value} sec`;
+    } else if (value < 3600) {
+      return `${Math.round(value / 60)} min`;
+    } else {
+      return `${Math.round(value / 3600)} hr`;
+    }
+  }
+
+}
+
+const durationPipe = new DurationPipe();

@@ -4,7 +4,7 @@ import { FormControl, FormGroup } from '@angular/forms';
 import { MatDatepicker } from '@angular/material/datepicker';
 import { UsageReport, UsageReportCallback, UsageReportLine } from 'github-usage-report/types';
 import { readGithubUsageReport } from 'github-usage-report/usage-report';
-import { Observable, debounceTime, map, merge, startWith } from 'rxjs';
+import { BehaviorSubject, Observable, debounceTime, map, merge, startWith } from 'rxjs';
 import { UsageReportService } from 'src/app/usage-report.service';
 
 @Component({
@@ -15,6 +15,7 @@ import { UsageReportService } from 'src/app/usage-report.service';
 export class UsageComponent {
   usage: UsageReport | null = null;
   usageLines: UsageReportLine[] = [];
+  usageLinesSharedStorage: UsageReportLine[] = [];
   status: string = 'Choose File';
   range = new FormGroup({
     start: new FormControl(),
@@ -65,6 +66,8 @@ export class UsageComponent {
 
   loadUsageReport(usage: UsageReport) {
     this.usage = usage;
+    this.usageLinesSharedStorage = this.usage.lines.filter(line => line.sku === 'Shared Storage');
+
     console.warn('Usage report', usage)
     if (usage.lines.length > 0) {
       this.workflows = this.usageReportService.getWorkflows();

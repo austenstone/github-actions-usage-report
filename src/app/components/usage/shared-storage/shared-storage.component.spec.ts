@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { UsageTableComponent } from './usage-table.component';
+import { SharedStorageComponent } from './shared-storage.component';
 
-describe('UsageTableComponent', () => {
-  let component: UsageTableComponent;
-  let fixture: ComponentFixture<UsageTableComponent>;
+describe('SharedStorageComponent', () => {
+  let component: SharedStorageComponent;
+  let fixture: ComponentFixture<SharedStorageComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ UsageTableComponent ]
+      imports: [SharedStorageComponent]
     })
     .compileComponents();
-
-    fixture = TestBed.createComponent(UsageTableComponent);
+    
+    fixture = TestBed.createComponent(SharedStorageComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
