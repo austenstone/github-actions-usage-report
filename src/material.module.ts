@@ -12,7 +12,9 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import {MatButtonToggleModule} from '@angular/material/button-toggle';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { FormsModule } from '@angular/forms';
+import { MatDialogModule } from '@angular/material/dialog';
 
 @NgModule({
   exports: [
@@ -31,7 +33,11 @@ import {MatButtonToggleModule} from '@angular/material/button-toggle';
     MatSelectModule,
     MatAutocompleteModule,
     MatProgressBarModule,
-    MatButtonToggleModule
+    MatButtonToggleModule,
+    MatInputModule,
+    FormsModule,
+    MatButtonModule,
+    MatDialogModule,
   ]
 })
 export class MaterialModule { }

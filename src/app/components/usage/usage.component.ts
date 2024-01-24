@@ -1,4 +1,4 @@
-import { OnInit, ChangeDetectorRef, Component } from '@angular/core';
+import { OnInit, ChangeDetectorRef, Component, Inject } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
@@ -36,7 +36,8 @@ export class UsageComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private usageReportService: UsageReportService,
     iconRegistry: MatIconRegistry,
-    sanitizer: DomSanitizer
+    sanitizer: DomSanitizer,
+    public dialog: MatDialog
   ) {
     iconRegistry.addSvgIconLiteral('github', sanitizer.bypassSecurityTrustHtml(GITHUB_ICON));
   }
@@ -111,9 +112,52 @@ export class UsageComponent implements OnInit {
   }
 
   navigateToBilling() {
-    const orgName = prompt('Organization Name');
-    if (orgName && orgName !== '') {
-      window.open(`https://github.com/organizations/${orgName}/settings/billing/summary`);
+    const dialogRef = this.dialog.open(DialogOverviewExampleDialog);
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        if (result.isEnterprise) {
+          window.open(`https://github.com/enterprises/${result.name}/settings/profile`);
+        } else {
+          window.open(`https://github.com/organizations/${result.name}/settings/billing/summary`);
+        }
+      }
+    });
+  }
+}
+
+
+import {
+  MAT_DIALOG_DATA,
+  MatDialog,
+  MatDialogRef,
+} from '@angular/material/dialog';
+
+interface DialogData {
+  name: string;
+  isEnterprise: boolean;
+}
+
+@Component({
+  selector: 'app-dialog-billing-navigate',
+  templateUrl: 'dialog-billing-navigate.html',
+})
+export class DialogOverviewExampleDialog {
+  constructor(
+    public dialogRef: MatDialogRef<DialogOverviewExampleDialog>,
+    @Inject(MAT_DIALOG_DATA) public data: DialogData,
+  ) {
+    this.data = {
+      name: '',
+      isEnterprise: true
     }
+  }
+
+  onNoClick(): void {
+    this.dialogRef.close();
+  }
+
+  onToggleEnterprise() {
+    this.data.isEnterprise = !this.data.isEnterprise;
   }
 }
