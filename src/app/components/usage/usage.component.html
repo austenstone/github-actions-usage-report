@@ -1,5 +1,5 @@
 <div *ngIf="!usage" class="flex-center-horizontally full-width">
-  <h1 class="mat-headline-1" style="user-select: none;">Github Usage Report</h1>
+  <h1 class="mat-headline-1" style="user-select: none; font-weight: 800; text-align: center;">Github Usage Report</h1>
 </div>
 <div class="flex-center-horizontally full-width">
   <app-file-upload [text]="status" (fileText)="onFileText($event)"></app-file-upload>
@@ -44,7 +44,7 @@
   <div class="flex-center-column full-width" style="text-align: center;">
     <p>This application helps you visualize your <a target="_blank"
         href="https://docs.github.com/en/billing/managing-billing-for-github-actions/viewing-your-github-actions-usage">GitHub
-        Usage Report</a>.<br> All processing is done client side and your usage report never leaves your computer.</p>
+        Usage Report</a>.<br> <i>All processing is done client side and your usage report never leaves your computer.</i></p>
     <p>To get started go get your usage report and then select it by clicking "Choose File" above.</p>
     <button mat-raised-button color="accent" (click)="navigateToBilling()" style="margin-top: 40px;">
       <mat-icon>download</mat-icon>
