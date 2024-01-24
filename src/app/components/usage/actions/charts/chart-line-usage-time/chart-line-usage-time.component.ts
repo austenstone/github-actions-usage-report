@@ -44,6 +44,7 @@ export class ChartLineUsageTimeComponent {
       align: 'right',
       verticalAlign: 'top',
       layout: 'vertical',
+      y: -80,
     },
     series: []
   };

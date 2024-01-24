@@ -2,44 +2,115 @@
 
 @include mat.core();
 
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap');
+
+$github-palette: (
+  50: #e6f4ea,
+  100: #c0e6c8,
+  200: #98d7a5,
+  300: #6fc882,
+  400: #4bb369,
+  500: #238636,
+  600: #1f7730,
+  700: #196127,
+  800: #134b1e,
+  900: #0a2f11,
+  A100: #c0e6c8,
+  A200: #98d7a5,
+  A400: #4bb369,
+  A700: #238636,
+  contrast: (
+    50: #000000,
+    100: #000000,
+    200: #000000,
+    300: #000000,
+    400: #000000,
+    500: #ffffff,
+    600: #ffffff,
+    700: #ffffff,
+    800: #ffffff,
+    900: #ffffff,
+    A100: #000000,
+    A200: #000000,
+    A400: #000000,
+    A700: #ffffff,
+  )
+);
+
+$github-purple-palette: (
+  50: #f2e8fc,
+  100: #d9c6f9,
+  200: #bea3f5,
+  300: #a380f2,
+  400: #8957e5,
+  500: #6e2fc7,
+  600: #541aa9,
+  700: #3a078b,
+  800: #20006d,
+  900: #05004e,
+  A100: #d9c6f9,
+  A200: #bea3f5,
+  A400: #8957e5,
+  A700: #6e2fc7,
+  contrast: (
+    50: #000000,
+    100: #000000,
+    200: #000000,
+    300: #000000,
+    400: #ffffff,
+    500: #ffffff,
+    600: #ffffff,
+    700: #ffffff,
+    800: #ffffff,
+    900: #ffffff,
+    A100: #000000,
+    A200: #000000,
+    A400: #ffffff,
+    A700: #ffffff,
+  )
+);
+
+$typography: mat.define-typography-config(
+  $font-family: '"Noto Sans", sans-serif'
+);
+
+@include mat.typography-hierarchy($typography);
+
 // Define a dark theme
 $dark-theme: mat.define-dark-theme((
  color: (
-   primary: mat.define-palette(mat.$pink-palette),
-   accent: mat.define-palette(mat.$blue-grey-palette),
+  primary: mat.define-palette($github-palette),
+  accent: mat.define-palette($github-purple-palette),
  ),
   // Only include `typography` and `density` in the default dark theme.
-  typography: mat.define-typography-config(
-    $font-family: 'Noto Sans',
-  ),
+  typography: $typography,
   density: 0,
 ));
 
 // Define a light theme
 $light-theme: mat.define-light-theme((
  color: (
-   primary: mat.define-palette(mat.$indigo-palette),
-   accent: mat.define-palette(mat.$pink-palette),
+  primary: mat.define-palette($github-palette),
+  accent: mat.define-palette($github-purple-palette),
  ),
- typography: mat.define-typography-config(
-    $font-family: 'Noto Sans',
-  ),
 ));
 
-// // Apply the dark theme by default
-// @include mat.core-theme($dark-theme);
-// @include mat.button-theme($dark-theme);
+// Apply the dark theme by default
+@include mat.core-theme($dark-theme);
+@include mat.button-theme($dark-theme);
+@include mat.all-component-themes($dark-theme);
 
-// // Apply the light theme only when the user prefers light themes.
-// @media (prefers-color-scheme: light) {
-//  // Use the `-color` mixins to only apply color styles without reapplying the same
-//  // typography and density styles.
-//  @include mat.core-color($light-theme);
-//  @include mat.button-color($light-theme);
-// }
+// Apply the light theme only when the user prefers light themes.
+@media (prefers-color-scheme: light) {
+ // Use the `-color` mixins to only apply color styles without reapplying the same
+ // typography and density styles.
+ @include mat.core-color($light-theme);
+ @include mat.button-color($light-theme);
+ @include mat.all-component-themes($light-theme);
+}
 
-@include mat.core-theme($light-theme);
-@include mat.core-color($light-theme);
-@include mat.button-color($light-theme);
-
-@include mat.all-component-themes($light-theme);
+@media (prefers-color-scheme: dark) {
+  a {
+    color: #238636;
+  }
+}

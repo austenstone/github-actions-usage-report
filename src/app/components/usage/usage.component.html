@@ -5,7 +5,7 @@
 <mat-progress-bar *ngIf="progress" mode="determinate" [value]="progress"></mat-progress-bar>
 
 <ng-container *ngIf="usage">
-  <form>
+  <form class="mat-app-background">
     <mat-form-field appearance="fill">
       <mat-label>Choose a date range</mat-label>
       <mat-date-range-input [rangePicker]="picker" [formGroup]="range" [min]="minDate" [max]="maxDate">
@@ -42,8 +42,15 @@
         href="https://docs.github.com/en/billing/managing-billing-for-github-actions/viewing-your-github-actions-usage">GitHub
         Usage Report</a>.<br> All processing is done client side and your usage report never leaves your computer.</p>
     <p>To get started go get your usage report and then select it by clicking "Choose File" above.</p>
-    <button mat-raised-button color="primary" (click)="navigateToBilling()">
+    <button mat-raised-button color="accent" (click)="navigateToBilling()" style="margin-top: 40px;">
+      <mat-icon>download</mat-icon>
       Take me to Github Billing & Plans
     </button>
+    <a href="https://github.com/austenstone/github-actions-usage-report" target="_blank">
+      <button mat-raised-button color="accent" style="margin-top: 40px;">
+        <mat-icon>code</mat-icon>
+        View source
+      </button>
+    </a>
   </div>
 </ng-container>

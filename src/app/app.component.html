@@ -1,6 +1,6 @@
 <div class="container flex-center-column">
   <div class="logo" style="user-select: none;">
-    <img src="assets/github-mark.svg">
+    <img [src]="this.theme === 'light-theme' ? 'assets/github-mark.svg' : 'assets/github-mark-white.svg' ">
   </div>
   <h1 class="mat-headline-1" style="user-select: none;">Github Usage Report</h1>
   <app-usage></app-usage>

@@ -1,17 +1,4 @@
-@use '@angular/material' as mat;
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap');
-
-$typography: mat.define-typography-config(
-  $font-family: '"Noto Sans", sans-serif'
-);
-
-@include mat.typography-hierarchy($typography);
-
-$app-theme: mat.define-light-theme((
-  typography: $typography
-));
-
-@include mat.all-component-themes($app-theme);
+@import 'material.theme.scss';
 
 html,
 body {
