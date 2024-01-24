@@ -87,7 +87,7 @@ export class UsageComponent {
         }, 0)
       });
     }).then(async (usage) => {
-      this.status = 'Loading...';
+      this.status = 'Loading... Be patient, this may take a while.';
       this.cdr.detectChanges();
       return new Promise<UsageReport>((resolve) => setTimeout(() => resolve(usage), 100));
     });
