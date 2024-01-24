@@ -34,7 +34,7 @@ export class TableSharedStorageComponent {
     },
     {
       columnDef: 'cost',
-      header: 'Cost / Day',
+      header: 'Cost/Day',
       cell: (workflowItem: any) => `$${workflowItem.cost.toFixed(2)}`,
     },
   ];

@@ -39,19 +39,14 @@ export class TableWorkflowUsageComponent {
     },
     {
       columnDef: 'avgCost',
-      header: 'Average cost',
-      cell: (workflowItem: any) => `$${workflowItem.avgCost.toFixed(2)}`,
-    },
-    {
-      columnDef: 'cost',
-      header: 'Total cost',
-      cell: (workflowItem: any) => `$${workflowItem.cost.toFixed(2)}`,
+      header: 'Average run cost',
+      cell: (workflowItem: any) => `$${workflowItem.avgCost.toFixed(3)}`,
     },
     {
       columnDef: 'total',
       header: 'Total minutes',
-        cell: (workflowItem: any) => Math.floor(workflowItem.total),
-      },
+      cell: (workflowItem: any) => Math.floor(workflowItem.total),
+    },
   ];
   displayedColumns = this.columns.map(c => c.columnDef);
   @Input() data!: UsageReportLine[];
@@ -86,6 +81,7 @@ export class TableWorkflowUsageComponent {
           });
           this.displayedColumns = this.columns.map(c => c.columnDef);
         }
+        workflowEntry.runs++;
       } else {
         acc.push({
           workflow: line.actionsWorkflow,
@@ -102,7 +98,7 @@ export class TableWorkflowUsageComponent {
       }
       return acc;
     }, [] as any[]);
-    
+
     workflowUsage.forEach((workflowItem: any) => {
       this.columns.forEach((column: any) => {
         if (!workflowItem[column.columnDef]) {
@@ -112,10 +108,9 @@ export class TableWorkflowUsageComponent {
       workflowItem.avgTime = workflowItem.total / workflowItem.runs;
       workflowItem.cost = workflowItem.total * workflowItem.pricePerUnit;
       workflowItem.avgCost = workflowItem.avgTime * workflowItem.pricePerUnit;
-      workflowItem.runs = workflowItem.runs;
     });
 
-    this.dataSource? this.dataSource.data = workflowUsage : this.dataSource = new MatTableDataSource();
+    this.dataSource ? this.dataSource.data = workflowUsage : this.dataSource = new MatTableDataSource();
   }
 
   ngAfterViewInit() {
@@ -140,13 +135,14 @@ import { Pipe, PipeTransform } from '@angular/core';
 })
 export class DurationPipe implements PipeTransform {
 
-  transform(value: number): string {
-    if (value < 60) {
-      return `${value} sec`;
-    } else if (value < 3600) {
-      return `${Math.round(value / 60)} min`;
+  transform(minutes: number): string {
+    const seconds = minutes * 60;
+    if (seconds < 60) {
+      return `${seconds} sec`;
+    } else if (seconds < 3600) {
+      return `${Math.round(seconds / 60)} min`;
     } else {
-      return `${Math.round(value / 3600)} hr`;
+      return `${Math.round(seconds / 3600)} hr`;
     }
   }
 
