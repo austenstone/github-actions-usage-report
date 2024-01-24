@@ -115,14 +115,17 @@ $light-theme: mat.define-light-theme((
    color-scheme: light;
  }
 
- a {
-   color: mat.get-theme-color($dark-theme, primary, default);
- }
+ @debug mat.get-theme-color($dark-theme, primary, default);
 }
 
 @media (prefers-color-scheme: dark) {
  :root {
    color-scheme: dark;
+ }
+
+ a {
+   color: mat.get-theme-color($dark-theme, primary, 300);
+   text-decoration: none; 
  }
 }
 
