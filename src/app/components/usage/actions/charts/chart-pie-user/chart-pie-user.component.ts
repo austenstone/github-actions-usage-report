@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnChanges } from '@angular/core';
 import { UsageReportLine } from 'github-usage-report/types';
 import * as Highcharts from 'highcharts';
 
@@ -7,7 +7,7 @@ import * as Highcharts from 'highcharts';
   templateUrl: './chart-pie-user.component.html',
   styleUrls: ['./chart-pie-user.component.scss']
 })
-export class ChartPieUserComponent {
+export class ChartPieUserComponent implements OnChanges {
   @Input() data!: UsageReportLine[];
   Highcharts: typeof Highcharts = Highcharts;
   options: Highcharts.Options = {

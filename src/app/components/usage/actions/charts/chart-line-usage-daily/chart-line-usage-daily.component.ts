@@ -1,5 +1,5 @@
-import { Component, Input } from '@angular/core';
-import { UsageReport, UsageReportLine } from 'github-usage-report/types';
+import { Component, Input, OnChanges } from '@angular/core';
+import { UsageReportLine } from 'github-usage-report/types';
 import * as Highcharts from 'highcharts';
 
 @Component({
@@ -7,7 +7,7 @@ import * as Highcharts from 'highcharts';
   templateUrl: './chart-line-usage-daily.component.html',
   styleUrl: './chart-line-usage-daily.component.scss'
 })
-export class ChartLineUsageDailyComponent {
+export class ChartLineUsageDailyComponent implements OnChanges {
   @Input() data!: UsageReportLine[];
   Highcharts: typeof Highcharts = Highcharts;
   options: Highcharts.Options = {

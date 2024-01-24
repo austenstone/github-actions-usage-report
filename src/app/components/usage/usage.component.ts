@@ -1,12 +1,9 @@
-import { HttpClient } from '@angular/common/http';
-import { ChangeDetectorRef, Component, NgZone, ViewChild, isDevMode } from '@angular/core';
+import { OnInit, ChangeDetectorRef, Component } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
-import { MatDatepicker } from '@angular/material/datepicker';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
-import { UsageReport, UsageReportCallback, UsageReportLine } from 'github-usage-report/types';
-import { readGithubUsageReport } from 'github-usage-report/usage-report';
-import { BehaviorSubject, Observable, debounceTime, map, merge, startWith } from 'rxjs';
+import { UsageReport, UsageReportLine } from 'github-usage-report/types';
+import { Observable, debounceTime, map, startWith } from 'rxjs';
 import { UsageReportService } from 'src/app/usage-report.service';
 
 const GITHUB_ICON = `<svg width="24px" height="24px" viewBox="1 0 100 100" xmlns="http://www.w3.org/2000/svg">
@@ -18,7 +15,7 @@ const GITHUB_ICON = `<svg width="24px" height="24px" viewBox="1 0 100 100" xmlns
   templateUrl: './usage.component.html',
   styleUrls: ['./usage.component.scss']
 })
-export class UsageComponent {
+export class UsageComponent implements OnInit {
   usage: UsageReport | null = null;
   usageLines: UsageReportLine[] = [];
   usageLinesSharedStorage: UsageReportLine[] = [];

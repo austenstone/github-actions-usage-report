@@ -1,7 +1,6 @@
-import { HttpClient } from '@angular/common/http';
-import { Injectable, isDevMode } from '@angular/core';
-import { UsageReport, UsageReportCallback, UsageReportLine } from 'github-usage-report/types';
-import { BehaviorSubject, Observable, Subject, map, of } from 'rxjs';
+import { Injectable } from '@angular/core';
+import { UsageReport, UsageReportLine } from 'github-usage-report/types';
+import { BehaviorSubject, Observable } from 'rxjs';
 
 const readGithubUsageReport = async (data: string, cb?: (usageReport: UsageReport, percent: number) => void): Promise<UsageReport> => {
   let percent = 0;
@@ -44,7 +43,7 @@ const readGithubUsageReport = async (data: string, cb?: (usageReport: UsageRepor
     }
     index++;
     percent = Math.round((index / (total - 1)) * 100);
-  };
+  }
   usageReport.startDate = usageReport.lines[0].date;
   usageReport.endDate = usageReport.lines[usageReport.lines.length - 1].date;
   usageReport.days = (usageReport.endDate.getTime() - usageReport.startDate.getTime()) / (1000 * 60 * 60 * 24);

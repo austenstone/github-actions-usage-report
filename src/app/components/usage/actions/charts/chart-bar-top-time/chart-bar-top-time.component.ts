@@ -1,5 +1,5 @@
-import { Component, Input } from '@angular/core';
-import { UsageReport, UsageReportLine } from 'github-usage-report/types';
+import { Component, Input, OnChanges } from '@angular/core';
+import { UsageReportLine } from 'github-usage-report/types';
 import * as Highcharts from 'highcharts';
 
 @Component({
@@ -7,7 +7,7 @@ import * as Highcharts from 'highcharts';
   templateUrl: './chart-bar-top-time.component.html',
   styleUrl: './chart-bar-top-time.component.scss'
 })
-export class ChartBarTopTimeComponent {
+export class ChartBarTopTimeComponent implements OnChanges {
   @Input() data!: UsageReportLine[];
   Highcharts: typeof Highcharts = Highcharts;
   options: Highcharts.Options = {
@@ -44,7 +44,6 @@ export class ChartBarTopTimeComponent {
 
   ngOnChanges() {
     this.data = this.data.filter((line) => line.unitType === 'minute');
-    let minutes = 0;
     this.options.series = [{
       type: 'bar',
       name: 'Usage',

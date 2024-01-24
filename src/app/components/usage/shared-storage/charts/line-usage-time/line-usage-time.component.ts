@@ -1,5 +1,5 @@
-import { Component, ComponentRef, Input, ViewChild } from '@angular/core';
-import { UsageReport, UsageReportLine } from 'github-usage-report/types';
+import { Component, Input, OnChanges, ViewChild } from '@angular/core';
+import { UsageReportLine } from 'github-usage-report/types';
 import * as Highcharts from 'highcharts';
 
 @Component({
@@ -7,7 +7,7 @@ import * as Highcharts from 'highcharts';
   templateUrl: './line-usage-time.component.html',
   styleUrl: './line-usage-time.component.scss'
 })
-export class LineUsageTimeComponent {
+export class LineUsageTimeComponent implements OnChanges {
   @Input() data!: UsageReportLine[];
   Highcharts: typeof Highcharts = Highcharts;
   @ViewChild('chart') chartRef!: any;
@@ -54,7 +54,6 @@ export class LineUsageTimeComponent {
   ngOnChanges() {
     let gbs = 0;
     if (this.chartType === 'total') {
-      let gbs = 0;
       this.options.series = [{
         type: 'spline',
         name: 'Usage',

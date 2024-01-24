@@ -1,7 +1,7 @@
-import { Component, Input, ViewChild } from '@angular/core';
-import { UsageReport, UsageReportLine } from 'github-usage-report/types';
-import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { AfterViewInit, Component, Input, OnChanges, ViewChild } from '@angular/core';
+import { UsageReportLine } from 'github-usage-report/types';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
 import { UsageReportService } from 'src/app/usage-report.service';
 
@@ -10,7 +10,7 @@ import { UsageReportService } from 'src/app/usage-report.service';
   templateUrl: './table-workflow-usage.component.html',
   styleUrl: './table-workflow-usage.component.scss'
 })
-export class TableWorkflowUsageComponent {
+export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
   columns = [
     {
       columnDef: 'workflow',
@@ -58,8 +58,6 @@ export class TableWorkflowUsageComponent {
   constructor(
     private usageReportService: UsageReportService,
   ) { }
-
-  ngOnInit() { }
 
   ngOnChanges() {
     const workflowUsage = this.data.filter(a => a.actionsWorkflow).reduce((acc, line) => {

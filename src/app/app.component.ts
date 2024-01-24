@@ -1,10 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import ExportingModule from 'highcharts/modules/exporting';
 import * as Highcharts from "highcharts";
 import { ThemingService } from './theme.service';
-import SunsetTheme from 'highcharts/themes/sunset.js';
-import DarkUnicaTheme from 'highcharts/themes/dark-unica.js';
-// The modules will work for all charts.
+
 ExportingModule(Highcharts);
 
 @Component({
@@ -12,7 +10,7 @@ ExportingModule(Highcharts);
     templateUrl: './app.component.html',
     styleUrls: ['./app.component.scss'],
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
     theme!: 'light-theme' | 'dark-theme';
     options: Highcharts.Options = {
         credits: {

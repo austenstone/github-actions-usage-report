@@ -8,7 +8,4 @@ import { UsageReportLine } from 'github-usage-report/types';
 })
 export class SharedStorageComponent {
   @Input() data!: UsageReportLine[];
-
-  ngOnInit() { 
-  }
 }

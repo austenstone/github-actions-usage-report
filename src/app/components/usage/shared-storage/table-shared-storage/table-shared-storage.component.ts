@@ -1,16 +1,15 @@
-import { Component, Input, Pipe, PipeTransform, ViewChild } from '@angular/core';
-import { UsageReport, UsageReportLine } from 'github-usage-report/types';
-import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { Component, Input, Pipe, PipeTransform, ViewChild, OnChanges, AfterViewInit } from '@angular/core';
+import { UsageReportLine } from 'github-usage-report/types';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
-import { UsageReportService } from 'src/app/usage-report.service';
 
 @Component({
   selector: 'app-table-shared-storage',
   templateUrl: './table-shared-storage.component.html',
   styleUrl: './table-shared-storage.component.scss'
 })
-export class TableSharedStorageComponent {
+export class TableSharedStorageComponent implements OnChanges, AfterViewInit {
   columns = [
     {
       columnDef: 'repo',
@@ -47,9 +46,6 @@ export class TableSharedStorageComponent {
 
   constructor(
   ) { }
-
-  ngOnInit() {
-  }
 
   ngOnChanges() {
     const workflowUsage = this.data.reduce((acc, line) => {
