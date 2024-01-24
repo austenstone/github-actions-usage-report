@@ -44,7 +44,7 @@ export class LineUsageTimeComponent implements OnChanges {
       align: 'right',
       verticalAlign: 'top',
       layout: 'vertical',
-      y: -80,
+      y: 0,
     },
     series: []
   };
@@ -63,6 +63,7 @@ export class LineUsageTimeComponent implements OnChanges {
           return acc;
         }, [] as [number, number][])
       }];
+      if (this.options.legend) this.options.legend.enabled = false;
     } else if (this.chartType === 'perRepo') {
       (this.options.series as any) = this.data.reduce((acc, line) => {
         gbs += line.quantity;
@@ -79,6 +80,7 @@ export class LineUsageTimeComponent implements OnChanges {
         }
         return acc;
       }, [] as { name: string; data: [number, number][] }[]);
+      if (this.options.legend) this.options.legend.enabled = true;
     }
     this.updateFromInput = true;
   }

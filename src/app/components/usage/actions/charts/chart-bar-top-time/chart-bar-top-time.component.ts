@@ -21,7 +21,7 @@ export class ChartBarTopTimeComponent implements OnChanges {
     },
     yAxis: {
         title: {
-            text: 'Execution time (min)'
+            text: 'Minutes (min)'
         },
     },
     xAxis: {
@@ -38,7 +38,10 @@ export class ChartBarTopTimeComponent implements OnChanges {
         { name: 'Point 3', y: null }, // null value for missing data point
         { name: 'Point 4', y: 4 }
       ]
-    }]
+    }],
+    legend: {
+      enabled: false
+    }
   };
   updateFromInput: boolean = false;
 
@@ -59,7 +62,7 @@ export class ChartBarTopTimeComponent implements OnChanges {
     }];
     this.options.xAxis = {
       ...this.options.xAxis,
-      categories: (this.options.series[0] as any).data.map((a: any) => a.name)
+      categories: (this.options.series[0] as any).data.map((a: any) => a.name),
     };
     this.updateFromInput = true;
   }

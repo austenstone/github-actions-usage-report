@@ -147,10 +147,24 @@ export class AppComponent implements OnInit {
                     },
                     navigation: {
                         buttonOptions: {
-                            symbolStroke: '#DDDDDD',
+                            // symbolStroke: '#DDDDDD',
                             theme: {
-                                fill: '#505053'
+                                fill: 'transparent'
                             }
+                        },
+                        menuStyle: {
+                            background: '#4a4a4a',
+                            color: '#E0E0E3'
+                        },
+                        menuItemStyle: {
+                            fontWeight: 'normal',
+                            background: '#4a4a4a',
+                            color: '#E0E0E3'
+                        },
+                        menuItemHoverStyle: {
+                            fontWeight: 'bold',
+                            background: '#4a4a4a',
+                            color: 'white'
                         }
                     },
                     rangeSelector: {
@@ -186,7 +200,6 @@ export class AppComponent implements OnInit {
                             color: 'silver'
                         }
                     },
-
                     navigator: {
                         handles: {
                             backgroundColor: '#666',
@@ -211,6 +224,9 @@ export class AppComponent implements OnInit {
                         rifleColor: '#FFF',
                         trackBackgroundColor: '#404043',
                         trackBorderColor: '#404043'
+                    },
+                    credits: {
+                        enabled: false
                     }
                 })
             } else {

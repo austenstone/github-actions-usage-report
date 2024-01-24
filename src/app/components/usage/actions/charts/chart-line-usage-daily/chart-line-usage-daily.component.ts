@@ -44,7 +44,10 @@ export class ChartLineUsageDailyComponent implements OnChanges {
       name: 'Usage',
       data: [
       ]
-    }]
+    }],
+    legend: {
+      enabled: false
+    }
   };
   updateFromInput: boolean = false;
 
