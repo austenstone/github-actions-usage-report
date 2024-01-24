@@ -1,3 +1,4 @@
+@use 'sass:map';
 @use '@angular/material' as mat;
 
 @include mat.core();
@@ -80,10 +81,17 @@ $dark-theme: mat.define-dark-theme((
   primary: mat.define-palette($github-palette),
   accent: mat.define-palette($github-purple-palette),
  ),
-  // Only include `typography` and `density` in the default dark theme.
   typography: $typography,
   density: 0,
 ));
+
+$backgroundColor: #24292f;
+$color: map.get($dark-theme, "color");
+$colorBackground: map.get($color, "background");
+$colorBackground: map.set($colorBackground, "background", 
+$backgroundColor);
+$color: map.set($color, "background", $colorBackground);
+$dark-theme: map.set($dark-theme, "color", $color);
 
 // Define a light theme
 $light-theme: mat.define-light-theme((
@@ -95,7 +103,6 @@ $light-theme: mat.define-light-theme((
 
 // Apply the dark theme by default
 @include mat.core-theme($dark-theme);
-@include mat.button-theme($dark-theme);
 @include mat.all-component-themes($dark-theme);
 
 // Apply the light theme only when the user prefers light themes.
@@ -103,11 +110,11 @@ $light-theme: mat.define-light-theme((
  // Use the `-color` mixins to only apply color styles without reapplying the same
  // typography and density styles.
  @include mat.core-color($light-theme);
- @include mat.button-color($light-theme);
  @include mat.all-component-themes($light-theme);
 }
 
 @include mat.typography-hierarchy($typography);
+@include mat.all-component-typographies($typography);
 
 @media (prefers-color-scheme: dark) {
   a {

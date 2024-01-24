@@ -41,16 +41,15 @@ export class UsageComponent {
         this.usageReportService.applyDateFilter(value.start, value.end);
         const usage = this.usageReportService.getUsageReport;
         this.loadUsageReport(usage);
-        this.cdr.detectChanges();
+        // this.cdr.detectChanges();
       }
     });
 
     this.workflowControl.valueChanges.subscribe(value => {
-      console.log('workflowControl', value)
       this.usageReportService.applyWorkflowFilter(value || '');
       const usage = this.usageReportService.getUsageReport;
       this.loadUsageReport(usage);
-      this.cdr.detectChanges();
+      // this.cdr.detectChanges();
     });
 
     this.filteredWorkflows = this.workflowControl.valueChanges.pipe(
@@ -61,15 +60,13 @@ export class UsageComponent {
     this.usageReportService.getUsageReportFiltered().subscribe((usage) => {
       this.usageLines = usage;
       this.usageLinesSharedStorage = usage.filter(line => line.sku === 'Shared Storage');
-      this.cdr.detectChanges();
+      // this.cdr.detectChanges();
     });
   }
 
   loadUsageReport(usage: UsageReport) {
     this.usage = usage;
     this.usageLinesSharedStorage = this.usage.lines.filter(line => line.sku === 'Shared Storage');
-
-    console.warn('Usage report', usage)
     if (usage.lines.length > 0) {
       this.workflows = this.usageReportService.getWorkflows();
     }
@@ -86,19 +83,19 @@ export class UsageComponent {
           resolve('');
         }, 0)
       });
-    }).then(async (usage) => {
+    })
+    .then(async (usage) => {
       this.status = 'Loading... Be patient, this may take a while.';
-      this.cdr.detectChanges();
-      return new Promise<UsageReport>((resolve) => setTimeout(() => resolve(usage), 100));
+      return new Promise<UsageReport>(resolve => setTimeout(() => resolve(usage), 100));
     });
     this.minDate = new Date(usage.lines[0]?.date);
     this.maxDate = new Date(usage.lines[usage.lines.length - 1]?.date);
-    this.range.controls.start.setValue(usage.lines[0]?.date);
-    this.range.controls.end.setValue(usage.lines[usage.lines.length - 1]?.date);
+    this.range.controls.start.setValue(usage.lines[0]?.date, { emitEvent: false });
+    this.range.controls.end.setValue(usage.lines[usage.lines.length - 1]?.date, { emitEvent: false });
     this.loadUsageReport(usage);
     this.status = 'Choose File';
     this.progress = null;
-    this.cdr.detectChanges();
+    // this.cdr.detectChanges();
   }
 
   private _filter(value: string): string[] {
