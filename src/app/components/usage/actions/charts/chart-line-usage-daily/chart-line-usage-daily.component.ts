@@ -81,10 +81,6 @@ export class ChartLineUsageDailyComponent implements OnChanges {
       name: 'Usage',
       data: Object.values(daily)
     }];
-  
-    this.options.subtitle = {
-      // text: `${this.data.days} days between ${this.data.startDate.toLocaleDateString('en-US')} and ${this.data.endDate.toLocaleDateString('en-US')}`,
-    }
     this.updateFromInput = true;
   }
 }

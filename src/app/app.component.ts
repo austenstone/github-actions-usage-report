@@ -41,9 +41,10 @@ export class AppComponent implements OnInit {
                     },
                     title: {
                         style: {
-                            color: '#E0E0E3',
+                            color: '#ffffff',
                             textTransform: 'uppercase',
-                            fontSize: '20px'
+                            fontSize: '24px',
+                            fontWeight: '400'
                         }
                     },
                     subtitle: {
