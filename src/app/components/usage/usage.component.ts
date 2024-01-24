@@ -60,6 +60,7 @@ export class UsageComponent {
 
     this.usageReportService.getUsageReportFiltered().subscribe((usage) => {
       this.usageLines = usage;
+      this.usageLinesSharedStorage = usage.filter(line => line.sku === 'Shared Storage');
       this.cdr.detectChanges();
     });
   }

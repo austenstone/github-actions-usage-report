@@ -49,7 +49,6 @@ export class TableSharedStorageComponent {
   ) { }
 
   ngOnInit() {
-    console.log('SharedStorageComponent ngOnInit()', this.data);
   }
 
   ngOnChanges() {

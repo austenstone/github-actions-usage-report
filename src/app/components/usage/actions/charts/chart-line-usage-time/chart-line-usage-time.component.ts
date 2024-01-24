@@ -59,9 +59,9 @@ export class ChartLineUsageTimeComponent {
         name: 'Usage',
         data: this.data.reduce((acc, line) => {
           minutes += line.quantity;
-          acc.push([line.date, minutes]);
+          acc.push([line.date.getTime(), minutes]);
           return acc;
-        }, [] as [Date, number][])
+        }, [] as [number, number][])
       }];
     } else if (this.chartType === 'perRepo') {
       (this.options.series as any) = this.data.reduce((acc, line) => {

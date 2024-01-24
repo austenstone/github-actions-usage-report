@@ -59,21 +59,21 @@ export class LineUsageTimeComponent {
         name: 'Usage',
         data: this.data.reduce((acc, line) => {
           gbs += line.quantity;
-          acc.push([line.date, gbs]);
+          acc.push([line.date.getTime(), gbs]);
           return acc;
-        }, [] as [Date, number][])
+        }, [] as [number, number][])
       }];
     } else if (this.chartType === 'perRepo') {
       (this.options.series as any) = this.data.reduce((acc, line) => {
         gbs += line.quantity;
         if (acc.find(a => a.name === line.repositorySlug)) {
           const existing = acc.find(a => a.name === line.repositorySlug);
-          existing?.data.push([new Date(line.date).getTime(), existing.data[existing.data.length - 1][1] + line.quantity]);
+          existing?.data.push([line.date.getTime(), existing.data[existing.data.length - 1][1] + line.quantity]);
         } else {
           acc.push({
             name: line.repositorySlug,
             data: [
-              [new Date(line.date).getTime(), line.quantity]
+              [line.date.getTime(), line.quantity]
             ]
           });
         }
