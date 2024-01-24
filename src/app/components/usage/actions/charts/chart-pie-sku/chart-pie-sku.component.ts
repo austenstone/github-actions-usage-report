@@ -1,6 +1,7 @@
 import { Component, Input, OnChanges } from '@angular/core';
 import { UsageReportLine } from 'github-usage-report/types';
 import * as Highcharts from 'highcharts';
+import { ThemingService } from 'src/app/theme.service';
 import { UsageReportService } from 'src/app/usage-report.service';
 
 @Component({
@@ -29,13 +30,19 @@ export class ChartPieSkuComponent implements OnChanges {
         ['SKU2', 2],
         ['SKU3', 3]
       ]
-    }]
+    }],
   };
   updateFromInput: boolean = false;
 
   constructor(
     private usageReportService: UsageReportService,
-  ) { }
+    private themeService: ThemingService
+  ) {
+    this.options = {
+      ...this.options,
+      ...this.themeService.getHighchartsOptions(),
+    }
+  }
 
   ngOnChanges() {
     this.data = this.data.filter((line) => line.unitType === 'minute');

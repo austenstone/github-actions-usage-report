@@ -224,9 +224,6 @@ export class AppComponent implements OnInit {
                         rifleColor: '#FFF',
                         trackBackgroundColor: '#404043',
                         trackBorderColor: '#404043'
-                    },
-                    credits: {
-                        enabled: false
                     }
                 })
             } else {

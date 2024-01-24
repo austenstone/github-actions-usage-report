@@ -1,6 +1,7 @@
 import { Component, Input, OnChanges, ViewChild } from '@angular/core';
 import { UsageReportLine } from 'github-usage-report/types';
 import * as Highcharts from 'highcharts';
+import { ThemingService } from 'src/app/theme.service';
 
 @Component({
   selector: 'app-line-usage-time',
@@ -50,6 +51,15 @@ export class LineUsageTimeComponent implements OnChanges {
   };
   updateFromInput: boolean = false;
   chartType: 'perRepo' | 'total' = 'total';
+
+  constructor(
+    private themeService: ThemingService
+  ) {
+    this.options = {
+      ...this.options,
+      ...this.themeService.getHighchartsOptions(),
+    }
+  }
 
   ngOnChanges() {
     let gbs = 0;

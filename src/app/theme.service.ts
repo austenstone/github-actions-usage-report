@@ -12,6 +12,11 @@ export class ThemingService {
   colors: string[] = [this.primaryColor, '#00ff18', this.secondaryColor, '#f8e044', '#ff3978', '#ffa8dc', '#ff461a', '#006de6', '#2fd9d1', '#9ee800'];
   themes = ["dark-theme", "light-theme"]; // <- list all themes in this array
   theme: BehaviorSubject<Theme> = new BehaviorSubject<Theme>("light-theme"); // <- initial theme
+  highchartsOptions: Highcharts.Options = {
+    credits: {
+      enabled: false
+    },
+  }
 
   constructor(private ref: ApplicationRef) {
     // Initially check if dark mode is enabled on system
@@ -52,5 +57,9 @@ export class ThemingService {
 
   getTheme(): Observable<Theme> {
     return this.theme.asObservable();
+  }
+
+  getHighchartsOptions(): Highcharts.Options {
+    return this.highchartsOptions;
   }
 }

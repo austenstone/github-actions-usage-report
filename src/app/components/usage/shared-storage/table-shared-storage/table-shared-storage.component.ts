@@ -44,9 +44,6 @@ export class TableSharedStorageComponent implements OnChanges, AfterViewInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-  constructor(
-  ) { }
-
   ngOnChanges() {
     const workflowUsage = this.data.reduce((acc, line) => {
       const workflowEntry = acc.find(a => a.repo === line.repositorySlug);

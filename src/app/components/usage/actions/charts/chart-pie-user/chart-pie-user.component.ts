@@ -1,6 +1,7 @@
 import { Component, Input, OnChanges } from '@angular/core';
 import { UsageReportLine } from 'github-usage-report/types';
 import * as Highcharts from 'highcharts';
+import { ThemingService } from 'src/app/theme.service';
 
 @Component({
   selector: 'app-chart-pie-user',
@@ -32,6 +33,15 @@ export class ChartPieUserComponent implements OnChanges {
   };
   updateFromInput: boolean = false;
 
+  constructor(
+    private themeService: ThemingService
+  ) {
+    this.options = {
+      ...this.options,
+      ...this.themeService.getHighchartsOptions(),
+    }
+  }
+
   ngOnChanges() {
     this.data = this.data.filter((line) => line.unitType === 'minute');
     this.options.series = [{
@@ -49,5 +59,5 @@ export class ChartPieUserComponent implements OnChanges {
     }];
     this.updateFromInput = true;
   }
-  
+
 }
