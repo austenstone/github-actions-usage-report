@@ -216,7 +216,7 @@ export class AppComponent {
                     }
                 })
             } else {
-
+                Highcharts.setOptions(this.options);
             }
         }
         )
