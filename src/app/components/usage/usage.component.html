@@ -1,8 +1,12 @@
+<div *ngIf="!usage" class="flex-center-horizontally full-width">
+  <h1 class="mat-headline-1" style="user-select: none;">Github Usage Report</h1>
+</div>
 <div class="flex-center-horizontally full-width">
   <app-file-upload [text]="status" (fileText)="onFileText($event)"></app-file-upload>
 </div>
 
-<mat-progress-bar *ngIf="progress" mode="determinate" [value]="progress"></mat-progress-bar>
+<mat-progress-bar *ngIf="progress && progress < 99" mode="determinate" [value]="progress"></mat-progress-bar>
+<mat-progress-bar *ngIf="progress && progress >= 99" mode="indeterminate"></mat-progress-bar>
 
 <ng-container *ngIf="usage">
   <form class="mat-app-background">

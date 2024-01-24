@@ -7,6 +7,9 @@ export type Theme = "dark-theme" | "light-theme";
   providedIn: 'root'
 })
 export class ThemingService {
+  primaryColor: string = "#00a742";
+  secondaryColor: string = "#7e72ff";
+  colors: string[] = [this.primaryColor, '#00ff18', this.secondaryColor, '#f8e044', '#ff3978', '#ffa8dc', '#ff461a', '#006de6', '#2fd9d1', '#9ee800'];
   themes = ["dark-theme", "light-theme"]; // <- list all themes in this array
   theme: BehaviorSubject<Theme> = new BehaviorSubject<Theme>("light-theme"); // <- initial theme
 
@@ -29,6 +32,18 @@ export class ThemingService {
       // Trigger refresh of UI
       this.ref.tick();
     });
+  }
+
+  getPrimaryColor(): string {
+    return this.primaryColor;
+  }
+
+  getSecondaryColor(): string {
+    return this.secondaryColor;
+  }
+
+  getColors(): string[] {
+    return this.colors;
   }
 
   setTheme(theme: Theme) {

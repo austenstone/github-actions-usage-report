@@ -5,20 +5,20 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap');
 
 $github-palette: (
-  50: #e6f4ea,
-  100: #c0e6c8,
-  200: #98d7a5,
-  300: #6fc882,
-  400: #4bb369,
-  500: #238636,
-  600: #1f7730,
-  700: #196127,
-  800: #134b1e,
-  900: #0a2f11,
-  A100: #c0e6c8,
-  A200: #98d7a5,
-  A400: #4bb369,
-  A700: #238636,
+  50: #e6f9e8,
+  100: #c0f2c2,
+  200: #98ea9b,
+  300: #70e374,
+  400: #48dc4d,
+  500: #00a742,
+  600: #00963a,
+  700: #008532,
+  800: #00742a,
+  900: #006322,
+  A100: #c0f2c2,
+  A200: #98ea9b,
+  A400: #48dc4d,
+  A700: #00a742,
   contrast: (
     50: #000000,
     100: #000000,
@@ -38,20 +38,20 @@ $github-palette: (
 );
 
 $github-purple-palette: (
-  50: #f2e8fc,
-  100: #d9c6f9,
-  200: #bea3f5,
-  300: #a380f2,
-  400: #8957e5,
-  500: #6e2fc7,
-  600: #541aa9,
-  700: #3a078b,
-  800: #20006d,
-  900: #05004e,
-  A100: #d9c6f9,
-  A200: #bea3f5,
-  A400: #8957e5,
-  A700: #6e2fc7,
+  50: #f2f0ff,
+  100: #d6d2ff,
+  200: #b9b4ff,
+  300: #9d96ff,
+  400: #8078ff,
+  500: #7e72ff,
+  600: #6e65e6,
+  700: #5e58cc,
+  800: #4e4bb2,
+  900: #3e3e98,
+  A100: #d6d2ff,
+  A200: #b9b4ff,
+  A400: #8078ff,
+  A700: #7e72ff,
   contrast: (
     50: #000000,
     100: #000000,
@@ -73,8 +73,6 @@ $github-purple-palette: (
 $typography: mat.define-typography-config(
   $font-family: '"Noto Sans", sans-serif'
 );
-
-@include mat.typography-hierarchy($typography);
 
 // Define a dark theme
 $dark-theme: mat.define-dark-theme((
@@ -108,6 +106,8 @@ $light-theme: mat.define-light-theme((
  @include mat.button-color($light-theme);
  @include mat.all-component-themes($light-theme);
 }
+
+@include mat.typography-hierarchy($typography);
 
 @media (prefers-color-scheme: dark) {
   a {
