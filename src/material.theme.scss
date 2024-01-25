@@ -89,11 +89,13 @@ $dark-theme: mat.define-dark-theme((
   density: 0,
 ));
 
-$backgroundColor: #24292f; // Github background color
+// #0d1117
+
+$backgroundColor: #0d1117; // Github background color
+$foreground: #e6edf3; // Github foreground color
 $color: map.get($dark-theme, "color");
 $colorBackground: map.get($color, "background");
-$colorBackground: map.set($colorBackground, "background", 
-$backgroundColor);
+$colorBackground: map.set($colorBackground, "background", $backgroundColor);
 $color: map.set($color, "background", $colorBackground);
 $dark-theme: map.set($dark-theme, "color", $color);
 
@@ -126,6 +128,23 @@ $light-theme: mat.define-light-theme((
  a {
    color: mat.get-theme-color($dark-theme, primary, 300);
    text-decoration: none; 
+ }
+
+ .mdc-text-field--filled:not(.mdc-text-field--disabled),
+ .mat-datepicker-content,
+ div.mat-mdc-autocomplete-panel {
+  background: #010409 !important;
+ }
+ .mat-mdc-paginator,
+ .mat-mdc-table tbody, .mat-mdc-table tfoot, .mat-mdc-table thead, .mat-mdc-cell, .mat-mdc-footer-cell, .mat-mdc-header-row, .mat-mdc-row, .mat-mdc-footer-row, .mat-mdc-table .mat-mdc-header-cell {
+  background: #161b22 !important;
+ }
+
+ .mat-button-toggle-appearance-standard.mat-button-toggle-checked {
+  background: mat.get-theme-color($dark-theme, primary, 500) !important;
+ }
+ .mat-button-toggle-appearance-standard {
+  background: #161b22 !important;
  }
 }
 

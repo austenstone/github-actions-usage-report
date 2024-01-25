@@ -75,21 +75,26 @@ export class LineUsageTimeComponent implements OnChanges {
       }];
       if (this.options.legend) this.options.legend.enabled = false;
     } else if (this.chartType === 'perRepo') {
-      (this.options.series as any) = this.data.reduce((acc, line) => {
-        gbs += line.quantity;
-        if (acc.find(a => a.name === line.repositorySlug)) {
-          const existing = acc.find(a => a.name === line.repositorySlug);
-          existing?.data.push([line.date.getTime(), existing.data[existing.data.length - 1][1] + line.quantity]);
-        } else {
-          acc.push({
-            name: line.repositorySlug,
-            data: [
-              [line.date.getTime(), line.quantity]
-            ]
-          });
-        }
-        return acc;
-      }, [] as { name: string; data: [number, number][] }[]);
+      (this.options.series as any) = this.data.reduce(
+        (acc, line) => {
+          gbs += line.quantity;
+          if (acc.find(a => a.name === line.repositorySlug)) {
+            const existing = acc.find(a => a.name === line.repositorySlug);
+            existing?.data.push([line.date.getTime(), existing.data[existing.data.length - 1][1] + line.quantity]);
+          } else {
+            acc.push({
+              name: line.repositorySlug,
+              data: [
+                [line.date.getTime(), line.quantity]
+              ]
+            });
+          }
+          return acc;
+        }, 
+        [] as { name: string; data: [number, number][] }[]
+      ).sort((a: any, b: any) => {
+        return b.data[b.data.length - 1][1] - a.data[a.data.length - 1][1];
+      }).slice(0, 50);
       if (this.options.legend) this.options.legend.enabled = true;
     }
     this.updateFromInput = true;

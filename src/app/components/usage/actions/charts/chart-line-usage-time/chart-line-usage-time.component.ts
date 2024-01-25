@@ -76,24 +76,51 @@ export class ChartLineUsageTimeComponent implements OnChanges {
       }];
       if (this.options.legend) this.options.legend.enabled = false;
     } else if (this.chartType === 'perRepo') {
-      (this.options.series as any) = this.data.reduce((acc, line) => {
-        minutes += line.quantity;
-        if (acc.find(a => a.name === line.repositorySlug)) {
-          const existing = acc.find(a => a.name === line.repositorySlug);
-          existing?.data.push([new Date(line.date).getTime(), existing.data[existing.data.length - 1][1] + line.quantity]);
-        } else {
-          acc.push({
-            name: line.repositorySlug,
-            data: [
-              [new Date(line.date).getTime(), line.quantity]
-            ]
-          });
-        }
-        return acc;
-      }, [] as { name: string; data: [number, number][] }[]);
+      (this.options.series as any) = this.data.reduce(
+        (acc, line) => {
+          minutes += line.quantity;
+          if (acc.find(a => a.name === line.repositorySlug)) {
+            const existing = acc.find(a => a.name === line.repositorySlug);
+            if (existing) {
+              existing?.data2.push([new Date(line.date).getTime(), existing.data[existing.data.length - 1][1] + line.quantity]);
+              const rollingAverage = this.calculateRollingAverage(existing.data2.map(d => d[1]), 28);
+              existing?.data.push([new Date(line.date).getTime(), rollingAverage]);
+            }
+          } else {
+            acc.push({
+              name: line.repositorySlug,
+              data: [
+                [new Date(line.date).getTime(), line.quantity]
+              ],
+              data2: [
+                [new Date(line.date).getTime(), line.quantity]
+              ]
+            });
+          }
+          return acc;
+        },
+        [] as { name: string; data: [number, number][], data2: [number, number][] }[]
+      ).sort((a: any, b: any) => {
+        return b.data[b.data.length - 1][1] - a.data[a.data.length - 1][1];
+      }).slice(0, 50);
       if (this.options.legend) this.options.legend.enabled = true;
     }
     this.updateFromInput = true;
+  }
+
+  calculateRollingAverage(data: number[], windowSize: number): number {
+    const rollingAverageData: number[] = [];
+    for (let i = 0; i < data.length; i++) {
+      let sum = 0;
+      let count = 0;
+      for (let j = Math.max(0, i - windowSize + 1); j <= i; j++) {
+        sum += data[j];
+        count++;
+      }
+      const average = sum / count;
+      rollingAverageData.push(average);
+    }
+    return rollingAverageData[rollingAverageData.length - 1];
   }
 
   toggleChartType(value: string) {

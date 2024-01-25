@@ -9,8 +9,17 @@
 <mat-progress-bar *ngIf="progress && progress >= 99" mode="indeterminate"></mat-progress-bar>
 
 <ng-container *ngIf="usage">
+  <!-- <div>
+    <mat-chip-set>
+      @for (sku of usageSkus; track sku) {
+      <mat-chip>
+        {{ sku }}
+      </mat-chip>
+      }
+    </mat-chip-set>
+  </div> -->
   <form class="mat-app-background">
-    <mat-form-field appearance="fill">
+    <mat-form-field appearance="fill" style="margin-right: 15px;">
       <mat-label>Choose a date range</mat-label>
       <mat-date-range-input [rangePicker]="picker" [formGroup]="range" [min]="minDate" [max]="maxDate">
         <input matStartDate placeholder="Start date" formControlName="start">
@@ -19,7 +28,7 @@
       <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
       <mat-date-range-picker #picker></mat-date-range-picker>
     </mat-form-field>
-    <mat-form-field>
+    <mat-form-field style="width: 100%; max-width: 500px;">
       <mat-label>Workflow</mat-label>
       <input type="text" placeholder="build.yml" aria-label="Number" matInput [formControl]="workflowControl"
         [matAutocomplete]="auto" name="workflow">
@@ -35,16 +44,44 @@
       }
     </mat-form-field>
   </form>
-
-  <app-actions [data]="usageLines"></app-actions>
-  <app-shared-storage [data]="usageLinesSharedStorage"></app-shared-storage>
+  <mat-tab-group>
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon class="tab-icon">commit</mat-icon>
+        Actions
+      </ng-template>
+      <ng-template matTabContent>
+        <app-actions [data]="usageLines" [usage]="usage"></app-actions>
+      </ng-template>
+    </mat-tab>
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon class="tab-icon">backup</mat-icon>
+        Shared Storage
+      </ng-template>
+      <ng-template matTabContent>
+        <app-shared-storage [data]="usageLinesSharedStorage"></app-shared-storage>
+      </ng-template>
+    </mat-tab>
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon class="tab-icon" svgIcon="copilot"></mat-icon>
+        Copilot
+      </ng-template>
+      <ng-template matTabContent>
+        <app-copilot [data]="usageLinesSharedCopilot"></app-copilot>
+      </ng-template>
+    </mat-tab>
+  </mat-tab-group>
+  
 </ng-container>
 
 <ng-container *ngIf="!usage && !progress">
   <div class="flex-center-column full-width" style="text-align: center;">
     <p>This application helps you visualize your <a target="_blank"
         href="https://docs.github.com/en/billing/managing-billing-for-github-actions/viewing-your-github-actions-usage">GitHub
-        Usage Report</a>.<br> <i>All processing is done client side and your usage report never leaves your computer.</i></p>
+        Usage Report</a>.<br> <i>All processing is done client side and your usage report never leaves your
+        computer.</i></p>
     <p>To get started go get your usage report and then select it by clicking "Choose File" above.</p>
     <button mat-raised-button color="accent" (click)="navigateToBilling()" style="margin-top: 40px;">
       <mat-icon svgIcon="github"></mat-icon>

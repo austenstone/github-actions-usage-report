@@ -1,3 +1,11 @@
+<div style="margin-top: 25px;"></div>
+<app-table-workflow-usage [data]="data"></app-table-workflow-usage>
+<mat-list>
+  <!-- <mat-list-item>This report is for the {{ days }} days between {{ usage.startDate | date:'M/d' }} and {{ usage.endDate | date:'M/d' }}</mat-list-item> -->
+  <mat-list-item>Total minutes: {{ totalMinutes | number }}</mat-list-item>
+  <mat-list-item>Total workflows: {{ workflows.length | number }}</mat-list-item>
+  <mat-list-item>Total cost: {{ totalCost | currency }}</mat-list-item>
+</mat-list>
 <app-chart-bar-top-time [data]="data"></app-chart-bar-top-time>
 <div style="display: flex; flex: 1 1 0px; flex-wrap: wrap; align-items: center; justify-content: center;">
   <app-chart-pie-user [data]="data"></app-chart-pie-user>
@@ -6,5 +14,3 @@
 <app-chart-line-usage-daily [data]="data"></app-chart-line-usage-daily>
 <app-chart-line-usage-time [data]="data"></app-chart-line-usage-time>
 <!-- <app-usage-table [data]="data"></app-usage-table> -->
-<h1>Workflow Usage</h1>
-<app-table-workflow-usage [data]="data"></app-table-workflow-usage>

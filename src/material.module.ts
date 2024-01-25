@@ -15,6 +15,9 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { FormsModule } from '@angular/forms';
 import { MatDialogModule } from '@angular/material/dialog';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatListModule } from '@angular/material/list';
 
 @NgModule({
   exports: [
@@ -38,6 +41,9 @@ import { MatDialogModule } from '@angular/material/dialog';
     FormsModule,
     MatButtonModule,
     MatDialogModule,
+    MatChipsModule,
+    MatTabsModule,
+    MatListModule
   ]
 })
 export class MaterialModule { }

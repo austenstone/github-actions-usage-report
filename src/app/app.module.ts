@@ -20,6 +20,7 @@ import { ActionsUsageComponent } from './components/usage/actions/actions.compon
 import { SharedStorageComponent } from './components/usage/shared-storage/shared-storage.component';
 import { TableSharedStorageComponent } from './components/usage/shared-storage/table-shared-storage/table-shared-storage.component';
 import { LineUsageTimeComponent } from './components/usage/shared-storage/charts/line-usage-time/line-usage-time.component';
+import { CopilotComponent } from './components/usage/copilot/copilot.component';
 
 @NgModule({
   declarations: [
@@ -36,7 +37,8 @@ import { LineUsageTimeComponent } from './components/usage/shared-storage/charts
     FileUploadComponent,
     TableSharedStorageComponent,
     LineUsageTimeComponent,
-    DialogOverviewExampleDialog
+    DialogOverviewExampleDialog,
+    CopilotComponent
   ],
   imports: [
     BrowserModule,
