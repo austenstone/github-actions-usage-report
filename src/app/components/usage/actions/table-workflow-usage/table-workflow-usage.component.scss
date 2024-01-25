@@ -28,3 +28,10 @@ mat-header-cell {
   overflow: hidden;
   vertical-align: middle;
 }
+
+.table-control {
+  display: flex;
+  mat-form-field {
+    margin-right: 15px;
+  }
+}
