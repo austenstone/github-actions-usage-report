@@ -32,7 +32,7 @@ const readGithubUsageReport = async (data: string, cb?: (usageReport: UsageRepor
       owner: csv[7],
       repositorySlug: csv[8],
       username: csv[9],
-      actionsWorkflow: csv[10],
+      actionsWorkflow: csv[10] || 'deleted',
       notes: csv[11],
     };
     if (data.product != null) {

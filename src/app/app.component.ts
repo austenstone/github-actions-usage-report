@@ -41,6 +41,9 @@ export class AppComponent implements OnInit {
     ngOnInit() {
         this.options = {
             colors: this.themeService.getColors(),
+            lang: {
+                thousandsSep: ','
+            }
         };
         this.themeService.getTheme().subscribe(theme => {
             this.theme = theme;
@@ -253,7 +256,7 @@ export class AppComponent implements OnInit {
                 ...this.options,
                 tooltip: {
                     ...this.options.tooltip,
-                    pointFormat: `<b>${valueType === 'cost' ? '${point.y:.2f}' : 'Minutes: {point.y}'}</b>`
+                    pointFormat: `<b>{series.name}</b><br>${valueType === 'cost' ? '${point.y:.2f}' : '{point.y} mins'}`,
                 }
             }
             Highcharts.setOptions(this.options);

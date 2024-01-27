@@ -36,18 +36,27 @@ interface SkuUsageItem {
   cost: number;
 };
 
+interface UsageColumn {
+  columnDef: string;
+  header: string;
+  cell: (element: any) => any;
+  footer?: () => any;
+  tooltip?: (element: any) => any;
+  icon?: (element: any) => string;
+};
+
+const MONTHS = [
+  'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September',
+  'October', 'November', 'December',
+];
+
 @Component({
   selector: 'app-table-workflow-usage',
   templateUrl: './table-workflow-usage.component.html',
   styleUrl: './table-workflow-usage.component.scss'
 })
 export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
-  columns = [] as {
-    columnDef: string;
-    header: string;
-    cell: (element: any) => any;
-    footer?: () => any;
-  }[];
+  columns = [] as UsageColumn[];
   displayedColumns = this.columns.map(c => c.columnDef);
   @Input() data!: CustomUsageReportLine[];
   @Input() currency!: string;
@@ -87,15 +96,35 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
         }
         item.total += line.value;
         if (!this.columns.find(c => c.columnDef === month)) {
-          this.columns.push({
+          const column: UsageColumn = {
             columnDef: month,
             header: month,
             cell: (workflowItem: any) => this.currency === 'cost' ? currencyPipe.transform(workflowItem[month]) : decimalPipe.transform(workflowItem[month]),
             footer: () => {
               const total = this.dataSource.data.reduce((acc, item) => acc + (item as any)[month], 0);
               return this.currency === 'cost' ? currencyPipe.transform(total) : decimalPipe.transform(total);
-            }
-          });
+            },
+          };
+          const lastMonth: string = new Date(line.date.getFullYear(), line.date.getMonth() - 1).toLocaleString('default', { month: 'long' });
+          const value = (item as any)[month];
+          const lastMonthValue = (item as any)[lastMonth];
+          if (lastMonthValue) {
+            const percentageChanged = (item as any)[month + 'PercentChange'];
+            column.tooltip = (workflowItem: WorkflowUsageItem) => {
+              return (workflowItem as any)[month + 'PercentChange'].toFixed(2) + '%';
+            };
+            column.icon = (workflowItem: WorkflowUsageItem) => {
+              const percentageChanged = (workflowItem as any)[month + 'PercentChange'];
+              if (percentageChanged > 0) {
+                return 'trending_up';
+              } else if (percentageChanged < 0) {
+                return 'trending_down';
+              } else {
+                return 'trending_flat';
+              }
+            };
+          }
+          this.columns.push(column);
         }
         item.cost += line.quantity * line.pricePerUnit * line.multiplier;
         item.total += line.quantity;
@@ -119,11 +148,16 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
     }, [] as WorkflowUsageItem[]);
 
     usageItems.forEach((item) => {
-      this.columns.forEach((column: any) => {
-        if (!(item as any)[column.columnDef]) {
-          (item as any)[column.columnDef] = 0;
+      MONTHS.forEach((month: string) => {
+        if (!(item as any)[month]) {
+          (item as any)[month] = 0;
         }
+        const lastMonth: string = new Date(new Date().getFullYear(), MONTHS.indexOf(month) - 1).toLocaleString('default', { month: 'long' });
+        const lastMonthValue = (item as any)[lastMonth];
+        const percentageChanged = this.calculatePercentageChange(lastMonthValue, (item as any)[month]);
+        (item as any)[month + 'PercentChange'] = percentageChanged;
       });
+
       item.avgTime = item.total / item.runs;
       item.avgCost = item.cost / item.runs;
     });
@@ -197,14 +231,14 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
       ];
     };
     columns.push({
-        columnDef: 'runs',
-        header: 'Runs',
-        cell: (workflowItem: WorkflowUsageItem) => `${decimalPipe.transform(workflowItem.runs)}`,
-        footer: () => {
-          const total = this.dataSource.data.reduce((acc, item) => acc + item.runs, 0);
-          return decimalPipe.transform(total);
-        }
-      });
+      columnDef: 'runs',
+      header: 'Runs',
+      cell: (workflowItem: WorkflowUsageItem) => `${decimalPipe.transform(workflowItem.runs)}`,
+      footer: () => {
+        const total = this.dataSource.data.reduce((acc, item) => acc + item.runs, 0);
+        return decimalPipe.transform(total);
+      }
+    });
     if (this.currency === 'minutes') {
       columns.push({
         columnDef: 'avgTime',
@@ -233,6 +267,14 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
     columns[0].footer = () => 'Total';
     this.columns = columns;
     this.displayedColumns = this.columns.map(c => c.columnDef);
+  }
+
+  calculatePercentageChange(oldValue: number, newValue: number) {
+    if (oldValue === 0) {
+      return 0;
+    }
+    let percentageChange = ((newValue - oldValue) / oldValue) * 100;
+    return percentageChange;
   }
 }
 

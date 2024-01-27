@@ -51,7 +51,8 @@ export class ChartLineUsageDailyComponent implements OnChanges {
     },
   };
   updateFromInput: boolean = false;
-  chartType: 'repo' | 'total' | 'sku' | 'user' = 'total';
+  chartType: 'repo' | 'total' | 'sku' | 'user' | 'workflow' = 'total';
+  timeType: 'total' | 'daily' | 'weekly' | 'monthly' | 'rolling20' = 'total';
 
   constructor(
     private themeService: ThemingService,
@@ -66,25 +67,45 @@ export class ChartLineUsageDailyComponent implements OnChanges {
   ngOnChanges() {
     const seriesDays = this.data.reduce(
       (acc, line) => {
-        const day = line.date.toISOString().split('T')[0];
         let name = 'Total';
+        let timeKey = 'total';
+        if (this.timeType === 'daily') {
+          timeKey = line.date.toISOString().split('T')[0];
+        } else if (this.timeType === 'weekly') {
+          timeKey = this.getWeekOfYear(line.date).toString();
+        } else if (this.timeType === 'monthly') {
+          // get key in format YYYY-MM
+          timeKey = line.date.toISOString().split('T')[0].slice(0, 7);
+        } else if (this.timeType === 'rolling20') {
+        } else if (this.timeType === 'total') {
+          timeKey = 'total'
+        }
         if (this.chartType === 'sku') {
           name = this.usageReportService.formatSku(line.sku);
         } else if (this.chartType === 'user') {
           name = line.username;
         } else if (this.chartType === 'repo') {
           name = line.repositorySlug;
+        } else if (this.chartType === 'workflow') {
+          name = line.actionsWorkflow;
+        } else if (this.chartType === 'total') {
+          name = 'total';
         }
         const series = acc.find((s) => s.name === name);
         if (series) {
-          if (!series.data[day]) series.data[day] = [];
-          series.data[day].push([new Date(line.date).getTime(), line.value]);
+          if (!series.data[timeKey]) series.data[timeKey] = [];
+          if (timeKey === 'total') {
+            const last = series.data[timeKey][series.data[timeKey].length - 1];
+            series.data[timeKey].push([new Date(line.date).getTime(), (last[1] + line.value)]);
+          } else {
+            series.data[timeKey].push([new Date(line.date).getTime(), line.value]);
+          }
           series.total += line.value;
         } else {
           acc.push({
             name,
             data: {
-              [day]: [[new Date(line.date).getTime(), line.value]]
+              [timeKey]: [[new Date(line.date).getTime(), line.value]]
             },
             total: line.value
           });
@@ -96,12 +117,18 @@ export class ChartLineUsageDailyComponent implements OnChanges {
       return b.total - a.total;
     }).slice(0, 50);
     (this.options.series as { name: string; data: [number, number][] }[]) = seriesDays.map((series) => {
+      let data: [number, number][] = [];
+      if (this.timeType === 'total') {
+        data = series.data['total'];
+      } else {
+        data = Object.keys(series.data).reduce((acc, timeKey) => {
+          acc.push([new Date(series.data[timeKey][0][0]).getTime(), series.data[timeKey].reduce((acc, curr) => acc + curr[1], 0)]);
+          return acc;
+        }, [] as [number, number][]);
+      }
       return {
         name: series.name,
-        data: Object.keys(series.data).reduce((acc, day) => {
-          acc.push([new Date(day).getTime(), series.data[day].reduce((acc, curr) => acc + curr[1], 0)]);
-          return acc;
-        }, [] as [number, number][]).sort((a, b) => a[0] - b[0])
+        data
       }
     });
     if (this.options.legend) this.options.legend.enabled = this.chartType === 'total' ? false : true;
@@ -114,12 +141,22 @@ export class ChartLineUsageDailyComponent implements OnChanges {
         format: this.currency === 'cost' ? '${value}' : '{value}',
       }
     };
+    this.options.title = {
+      text: `Actions Usage ${this.timeType.toUpperCase()}`
+    };
     this.updateFromInput = true;
   }
 
-  toggleChartType(value: string) {
-    (this.chartType as string) = value;
+  redrawChart() {
     this.chartRef.ngOnDestroy();
     this.ngOnChanges();
+  }
+
+  getWeekOfYear(date: Date) {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+    var weekNo = Math.ceil(( ( (d.getTime() - yearStart.getTime()) / 86400000) + 1)/7);
+    return weekNo;
   }
 }

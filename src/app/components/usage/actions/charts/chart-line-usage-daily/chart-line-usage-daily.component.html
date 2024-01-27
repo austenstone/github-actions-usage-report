@@ -1,9 +1,16 @@
 <p>
-  <mat-button-toggle-group name="toggleChart" aria-label="Toggle Chart" [value]="chartType" (change)="toggleChartType($event.value)">
-    <mat-button-toggle value="total">Total</mat-button-toggle>
+  <mat-button-toggle-group name="toggleChart" aria-label="Toggle Chart" [value]="chartType" (change)="chartType = $event.value; redrawChart()">
+    <mat-button-toggle value="total">All</mat-button-toggle>
     <mat-button-toggle value="repo">Repo</mat-button-toggle>
     <mat-button-toggle value="sku">Runner</mat-button-toggle>
     <mat-button-toggle value="user">User</mat-button-toggle>
+    <mat-button-toggle value="workflow">Workflow</mat-button-toggle>
+  </mat-button-toggle-group>
+  <mat-button-toggle-group name="timeType" aria-label="Toggle Time" [value]="timeType" (change)="timeType = $event.value; redrawChart()">
+    <mat-button-toggle value="total">Total</mat-button-toggle>
+    <mat-button-toggle value="daily">Day</mat-button-toggle>
+    <mat-button-toggle value="weekly">Week</mat-button-toggle>
+    <mat-button-toggle value="monthly">Month</mat-button-toggle>
   </mat-button-toggle-group>
 </p>
 

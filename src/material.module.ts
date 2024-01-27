@@ -18,6 +18,7 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatListModule } from '@angular/material/list';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @NgModule({
   exports: [
@@ -43,7 +44,8 @@ import { MatListModule } from '@angular/material/list';
     MatDialogModule,
     MatChipsModule,
     MatTabsModule,
-    MatListModule
+    MatListModule,
+    MatTooltipModule
   ]
 })
 export class MaterialModule { }

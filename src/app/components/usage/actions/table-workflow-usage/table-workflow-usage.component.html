@@ -20,9 +20,12 @@
       <th mat-header-cell *matHeaderCellDef mat-sort-header>
         {{column.header}}
       </th>
-      <td mat-cell *matCellDef="let row">
+      <mat-cell *matCellDef="let row">
         {{column.cell(row)}}
-      </td>
+        <ng-container *ngIf="column.icon">
+          <mat-icon [matTooltip]="column.tooltip ? column.tooltip(row) : ''" inline="true">{{ column.icon(row) }}</mat-icon>
+        </ng-container>
+      </mat-cell>
       <td mat-footer-cell *matFooterCellDef> <b>{{ column.footer ? column.footer() : '' }}</b> </td>
     </ng-container>
     }
