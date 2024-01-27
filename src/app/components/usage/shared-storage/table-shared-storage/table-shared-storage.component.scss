@@ -14,11 +14,16 @@ mat-table {
   margin: 0px;
 }
 mat-row,
+mat-footer-cell,
 mat-header-row {
   display: table-row;
 }
 mat-cell,
+mat-footer-cell,
 mat-header-cell {
+  mat-icon {
+    vertical-align: bottom;
+  }
   word-wrap: initial;
   display: table-cell;
   padding: 0px 5px;
@@ -27,4 +32,12 @@ mat-header-cell {
   white-space: nowrap;
   overflow: hidden;
   vertical-align: middle;
+}
+
+.table-control {
+  display: flex;
+  div,
+  mat-form-field {
+    margin-right: 15px;
+  }
 }

@@ -14,10 +14,12 @@ mat-table {
   margin: 0px;
 }
 mat-row,
+mat-footer-cell,
 mat-header-row {
   display: table-row;
 }
 mat-cell,
+mat-footer-cell,
 mat-header-cell {
   mat-icon {
     vertical-align: bottom;
