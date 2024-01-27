@@ -64,8 +64,8 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
   ngOnChanges() {
     this.initializeColumns();
     let usage: WorkflowUsageItem[] | RepoUsageItem[] | SkuUsageItem[] = [];
-    let usageItem: WorkflowUsageItem[] = (usage as WorkflowUsageItem[]);
-    usageItem = this.data.reduce((acc, line) => {
+    let usageItems: WorkflowUsageItem[] = (usage as WorkflowUsageItem[]);
+    usageItems = this.data.reduce((acc, line) => {
       const item = acc.find(a => {
         if (this.tableType === 'workflow') {
           return a.workflow === line.actionsWorkflow
@@ -118,7 +118,7 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
       return acc;
     }, [] as WorkflowUsageItem[]);
 
-    usageItem.forEach((item) => {
+    usageItems.forEach((item) => {
       this.columns.forEach((column: any) => {
         if (!(item as any)[column.columnDef]) {
           (item as any)[column.columnDef] = 0;
@@ -127,7 +127,7 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
       item.avgTime = item.total / item.runs;
       item.avgCost = item.cost / item.runs;
     });
-    usage = usageItem;
+    usage = usageItems;
     this.displayedColumns = this.columns.map(c => c.columnDef);
     this.dataSource.data = usage;
   }

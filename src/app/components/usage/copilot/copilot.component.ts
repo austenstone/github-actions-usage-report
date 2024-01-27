@@ -10,4 +10,8 @@ import { CustomUsageReportLine } from 'src/app/usage-report.service';
 export class CopilotComponent {
   @Input() data!: CustomUsageReportLine[];
   @Input() currency!: string;
+  
+  ngOnChanges() {
+    console.log('data', this.data);
+  }
 }

@@ -37,7 +37,9 @@
     <div>
       <mat-button-toggle-group name="toggleCurrency" aria-label="Toggle Chart" [value]="currency"
         (change)="currency = $event.value; changeCurrency($event.value)">
-        <mat-button-toggle value="minutes">{{ tabSelected === 'shared-storage' ? 'GB' : 'Minutes' }}</mat-button-toggle>
+        <mat-button-toggle value="minutes">
+          {{ tabSelected === 'shared-storage' ? 'GB' : tabSelected === 'actions' ? 'Minutes' : 'Seats' }}
+        </mat-button-toggle>
         <mat-button-toggle value="cost">Cost</mat-button-toggle>
       </mat-button-toggle-group>
     </div>
