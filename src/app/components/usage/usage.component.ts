@@ -36,7 +36,8 @@ export class UsageComponent implements OnInit, OnDestroy {
 
   constructor(
     private usageReportService: UsageReportService,
-    public dialog: MatDialog
+    public dialog: MatDialog,
+    private cdr: ChangeDetectorRef,
   ) {
   }
 
@@ -108,6 +109,7 @@ export class UsageComponent implements OnInit, OnDestroy {
     this.status = 'Choose File';
     this.progress = null;
     this.usage = usage;
+    this.cdr.detectChanges();
   }
 
   private _filterWorkflows(workflow: string): string[] {

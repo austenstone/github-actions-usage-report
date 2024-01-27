@@ -42,11 +42,11 @@ export class TableSharedStorageComponent implements OnChanges, AfterViewInit {
       const month: string = date.toLocaleString('default', { month: 'long' });
       if (workflowEntry) {
         if (workflowEntry[month]) {
-          workflowEntry[month] += line.quantity;
+          workflowEntry[month] += line.value;
         } else {
-          workflowEntry[month] = line.quantity;
+          workflowEntry[month] = line.value;
         }
-        workflowEntry.total += line.quantity;
+        workflowEntry.total += line.value;
         if (!this.columns.find(c => c.columnDef === month)) {
           this.columns.push({
             columnDef: month,
