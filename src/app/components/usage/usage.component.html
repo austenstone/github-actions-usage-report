@@ -9,17 +9,8 @@
 <mat-progress-bar *ngIf="progress && progress >= 99" mode="indeterminate"></mat-progress-bar>
 
 <ng-container *ngIf="usage">
-  <!-- <div>
-    <mat-chip-set>
-      @for (sku of usageSkus; track sku) {
-      <mat-chip>
-        {{ sku }}
-      </mat-chip>
-      }
-    </mat-chip-set>
-  </div> -->
   <form class="mat-app-background">
-    <mat-form-field appearance="fill" style="margin-right: 15px;">
+    <mat-form-field appearance="fill">
       <mat-label>Choose a date range</mat-label>
       <mat-date-range-input [rangePicker]="picker" [formGroup]="range" [min]="minDate" [max]="maxDate">
         <input matStartDate placeholder="Start date" formControlName="start">
@@ -28,12 +19,12 @@
       <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
       <mat-date-range-picker #picker></mat-date-range-picker>
     </mat-form-field>
-    <mat-form-field style="width: 100%; max-width: 500px;">
+    <mat-form-field style="width: 100%; max-width: 500px;" *ngIf="tabSelected === 'actions'">
       <mat-label>Workflow</mat-label>
       <input type="text" placeholder="build.yml" aria-label="Number" matInput [formControl]="workflowControl"
         [matAutocomplete]="auto" name="workflow">
       <mat-autocomplete #auto="matAutocomplete">
-        @for (option of filteredWorkflows | async; track option) {
+        @for (option of _filteredWorkflows | async; track option) {
         <mat-option [value]="option">{{option}}</mat-option>
         }
       </mat-autocomplete>
@@ -43,15 +34,23 @@
       </button>
       }
     </mat-form-field>
+    <div>
+      <mat-button-toggle-group name="toggleCurrency" aria-label="Toggle Chart" [value]="currency"
+        (change)="currency = $event.value; changeCurrency($event.value)">
+        <mat-button-toggle value="minutes">{{ tabSelected === 'shared-storage' ? 'GB' : 'Minutes' }}</mat-button-toggle>
+        <mat-button-toggle value="cost">Cost</mat-button-toggle>
+      </mat-button-toggle-group>
+    </div>
   </form>
-  <mat-tab-group>
+  <mat-tab-group (selectedTabChange)="tabChanged($event)">
     <mat-tab>
       <ng-template mat-tab-label>
         <mat-icon class="tab-icon">commit</mat-icon>
         Actions
       </ng-template>
       <ng-template matTabContent>
-        <app-actions [data]="usageLines" [usage]="usage"></app-actions>
+        <div style="margin-top: 25px;"></div>
+        <app-actions [data]="usageLinesActions" [currency]="currency"></app-actions>
       </ng-template>
     </mat-tab>
     <mat-tab>
@@ -60,7 +59,8 @@
         Shared Storage
       </ng-template>
       <ng-template matTabContent>
-        <app-shared-storage [data]="usageLinesSharedStorage"></app-shared-storage>
+        <div style="margin-top: 25px;"></div>
+        <app-shared-storage [data]="usageLinesSharedStorage" [currency]="currency"></app-shared-storage>
       </ng-template>
     </mat-tab>
     <mat-tab>
@@ -69,11 +69,12 @@
         Copilot
       </ng-template>
       <ng-template matTabContent>
-        <app-copilot [data]="usageLinesSharedCopilot"></app-copilot>
+        <div style="margin-top: 25px;"></div>
+        <app-copilot [data]="usageLinesCopilot" [currency]="currency"></app-copilot>
       </ng-template>
     </mat-tab>
   </mat-tab-group>
-  
+
 </ng-container>
 
 <ng-container *ngIf="!usage && !progress">

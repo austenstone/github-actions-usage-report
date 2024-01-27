@@ -2,6 +2,7 @@ import { Component, Input, OnChanges } from '@angular/core';
 import { UsageReportLine } from 'github-usage-report/types';
 import * as Highcharts from 'highcharts';
 import { ThemingService } from 'src/app/theme.service';
+import { CustomUsageReportLine } from 'src/app/usage-report.service';
 
 @Component({
   selector: 'app-chart-bar-top-time',
@@ -9,7 +10,8 @@ import { ThemingService } from 'src/app/theme.service';
   styleUrl: './chart-bar-top-time.component.scss'
 })
 export class ChartBarTopTimeComponent implements OnChanges {
-  @Input() data!: UsageReportLine[];
+  @Input() data!: CustomUsageReportLine[];
+  @Input() currency!: string;
   Highcharts: typeof Highcharts = Highcharts;
   options: Highcharts.Options = {
     chart: {
@@ -27,7 +29,7 @@ export class ChartBarTopTimeComponent implements OnChanges {
     },
     xAxis: {
         title: {
-            text: 'Repo'
+            text: 'Repository'
         }
     },
     series: [{
@@ -63,9 +65,9 @@ export class ChartBarTopTimeComponent implements OnChanges {
       data: this.data.reduce((acc, line) => {
         const existingItem = acc.find((a) => a.name === line.repositorySlug);
         if (existingItem) {
-          existingItem.y += line.quantity;
+          existingItem.y += line.value;
         } else {
-          acc.push({ name: line.repositorySlug, y: line.quantity });
+          acc.push({ name: line.repositorySlug, y: line.value });
         }
         return acc;
       }, [] as { name: string, y: number }[]).sort((a, b) => b.y - a.y).slice(0, 10)
@@ -73,6 +75,18 @@ export class ChartBarTopTimeComponent implements OnChanges {
     this.options.xAxis = {
       ...this.options.xAxis,
       categories: (this.options.series[0] as any).data.map((a: any) => a.name),
+    };
+    this.options.title = {
+      text: this.currency === 'minutes' ? 'Top 10 repos by execution time' : 'Top 10 repos by cost'
+    };
+    this.options.yAxis = {
+      ...this.options.yAxis,
+      title: {
+        text: this.currency === 'minutes' ? 'Minutes (min)' : 'Cost (USD)'
+      },
+      labels: {
+        format: this.currency === 'cost' ? '${value}' : '{value}',
+      }
     };
     this.updateFromInput = true;
   }

@@ -2,6 +2,7 @@ import { Component, Input, OnChanges, ViewChild } from '@angular/core';
 import { UsageReportLine } from 'github-usage-report/types';
 import * as Highcharts from 'highcharts';
 import { ThemingService } from 'src/app/theme.service';
+import { CustomUsageReportLine } from 'src/app/usage-report.service';
 
 @Component({
   selector: 'app-chart-line-usage-time',
@@ -9,7 +10,8 @@ import { ThemingService } from 'src/app/theme.service';
   styleUrl: './chart-line-usage-time.component.scss'
 })
 export class ChartLineUsageTimeComponent implements OnChanges {
-  @Input() data!: UsageReportLine[];
+  @Input() currency!: string;
+  @Input() data!: CustomUsageReportLine[];
   Highcharts: typeof Highcharts = Highcharts;
   @ViewChild('chart') chartRef!: any;
   options: Highcharts.Options = {
@@ -69,7 +71,7 @@ export class ChartLineUsageTimeComponent implements OnChanges {
         type: 'spline',
         name: 'Usage',
         data: this.data.reduce((acc, line) => {
-          minutes += line.quantity;
+          minutes += line.value;
           acc.push([line.date.getTime(), minutes]);
           return acc;
         }, [] as [number, number][])
@@ -78,11 +80,11 @@ export class ChartLineUsageTimeComponent implements OnChanges {
     } else if (this.chartType === 'perRepo') {
       (this.options.series as any) = this.data.reduce(
         (acc, line) => {
-          minutes += line.quantity;
+          minutes += line.value;
           if (acc.find(a => a.name === line.repositorySlug)) {
             const existing = acc.find(a => a.name === line.repositorySlug);
             if (existing) {
-              existing?.data2.push([new Date(line.date).getTime(), existing.data[existing.data.length - 1][1] + line.quantity]);
+              existing?.data2.push([new Date(line.date).getTime(), existing.data[existing.data.length - 1][1] + line.value]);
               const rollingAverage = this.calculateRollingAverage(existing.data2.map(d => d[1]), 28);
               existing?.data.push([new Date(line.date).getTime(), rollingAverage]);
             }
@@ -90,10 +92,10 @@ export class ChartLineUsageTimeComponent implements OnChanges {
             acc.push({
               name: line.repositorySlug,
               data: [
-                [new Date(line.date).getTime(), line.quantity]
+                [new Date(line.date).getTime(), line.value]
               ],
               data2: [
-                [new Date(line.date).getTime(), line.quantity]
+                [new Date(line.date).getTime(), line.value]
               ]
             });
           }
@@ -105,6 +107,15 @@ export class ChartLineUsageTimeComponent implements OnChanges {
       }).slice(0, 50);
       if (this.options.legend) this.options.legend.enabled = true;
     }
+    this.options.yAxis = {
+      ...this.options.yAxis,
+      title: {
+        text: this.currency === 'minutes' ? 'Minutes (min)' : 'Cost (USD)'
+      },
+      labels: {
+        format: this.currency === 'cost' ? '${value}' : '{value}',
+      }
+    };
     this.updateFromInput = true;
   }
 

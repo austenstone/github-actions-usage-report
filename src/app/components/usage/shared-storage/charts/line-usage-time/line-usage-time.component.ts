@@ -2,6 +2,7 @@ import { Component, Input, OnChanges, ViewChild } from '@angular/core';
 import { UsageReportLine } from 'github-usage-report/types';
 import * as Highcharts from 'highcharts';
 import { ThemingService } from 'src/app/theme.service';
+import { CustomUsageReportLine } from 'src/app/usage-report.service';
 
 @Component({
   selector: 'app-line-usage-time',
@@ -9,7 +10,8 @@ import { ThemingService } from 'src/app/theme.service';
   styleUrl: './line-usage-time.component.scss'
 })
 export class LineUsageTimeComponent implements OnChanges {
-  @Input() data!: UsageReportLine[];
+  @Input() data!: CustomUsageReportLine[];
+  @Input() currency!: string;
   Highcharts: typeof Highcharts = Highcharts;
   @ViewChild('chart') chartRef!: any;
   options: Highcharts.Options = {
@@ -68,7 +70,7 @@ export class LineUsageTimeComponent implements OnChanges {
         type: 'spline',
         name: 'Usage',
         data: this.data.reduce((acc, line) => {
-          gbs += line.quantity;
+          gbs += line.value;
           acc.push([line.date.getTime(), gbs]);
           return acc;
         }, [] as [number, number][])
@@ -77,15 +79,15 @@ export class LineUsageTimeComponent implements OnChanges {
     } else if (this.chartType === 'perRepo') {
       (this.options.series as any) = this.data.reduce(
         (acc, line) => {
-          gbs += line.quantity;
+          gbs += line.value;
           if (acc.find(a => a.name === line.repositorySlug)) {
             const existing = acc.find(a => a.name === line.repositorySlug);
-            existing?.data.push([line.date.getTime(), existing.data[existing.data.length - 1][1] + line.quantity]);
+            existing?.data.push([line.date.getTime(), existing.data[existing.data.length - 1][1] + line.value]);
           } else {
             acc.push({
               name: line.repositorySlug,
               data: [
-                [line.date.getTime(), line.quantity]
+                [line.date.getTime(), line.value]
               ]
             });
           }

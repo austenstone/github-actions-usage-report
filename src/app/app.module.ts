@@ -4,7 +4,7 @@ import { MaterialModule } from '../material.module';
 
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { DialogOverviewExampleDialog, UsageComponent } from './components/usage/usage.component';
+import { UsageComponent } from './components/usage/usage.component';
 import { FileUploadComponent } from './components/usage/file-upload/file-upload.component';
 import { ChartPieUserComponent } from './components/usage/actions/charts/chart-pie-user/chart-pie-user.component';
 import { ChartLineUsageTimeComponent } from './components/usage/actions/charts/chart-line-usage-time/chart-line-usage-time.component';
@@ -21,6 +21,7 @@ import { SharedStorageComponent } from './components/usage/shared-storage/shared
 import { TableSharedStorageComponent } from './components/usage/shared-storage/table-shared-storage/table-shared-storage.component';
 import { LineUsageTimeComponent } from './components/usage/shared-storage/charts/line-usage-time/line-usage-time.component';
 import { CopilotComponent } from './components/usage/copilot/copilot.component';
+import { DialogOverviewExampleDialog } from './components/usage/dialog-billing-navigate';
 
 @NgModule({
   declarations: [

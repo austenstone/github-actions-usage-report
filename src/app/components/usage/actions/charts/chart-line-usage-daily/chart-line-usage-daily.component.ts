@@ -2,6 +2,7 @@ import { Component, Input, OnChanges } from '@angular/core';
 import { UsageReportLine } from 'github-usage-report/types';
 import * as Highcharts from 'highcharts';
 import { ThemingService } from 'src/app/theme.service';
+import { CustomUsageReportLine } from 'src/app/usage-report.service';
 
 @Component({
   selector: 'app-chart-line-usage-daily',
@@ -9,7 +10,8 @@ import { ThemingService } from 'src/app/theme.service';
   styleUrl: './chart-line-usage-daily.component.scss'
 })
 export class ChartLineUsageDailyComponent implements OnChanges {
-  @Input() data!: UsageReportLine[];
+  @Input() data!: CustomUsageReportLine[];
+  @Input() currency!: string;
   Highcharts: typeof Highcharts = Highcharts;
   options: Highcharts.Options = {
     chart: {
@@ -68,9 +70,9 @@ export class ChartLineUsageDailyComponent implements OnChanges {
       const day = date.toISOString().split('T')[0]; // get the day in YYYY-MM-DD format
     
       if (!acc[day]) {
-        acc[day] = [date.getTime(), line.quantity];
+        acc[day] = [date.getTime(), line.value];
       } else {
-        acc[day][1] += line.quantity;
+        acc[day][1] += line.value;
       }
   
       return acc;
@@ -81,6 +83,15 @@ export class ChartLineUsageDailyComponent implements OnChanges {
       name: 'Usage',
       data: Object.values(daily)
     }];
+    this.options.yAxis = {
+      ...this.options.yAxis,
+      title: {
+        text: this.currency === 'minutes' ? 'Minutes (min)' : 'Cost (USD)'
+      },
+      labels: {
+        format: this.currency === 'cost' ? '${value}' : '{value}',
+      }
+    };
     this.updateFromInput = true;
   }
 }

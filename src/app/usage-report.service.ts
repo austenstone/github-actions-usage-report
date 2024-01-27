@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { UsageReport, UsageReportLine } from 'github-usage-report/types';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, map, tap } from 'rxjs';
 
 const readGithubUsageReport = async (data: string, cb?: (usageReport: UsageReport, percent: number) => void): Promise<UsageReport> => {
   let percent = 0;
@@ -50,59 +50,163 @@ const readGithubUsageReport = async (data: string, cb?: (usageReport: UsageRepor
   return Promise.resolve(usageReport)
 };
 
+interface Filter {
+  startDate: Date;
+  endDate: Date;
+  workflow: string;
+  sku: string;
+}
+
+type Product = 'Shared Storage' | 'Copilot' | 'Actions';
+
+export interface CustomUsageReportLine extends UsageReportLine {
+  value: number;
+}
+
+export interface CustomUsageReport extends UsageReport {
+  lines: CustomUsageReportLine[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class UsageReportService {
   usageReportData!: string;
-  usageReport!: UsageReport;
-  usageReportFiltered: BehaviorSubject<UsageReportLine[]> = new BehaviorSubject<UsageReportLine[]>([]);
+  usageReport!: CustomUsageReport;
+  usageReportFiltered: BehaviorSubject<CustomUsageReportLine[]> = new BehaviorSubject<CustomUsageReportLine[]>([]);
+  usageReportFilteredProduct: {[key: string]: Observable<CustomUsageReportLine[]>} = {};
+  filters: Filter = {
+    startDate: new Date(),
+    endDate: new Date(),
+    workflow: '',
+    sku: '',
+  } as Filter;
+  days = 0;
+  owners: string[] = [];
+  repositories: string[] = [];
+  workflows: string[] = [];
+  skus: string[] = [];
+  products: string[] = [];
+  usernames: string[] = [];
+  valueType: BehaviorSubject<'minutes' | 'cost'> = new BehaviorSubject<'minutes' | 'cost'>('minutes');
   
-  constructor() { }
+  constructor() {
+  }
 
   get getUsageReport(): UsageReport {
     return this.usageReport;
   }
 
-  async setUsageReportData(usageReportData: string, cb?: (usageReport: UsageReport, percent: number) => void): Promise<UsageReport> {
+  get getWorkflows(): string[] {
+    return this.workflows;
+  }
+
+  setValueType(value: 'minutes' | 'cost') {
+    this.usageReport.lines.forEach(line => {
+      if (value === 'minutes') {
+        line.value = (line.quantity * line.multiplier) || 0;
+      } else {
+        line.value = (line.quantity * line.pricePerUnit * line.multiplier) || 0;
+      }
+    });
+    this.usageReportFiltered.next(this.usageReport.lines);
+    this.valueType.next(value);
+  }
+
+  async setUsageReportData(usageReportData: string, cb?: (usageReport: CustomUsageReport, percent: number) => void): Promise<CustomUsageReport> {
     this.usageReportData = usageReportData;
-    this.usageReport = await readGithubUsageReport(this.usageReportData, cb)
+    this.usageReport = await readGithubUsageReport(this.usageReportData, cb as any) as CustomUsageReport;
+    this.filters.startDate = this.usageReport.startDate;
+    this.filters.endDate = this.usageReport.endDate;
+    this.owners = [];
+    this.repositories = [];
+    this.workflows = [];
+    this.skus = [];
+    this.products = [];
+    this.usernames = [];
+    this.usageReport.lines.forEach(line => {
+      if (!this.owners.includes(line.owner)) {
+        this.owners.push(line.owner);
+      }
+      if (!this.repositories.includes(line.repositorySlug)) {
+        this.repositories.push(line.repositorySlug);
+      }
+      if (!this.workflows.includes(line.actionsWorkflow)) {
+        this.workflows.push(line.actionsWorkflow);
+      }
+      if (!this.skus.includes(line.sku)) {
+        this.skus.push(line.sku);
+      }
+      if (!this.products.includes(line.product)) {
+        this.products.push(line.product);
+      }
+      if (!this.usernames.includes(line.username)) {
+        this.usernames.push(line.username);
+      }
+    });
+    this.setValueType(this.valueType.value);
     this.usageReportFiltered.next(this.usageReport.lines);
     return this.usageReport;
   }
 
-  getWorkflows(): string[] {
-    return this.usageReport.lines.map(line => line.actionsWorkflow).filter((value, index, self) => self.indexOf(value) === index);
-  }
-
-  getUsageReportFiltered(): Observable<UsageReportLine[]> {
-    return this.usageReportFiltered;
-  }
-
-  filterByDate(startDate: Date, endDate: Date): UsageReportLine[] {
-    return this.usageReport.lines.filter(line => {
-      const lineDate = new Date(line.date);
-      if (startDate.getTime() === endDate.getTime()) {
-        const day = startDate.toISOString().split('T')[0];
-        const lineDay = lineDate.toISOString().split('T')[0];
-        return day === lineDay;
-      }
-      return lineDate >= startDate && lineDate <= endDate;
-    });
-  }
-
-  filterByWorkflow(workflow: string): UsageReportLine[] {
-    if (!workflow || workflow === '') return this.usageReport.lines;
-    return this.usageReport.lines.filter(line => line.actionsWorkflow === workflow);
-  }
-
-  applyDateFilter(startDate: Date, endDate: Date): void {
-    const filtered = this.filterByDate(startDate, endDate);
+  applyFilter(filter: {
+    startDate?: Date,
+    endDate?: Date,
+    workflow?: string,
+    sku?: string,
+  }): void {
+    Object.assign(this.filters, filter);
+    let filtered = this.usageReport.lines;
+    if (this.filters.sku !== '') {
+      filtered = filtered.filter(line => line.sku === this.filters.sku);
+    }
+    if (this.filters.workflow !== '') {
+      filtered = filtered.filter(line => line.actionsWorkflow === this.filters.workflow);
+    }
+    if (this.filters.startDate && this.filters.endDate) {
+      filtered = filtered.filter(line => {
+        const lineDate = new Date(line.date);
+        if (this.filters.startDate.getTime() === this.filters.endDate.getTime()) {
+          const day = this.filters.startDate.toISOString().split('T')[0];
+          const lineDay = lineDate.toISOString().split('T')[0];
+          return day === lineDay;
+        }
+        return lineDate >= this.filters.startDate && lineDate <= this.filters.endDate;
+      });
+    }
     this.usageReportFiltered.next(filtered);
   }
 
-  applyWorkflowFilter(workflow: string): void {
-    this.usageReportFiltered.next(this.filterByWorkflow(workflow));
+  getUsageReportFiltered(): Observable<CustomUsageReportLine[]> {
+    return this.usageReportFiltered.asObservable();
+  }
+
+  getUsageFilteredByProduct(product: Product): Observable<CustomUsageReportLine[]> {
+    return this.getUsageReportFiltered().pipe(
+      map(lines => lines.filter(line => line.product === product))
+    );
+  }
+
+  getWorkflowsFiltered(): Observable<string[]> {
+    return this.getUsageFilteredByProduct('Actions').pipe(
+      map(lines => lines.map(line => line.actionsWorkflow).filter((workflow, index, self) => self.indexOf(workflow) === index)),
+    )
+  }
+
+  getActionsTotalMinutes(): Observable<number> {
+    return this.getUsageFilteredByProduct('Actions').pipe(
+      map(lines => lines.reduce((total, line) => total + line.quantity, 0)),
+    )
+  }
+
+  getActionsTotalCost(): Observable<number> {
+    return this.getUsageFilteredByProduct('Actions').pipe(
+      map(lines => lines.reduce((total, line) => total + line.pricePerUnit, 0))
+    )
+  }
+
+  getValueType(): Observable<'minutes' | 'cost'> {
+    return this.valueType.asObservable();
   }
 
   formatSku(sku: string) {

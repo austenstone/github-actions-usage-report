@@ -1,8 +1,9 @@
-import { Component, Input, OnChanges } from '@angular/core';
+import { Component, Input, OnChanges, ViewChild } from '@angular/core';
 import { UsageReportLine } from 'github-usage-report/types';
 import * as Highcharts from 'highcharts';
+import { skip } from 'rxjs';
 import { ThemingService } from 'src/app/theme.service';
-import { UsageReportService } from 'src/app/usage-report.service';
+import { CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.service';
 
 @Component({
   selector: 'app-chart-pie-sku',
@@ -10,14 +11,15 @@ import { UsageReportService } from 'src/app/usage-report.service';
   styleUrl: './chart-pie-sku.component.scss'
 })
 export class ChartPieSkuComponent implements OnChanges {
-  @Input() data!: UsageReportLine[];
+  @Input() data!: CustomUsageReportLine[];
+  @Input() currency!: string;
   Highcharts: typeof Highcharts = Highcharts;
   options: Highcharts.Options = {
     chart: {
       type: 'pie'
     },
     title: {
-      text: 'Usage by SKU'
+      text: 'Usage by Runner Type'
     },
     tooltip: {
       pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b><br>Minutes: <b>{point.y}</b>'
@@ -53,13 +55,21 @@ export class ChartPieSkuComponent implements OnChanges {
         const formattedSku = this.usageReportService.formatSku(line.sku);
         const index = acc.findIndex((item) => item[0] === formattedSku);
         if (index === -1) {
-          acc.push([formattedSku, line.quantity]);
+          acc.push([formattedSku, line.value]);
         } else {
-          acc[index][1] += line.quantity;
+          acc[index][1] += line.value;
         }
         return acc;
       }, [] as [string, number][]).sort((a, b) => b[1] - a[1])
     }];
+    this.options.title = {
+      text: `${this.currency === 'minutes' ? 'Usage' : 'Cost'} by runner type`
+    };
+    console.log(this.currency)
+    this.options.tooltip = {
+      ...this.options.tooltip,
+      pointFormat: `{series.name}: <b>{point.percentage:.1f}%</b><br>${this.currency === 'cost' ? 'Cost: <b>${point.y:.2f}</b>' : 'Minutes: <b>{point.y}</b>'}</b>`
+    };
     this.updateFromInput = true;
   }
 }

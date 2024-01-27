@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { UsageReportLine } from 'github-usage-report/types';
+import { CustomUsageReportLine } from 'src/app/usage-report.service';
 
 @Component({
   selector: 'app-copilot',
@@ -7,5 +8,6 @@ import { UsageReportLine } from 'github-usage-report/types';
   styleUrl: './copilot.component.scss'
 })
 export class CopilotComponent {
-  @Input() data!: UsageReportLine[];
+  @Input() data!: CustomUsageReportLine[];
+  @Input() currency!: string;
 }

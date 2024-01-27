@@ -1,30 +1,29 @@
 import { Component, Input, OnChanges } from '@angular/core';
 import { UsageReport, UsageReportLine } from 'github-usage-report/types';
+import { CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.service';
 
 @Component({
   selector: 'app-actions',
   templateUrl: './actions.component.html',
   styleUrl: './actions.component.scss'
 })
-export class ActionsUsageComponent implements OnChanges {
-  @Input() usage!: UsageReport;
-  @Input() data!: UsageReportLine[];
+export class ActionsUsageComponent {
+  @Input() data!: CustomUsageReportLine[];
+  @Input() currency!: string;
   totalMinutes: number = 0;
   totalCost: number = 0;
-  workflows: string[] = [];
 
-  ngOnChanges() {
-    this.workflows = [];
-    this.totalCost = 0;
-    this.totalMinutes = 0;
-    this.data.forEach((line) => {
-      this.totalMinutes += line.quantity;
-      this.totalCost += line.quantity * line.pricePerUnit;
-      if (!this.workflows.includes(line.actionsWorkflow)) {
-        this.workflows.push(line.actionsWorkflow);
-      }
+  constructor(
+    public usageReportService: UsageReportService,
+  ) { }
+  
+  ngOnInit() {
+    this.usageReportService.getActionsTotalMinutes().subscribe((totalMinutes) => {
+      this.totalMinutes = totalMinutes;
     });
-    this.totalMinutes = Math.round(this.totalMinutes);
+    this.usageReportService.getActionsTotalCost().subscribe((totalCost) => {
+      this.totalCost = totalCost;
+    });
   }
 
 }

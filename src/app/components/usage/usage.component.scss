@@ -9,6 +9,11 @@ form {
   position: sticky;
   top: 0;
   z-index: 999;
+  display: flex;
+  flex-wrap: wrap;
+  mat-form-field {
+    margin-right: 15px;
+  }
 }
 
 .tab-icon {

@@ -1,7 +1,9 @@
 import { Component, Input, OnChanges } from '@angular/core';
 import { UsageReportLine } from 'github-usage-report/types';
 import * as Highcharts from 'highcharts';
+import { skip } from 'rxjs';
 import { ThemingService } from 'src/app/theme.service';
+import { CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.service';
 
 @Component({
   selector: 'app-chart-pie-user',
@@ -9,7 +11,8 @@ import { ThemingService } from 'src/app/theme.service';
   styleUrls: ['./chart-pie-user.component.scss']
 })
 export class ChartPieUserComponent implements OnChanges {
-  @Input() data!: UsageReportLine[];
+  @Input() data!: CustomUsageReportLine[];
+  @Input() currency!: string;
   Highcharts: typeof Highcharts = Highcharts;
   options: Highcharts.Options = {
     chart: {
@@ -22,19 +25,16 @@ export class ChartPieUserComponent implements OnChanges {
       pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b><br>Minutes: <b>{point.y}</b>'
     },
     series: [{
-      type: 'pie', // Add the type property
+      type: 'pie',
       name: 'Usage',
-      data: [
-        ['Jane', 1],
-        ['John', 2],
-        ['Joe', 3]
-      ]
+      data: []
     }]
   };
   updateFromInput: boolean = false;
 
   constructor(
-    private themeService: ThemingService
+    private themeService: ThemingService,
+    private usageReportService: UsageReportService
   ) {
     this.options = {
       ...this.options,
@@ -45,18 +45,25 @@ export class ChartPieUserComponent implements OnChanges {
   ngOnChanges() {
     this.data = this.data.filter((line) => line.unitType === 'minute');
     this.options.series = [{
-      type: 'pie', // Add the type property
+      type: 'pie',
       name: 'Usage',
       data: this.data.reduce((acc, line) => {
         const index = acc.findIndex((item) => item[0] === line.username);
         if (index === -1) {
-          acc.push([line.username, line.quantity]);
+          acc.push([line.username, line.value]);
         } else {
-          acc[index][1] += line.quantity;
+          acc[index][1] += line.value;
         }
         return acc;
       }, [] as [string, number][]).sort((a, b) => b[1] - a[1])
     }];
+    this.options.title = {
+      text: `${this.currency === 'minutes' ? 'Usage' : 'Cost'} by username`
+    };
+    this.options.tooltip = {
+      ...this.options.tooltip,
+      pointFormat: `{series.name}: <b>{point.percentage:.1f}%</b><br>${this.currency === 'cost' ? 'Cost: <b>${point.y:.2f}</b>' : 'Minutes: <b>{point.y}</b>'}</b>`
+    };
     this.updateFromInput = true;
   }
 

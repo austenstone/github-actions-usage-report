@@ -3,6 +3,16 @@ import { UsageReportLine } from 'github-usage-report/types';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
+import { CustomUsageReportLine } from 'src/app/usage-report.service';
+import { CurrencyPipe } from '@angular/common';
+
+type SharedStorageUsageItem = {
+  repo: string;
+  count: number;
+  avgSize: number;
+  total: number;
+  cost: number;
+};
 
 @Component({
   selector: 'app-table-shared-storage',
@@ -10,90 +20,126 @@ import { MatSort } from '@angular/material/sort';
   styleUrl: './table-shared-storage.component.scss'
 })
 export class TableSharedStorageComponent implements OnChanges, AfterViewInit {
-  columns = [
-    {
-      columnDef: 'repo',
-      header: 'Source repository',
-      cell: (workflowItem: any) => `${workflowItem.repo}`,
-    },
-    {
-      columnDef: 'count',
-      header: 'Artifact Count',
-      cell: (workflowItem: any) => `${workflowItem.count}`,
-    },
-    {
-      columnDef: 'avgSize',
-      header: 'Average Size',
-      cell: (workflowItem: any) => `${fileSizePipe.transform(workflowItem.avgSize)}`,
-    },
-    {
-      columnDef: 'total',
-      header: 'Total Gb',
-      cell: (workflowItem: any) => `${fileSizePipe.transform(workflowItem.total)}`,
-    },
-    {
-      columnDef: 'cost',
-      header: 'Cost/Day',
-      cell: (workflowItem: any) => `$${workflowItem.cost.toFixed(2)}`,
-    },
-  ];
+  columns: {
+    columnDef: string;
+    header: string;
+    cell: (element: SharedStorageUsageItem) => any;
+    footer?: () => any;
+  }[] = [];
   displayedColumns = this.columns.map(c => c.columnDef);
-  @Input() data!: UsageReportLine[];
-  dataSource: MatTableDataSource<UsageReportLine> = new MatTableDataSource<any>(); // Initialize the dataSource property
+  @Input() data!: CustomUsageReportLine[];
+  @Input() currency!: string;
+  dataSource: MatTableDataSource<SharedStorageUsageItem> = new MatTableDataSource<any>();
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
   ngOnChanges() {
+    this.initializeColumns();
     const workflowUsage = this.data.reduce((acc, line) => {
       const workflowEntry = acc.find(a => a.repo === line.repositorySlug);
-      const date = new Date(line.date);
+      const date = line.date;
       const month: string = date.toLocaleString('default', { month: 'long' });
       if (workflowEntry) {
         if (workflowEntry[month]) {
-          workflowEntry[month] += line.quantity || 0;
+          workflowEntry[month] += line.quantity;
         } else {
-          workflowEntry[month] = line.quantity || 0;
+          workflowEntry[month] = line.quantity;
         }
-        workflowEntry.total += line.quantity || 0;
+        workflowEntry.total += line.quantity;
         if (!this.columns.find(c => c.columnDef === month)) {
           this.columns.push({
             columnDef: month,
             header: month,
-            cell: (workflowItem: any) => `${fileSizePipe.transform(workflowItem[month])}`,
+            cell: (sharedStorageItem: any) => this.currency === 'cost' ? currencyPipe.transform(sharedStorageItem[month]) : fileSizePipe.transform(sharedStorageItem[month]),
+            footer: () => {
+              const total = this.dataSource.data.reduce((acc, item) => acc + (item as any)[month], 0);
+              return this.currency === 'cost' ? currencyPipe.transform(total) : fileSizePipe.transform(total);
+            }
           });
-          this.displayedColumns = this.columns.map(c => c.columnDef);
         }
-        workflowEntry.avgSize = workflowEntry.total / workflowEntry.count;
         workflowEntry.count++;
-        workflowEntry.cost += line.pricePerUnit * (line.quantity || 0);
+        workflowEntry.cost += line.pricePerUnit * line.quantity * line.multiplier;
       } else {
         acc.push({
           repo: line.repositorySlug,
-          total: line.quantity || 0,
+          total: line.quantity,
           count: 1,
-          cost: line.pricePerUnit * (line.quantity || 0),
-          avgSize: line.quantity || 0,
-          [month]: line.quantity || 0
+          cost: line.pricePerUnit * line.quantity * line.multiplier,
+          avgSize: 0,
+          avgCost: 0,
+          [month]: line.value
         });
       }
       return acc;
     }, [] as any[]);
-    
-    workflowUsage.forEach((workflowItem: any) => {
+
+    workflowUsage.forEach((sharedStorageItem: any) => {
       this.columns.forEach((column: any) => {
-        if (!workflowItem[column.columnDef]) {
-          workflowItem[column.columnDef] = 0;
+        if (!sharedStorageItem[column.columnDef]) {
+          sharedStorageItem[column.columnDef] = 0;
         }
+        sharedStorageItem.avgSize = sharedStorageItem.total / sharedStorageItem.count;
+        sharedStorageItem.avgCost = sharedStorageItem.cost / sharedStorageItem.count;
       });
     });
 
-    this.dataSource? this.dataSource.data = workflowUsage : this.dataSource = new MatTableDataSource();
+    this.displayedColumns = this.columns.map(c => c.columnDef);
+    this.dataSource ? this.dataSource.data = workflowUsage : this.dataSource = new MatTableDataSource();
   }
 
   ngAfterViewInit() {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
+  }
+
+  initializeColumns() {
+    let columns: {
+      columnDef: string,
+      header: string,
+      cell: (sharedStorageItem: SharedStorageUsageItem) => any,
+      footer?: () => any,
+    }[] = [
+        {
+          columnDef: 'repo',
+          header: 'Repository',
+          cell: (sharedStorageItem: any) => `${sharedStorageItem.repo}`,
+          footer: () => 'Total',
+        },
+        {
+          columnDef: 'count',
+          header: 'Artifact Count',
+          cell: (sharedStorageItem: any) => `${sharedStorageItem.count}`,
+          footer: () => this.dataSource.data.reduce((acc, line) => acc + line.count, 0),
+        }
+      ];
+    if (this.currency == 'cost') {
+      columns.push(
+        {
+          columnDef: 'total',
+          header: 'Cost/Day',
+          cell: (sharedStorageItem: any) => `$${sharedStorageItem.cost.toFixed(2)}`,
+          footer: () => `$${this.dataSource.data.reduce((acc, line) => acc + line.cost, 0).toFixed(2)}`,
+        }
+      );
+    } else if (this.currency == 'minutes') {
+      columns.push(
+        {
+          columnDef: 'total',
+          header: 'Total',
+          cell: (sharedStorageItem: any) => `${fileSizePipe.transform(sharedStorageItem.total)}`,
+          footer: () => fileSizePipe.transform(this.dataSource.data.reduce((acc, line) => acc + line.total, 0)),
+        },
+        {
+          columnDef: 'avgSize',
+          header: 'Average Size',
+          cell: (sharedStorageItem: any) => `${fileSizePipe.transform(sharedStorageItem.avgSize)}`,
+          footer: () => fileSizePipe.transform(this.dataSource.data.reduce((acc, line) => acc + line.avgSize, 0) / this.dataSource.data.length),
+        }
+      );
+    }
+    this.columns = columns;
+    this.displayedColumns = this.columns.map(c => c.columnDef);
   }
 
   applyFilter(event: Event) {
@@ -147,3 +193,4 @@ export class FormatFileSizePipe implements PipeTransform {
 }
 
 const fileSizePipe = new FormatFileSizePipe();
+const currencyPipe = new CurrencyPipe('en-US');
