@@ -1,8 +1,8 @@
-import { Component, Input, OnChanges } from '@angular/core';
+import { Component, Input, OnChanges, ViewChild } from '@angular/core';
 import { UsageReportLine } from 'github-usage-report/types';
 import * as Highcharts from 'highcharts';
 import { ThemingService } from 'src/app/theme.service';
-import { CustomUsageReportLine } from 'src/app/usage-report.service';
+import { CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.service';
 
 @Component({
   selector: 'app-chart-line-usage-daily',
@@ -12,10 +12,11 @@ import { CustomUsageReportLine } from 'src/app/usage-report.service';
 export class ChartLineUsageDailyComponent implements OnChanges {
   @Input() data!: CustomUsageReportLine[];
   @Input() currency!: string;
+  @ViewChild('chart') chartRef!: any;
   Highcharts: typeof Highcharts = Highcharts;
   options: Highcharts.Options = {
     chart: {
-      type: 'line',
+      type: 'spline',
       zooming: {
         type: 'x'
       }
@@ -34,7 +35,6 @@ export class ChartLineUsageDailyComponent implements OnChanges {
     xAxis: {
         type: 'datetime',
         dateTimeLabelFormats: {
-            // don't display the year
             month: '%e. %b',
             year: '%b'
         },
@@ -42,20 +42,20 @@ export class ChartLineUsageDailyComponent implements OnChanges {
             text: 'Date'
         }
     },
-    series: [{
-      type: 'line', // Add the type property
-      name: 'Usage',
-      data: [
-      ]
-    }],
+    series: [],
     legend: {
-      enabled: false
-    }
+      align: 'right',
+      verticalAlign: 'top',
+      layout: 'vertical',
+      y: 0,
+    },
   };
   updateFromInput: boolean = false;
+  chartType: 'repo' | 'total' | 'sku' | 'user' = 'total';
 
   constructor(
-    private themeService: ThemingService
+    private themeService: ThemingService,
+    private usageReportService: UsageReportService
   ) {
     this.options = {
       ...this.options,
@@ -64,25 +64,47 @@ export class ChartLineUsageDailyComponent implements OnChanges {
   }
 
   ngOnChanges() {
-    this.data = this.data.filter((line) => line.unitType === 'minute');
-    const daily = this.data.reduce((acc, line) => {
-      const date = new Date(line.date);
-      const day = date.toISOString().split('T')[0]; // get the day in YYYY-MM-DD format
-    
-      if (!acc[day]) {
-        acc[day] = [date.getTime(), line.value];
-      } else {
-        acc[day][1] += line.value;
+    const seriesDays = this.data.reduce(
+      (acc, line) => {
+        const day = line.date.toISOString().split('T')[0];
+        let name = 'Total';
+        if (this.chartType === 'sku') {
+          name = this.usageReportService.formatSku(line.sku);
+        } else if (this.chartType === 'user') {
+          name = line.username;
+        } else if (this.chartType === 'repo') {
+          name = line.repositorySlug;
+        }
+        const series = acc.find((s) => s.name === name);
+        if (series) {
+          if (!series.data[day]) series.data[day] = [];
+          series.data[day].push([new Date(line.date).getTime(), line.value]);
+          series.total += line.value;
+        } else {
+          acc.push({
+            name,
+            data: {
+              [day]: [[new Date(line.date).getTime(), line.value]]
+            },
+            total: line.value
+          });
+        }
+        return acc;
+      },
+      [] as { name: string; data: { [key: string]: [number, number][] }, total: number }[]
+    ).sort((a: any, b: any) => {
+      return b.total - a.total;
+    }).slice(0, 50);
+    (this.options.series as { name: string; data: [number, number][] }[]) = seriesDays.map((series) => {
+      return {
+        name: series.name,
+        data: Object.keys(series.data).reduce((acc, day) => {
+          acc.push([new Date(day).getTime(), series.data[day].reduce((acc, curr) => acc + curr[1], 0)]);
+          return acc;
+        }, [] as [number, number][]).sort((a, b) => a[0] - b[0])
       }
-  
-      return acc;
-    }, {} as {[key: string]: [number, number]});
-    
-    this.options.series = [{
-      type: 'line',
-      name: 'Usage',
-      data: Object.values(daily)
-    }];
+    });
+    if (this.options.legend) this.options.legend.enabled = this.chartType === 'total' ? false : true;
     this.options.yAxis = {
       ...this.options.yAxis,
       title: {
@@ -93,5 +115,11 @@ export class ChartLineUsageDailyComponent implements OnChanges {
       }
     };
     this.updateFromInput = true;
+  }
+
+  toggleChartType(value: string) {
+    (this.chartType as string) = value;
+    this.chartRef.ngOnDestroy();
+    this.ngOnChanges();
   }
 }

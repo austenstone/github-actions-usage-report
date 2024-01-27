@@ -130,7 +130,6 @@ export class UsageComponent implements OnInit, OnDestroy {
   }
 
   changeCurrency(currency: string) {
-    console.log('change', currency)
     this.currency = currency as 'minutes' | 'cost';
     this.usageReportService.setValueType(this.currency);
   }

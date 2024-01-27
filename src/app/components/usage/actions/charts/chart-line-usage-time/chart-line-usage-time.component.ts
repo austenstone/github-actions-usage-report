@@ -2,7 +2,7 @@ import { Component, Input, OnChanges, ViewChild } from '@angular/core';
 import { UsageReportLine } from 'github-usage-report/types';
 import * as Highcharts from 'highcharts';
 import { ThemingService } from 'src/app/theme.service';
-import { CustomUsageReportLine } from 'src/app/usage-report.service';
+import { CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.service';
 
 @Component({
   selector: 'app-chart-line-usage-time',
@@ -52,10 +52,11 @@ export class ChartLineUsageTimeComponent implements OnChanges {
     series: []
   };
   updateFromInput: boolean = false;
-  chartType: 'perRepo' | 'total' = 'total';
+  chartType: 'repo' | 'total' | 'sku' | 'user' = 'total';
 
   constructor(
-    private themeService: ThemingService
+    private themeService: ThemingService,
+    private usageReportService: UsageReportService
   ) {
     this.options = {
       ...this.options,
@@ -64,49 +65,40 @@ export class ChartLineUsageTimeComponent implements OnChanges {
   }
 
   ngOnChanges() {
-    let minutes = 0;
-    this.data = this.data.filter((line) => line.unitType === 'minute');
-    if (this.chartType === 'total') {
-      this.options.series = [{
-        type: 'spline',
-        name: 'Usage',
-        data: this.data.reduce((acc, line) => {
-          minutes += line.value;
-          acc.push([line.date.getTime(), minutes]);
-          return acc;
-        }, [] as [number, number][])
-      }];
-      if (this.options.legend) this.options.legend.enabled = false;
-    } else if (this.chartType === 'perRepo') {
-      (this.options.series as any) = this.data.reduce(
-        (acc, line) => {
-          minutes += line.value;
-          if (acc.find(a => a.name === line.repositorySlug)) {
-            const existing = acc.find(a => a.name === line.repositorySlug);
-            if (existing) {
-              existing?.data2.push([new Date(line.date).getTime(), existing.data[existing.data.length - 1][1] + line.value]);
-              const rollingAverage = this.calculateRollingAverage(existing.data2.map(d => d[1]), 28);
-              existing?.data.push([new Date(line.date).getTime(), rollingAverage]);
-            }
-          } else {
-            acc.push({
-              name: line.repositorySlug,
-              data: [
-                [new Date(line.date).getTime(), line.value]
-              ],
-              data2: [
-                [new Date(line.date).getTime(), line.value]
-              ]
-            });
+    let minutes = 0;    
+    (this.options.series as any) = this.data.reduce(
+      (acc, line) => {
+        let name = 'Total';
+        if (this.chartType === 'total') {
+          name = 'Total';
+        } else if (this.chartType === 'repo') {
+          name = line.repositorySlug;
+        } else if (this.chartType === 'sku') {
+          name = this.usageReportService.formatSku(line.sku);
+        } else if (this.chartType === 'user') {
+          name = line.username;
+        }
+        minutes += line.value;
+        if (acc.find(a => a.name === name)) {
+          const existing = acc.find(a => a.name === name);
+          if (existing) {
+            existing?.data.push([new Date(line.date).getTime(), existing.data[existing.data.length - 1][1] + line.value]);
           }
-          return acc;
-        },
-        [] as { name: string; data: [number, number][], data2: [number, number][] }[]
-      ).sort((a: any, b: any) => {
-        return b.data[b.data.length - 1][1] - a.data[a.data.length - 1][1];
-      }).slice(0, 50);
-      if (this.options.legend) this.options.legend.enabled = true;
-    }
+        } else {
+          acc.push({
+            name: name,
+            data: [
+              [new Date(line.date).getTime(), line.value]
+            ]
+          });
+        }
+        return acc;
+      },
+      [] as { name: string; data: [number, number][] }[]
+    ).sort((a: any, b: any) => {
+      return b.data[b.data.length - 1][1] - a.data[a.data.length - 1][1];
+    }).slice(0, 50);
+    if (this.options.legend) this.options.legend.enabled = this.chartType === 'total' ? false : true;
     this.options.yAxis = {
       ...this.options.yAxis,
       title: {
@@ -117,21 +109,6 @@ export class ChartLineUsageTimeComponent implements OnChanges {
       }
     };
     this.updateFromInput = true;
-  }
-
-  calculateRollingAverage(data: number[], windowSize: number): number {
-    const rollingAverageData: number[] = [];
-    for (let i = 0; i < data.length; i++) {
-      let sum = 0;
-      let count = 0;
-      for (let j = Math.max(0, i - windowSize + 1); j <= i; j++) {
-        sum += data[j];
-        count++;
-      }
-      const average = sum / count;
-      rollingAverageData.push(average);
-    }
-    return rollingAverageData[rollingAverageData.length - 1];
   }
 
   toggleChartType(value: string) {

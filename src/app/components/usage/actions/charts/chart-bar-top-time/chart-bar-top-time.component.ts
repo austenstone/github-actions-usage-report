@@ -18,7 +18,7 @@ export class ChartBarTopTimeComponent implements OnChanges {
       type: 'bar'
     },
     title: {
-      text: 'Top 10 repos by execution time'
+      text: 'Top 10 repos by minutes used'
     },
     subtitle: {
     },
@@ -77,7 +77,7 @@ export class ChartBarTopTimeComponent implements OnChanges {
       categories: (this.options.series[0] as any).data.map((a: any) => a.name),
     };
     this.options.title = {
-      text: this.currency === 'minutes' ? 'Top 10 repos by execution time' : 'Top 10 repos by cost'
+      text: this.currency === 'minutes' ? 'Top 10 repos by minutes used' : 'Top 10 repos by cost'
     };
     this.options.yAxis = {
       ...this.options.yAxis,

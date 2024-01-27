@@ -65,7 +65,6 @@ export class ChartPieSkuComponent implements OnChanges {
     this.options.title = {
       text: `${this.currency === 'minutes' ? 'Usage' : 'Cost'} by runner type`
     };
-    console.log(this.currency)
     this.options.tooltip = {
       ...this.options.tooltip,
       pointFormat: `{series.name}: <b>{point.percentage:.1f}%</b><br>${this.currency === 'cost' ? 'Cost: <b>${point.y:.2f}</b>' : 'Minutes: <b>{point.y}</b>'}</b>`

@@ -15,6 +15,7 @@ interface WorkflowUsageItem {
   cost: number;
   pricePerUnit: number;
   sku: string;
+  username: string;
 };
 
 interface RepoUsageItem {
@@ -51,7 +52,7 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
   @Input() data!: CustomUsageReportLine[];
   @Input() currency!: string;
   dataSource: MatTableDataSource<WorkflowUsageItem | RepoUsageItem | SkuUsageItem> = new MatTableDataSource<any>(); // Initialize the dataSource property
-  tableType: 'workflow' | 'repo' | 'sku' = 'workflow';
+  tableType: 'workflow' | 'repo' | 'sku' | 'user' = 'workflow';
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -65,24 +66,26 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
     let usage: WorkflowUsageItem[] | RepoUsageItem[] | SkuUsageItem[] = [];
     let usageItem: WorkflowUsageItem[] = (usage as WorkflowUsageItem[]);
     usageItem = this.data.reduce((acc, line) => {
-      const workflowItem = acc.find(a => {
+      const item = acc.find(a => {
         if (this.tableType === 'workflow') {
           return a.workflow === line.actionsWorkflow
         } else if (this.tableType === 'repo') {
           return a.repo === line.repositorySlug;
         } else if (this.tableType === 'sku') {
           return a.sku === this.usageReportService.formatSku(line.sku);
+        } else if (this.tableType === 'user') {
+          return a.username === line.username;
         }
         return false;
       });
       const month: string = line.date.toLocaleString('default', { month: 'long' });
-      if (workflowItem) {
-        if ((workflowItem as any)[month]) {
-          (workflowItem as any)[month] += line.value;
+      if (item) {
+        if ((item as any)[month]) {
+          (item as any)[month] += line.value;
         } else {
-          (workflowItem as any)[month] = line.value || 0;
+          (item as any)[month] = line.value || 0;
         }
-        workflowItem.total += line.value;
+        item.total += line.value;
         if (!this.columns.find(c => c.columnDef === month)) {
           this.columns.push({
             columnDef: month,
@@ -94,9 +97,9 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
             }
           });
         }
-        workflowItem.cost += line.quantity * line.pricePerUnit * line.multiplier;
-        workflowItem.total += line.quantity;
-        workflowItem.runs++;
+        item.cost += line.quantity * line.pricePerUnit * line.multiplier;
+        item.total += line.quantity;
+        item.runs++;
       } else {
         acc.push({
           workflow: line.actionsWorkflow,
@@ -108,20 +111,21 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
           avgCost: line.quantity * line.pricePerUnit * line.multiplier,
           avgTime: line.value,
           [month]: line.value,
-          sku: this.usageReportService.formatSku(line.sku)
+          sku: this.usageReportService.formatSku(line.sku),
+          username: line.username,
         });
       }
       return acc;
     }, [] as WorkflowUsageItem[]);
 
-    usageItem.forEach((workflowItem) => {
+    usageItem.forEach((item) => {
       this.columns.forEach((column: any) => {
-        if (!(workflowItem as any)[column.columnDef]) {
-          (workflowItem as any)[column.columnDef] = 0;
+        if (!(item as any)[column.columnDef]) {
+          (item as any)[column.columnDef] = 0;
         }
       });
-      workflowItem.avgTime = workflowItem.total / workflowItem.runs;
-      workflowItem.avgCost = workflowItem.cost / workflowItem.runs;
+      item.avgTime = item.total / item.runs;
+      item.avgCost = item.cost / item.runs;
     });
     usage = usageItem;
     this.displayedColumns = this.columns.map(c => c.columnDef);
@@ -166,15 +170,6 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
           header: 'Runner Type',
           cell: (workflowItem: WorkflowUsageItem) => `${workflowItem.sku}`,
         },
-        {
-          columnDef: 'runs',
-          header: 'Runs',
-          cell: (workflowItem: WorkflowUsageItem) => `${decimalPipe.transform(workflowItem.runs)}`,
-          footer: () => {
-            const total = this.dataSource.data.reduce((acc, item) => acc + item.runs, 0);
-            return decimalPipe.transform(total);
-          }
-        },
       ];
     } else if (this.tableType === 'repo') {
       columns = [
@@ -183,15 +178,6 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
           header: 'Source repository',
           cell: (workflowItem: WorkflowUsageItem) => `${workflowItem.repo}`,
         },
-        {
-          columnDef: 'runs',
-          header: 'Workflow Runs',
-          cell: (workflowItem: WorkflowUsageItem) => `${decimalPipe.transform(workflowItem.runs)}`,
-          footer: () => {
-            const total = this.dataSource.data.reduce((acc, item) => acc + item.runs, 0);
-            return decimalPipe.transform(total);
-          }
-        }
       ];
     } else if (this.tableType === 'sku') {
       columns = [
@@ -200,17 +186,25 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
           header: 'Runner Type',
           cell: (workflowItem: WorkflowUsageItem) => workflowItem.sku,
         },
-        {
-          columnDef: 'runs',
-          header: 'Workflow Runs',
-          cell: (workflowItem: WorkflowUsageItem) => `${decimalPipe.transform(workflowItem.runs)}`,
-          footer: () => {
-            const total = this.dataSource.data.reduce((acc, item) => acc + item.runs, 0);
-            return decimalPipe.transform(total);
-          }
-        }
       ];
-    }
+    } else if (this.tableType === 'user') {
+      columns = [
+        {
+          columnDef: 'username',
+          header: 'User',
+          cell: (workflowItem: WorkflowUsageItem) => workflowItem.username,
+        },
+      ];
+    };
+    columns.push({
+        columnDef: 'runs',
+        header: 'Runs',
+        cell: (workflowItem: WorkflowUsageItem) => `${decimalPipe.transform(workflowItem.runs)}`,
+        footer: () => {
+          const total = this.dataSource.data.reduce((acc, item) => acc + item.runs, 0);
+          return decimalPipe.transform(total);
+        }
+      });
     if (this.currency === 'minutes') {
       columns.push({
         columnDef: 'avgTime',

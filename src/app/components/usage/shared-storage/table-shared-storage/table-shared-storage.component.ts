@@ -125,16 +125,16 @@ export class TableSharedStorageComponent implements OnChanges, AfterViewInit {
     } else if (this.currency == 'minutes') {
       columns.push(
         {
-          columnDef: 'total',
-          header: 'Total',
-          cell: (sharedStorageItem: any) => `${fileSizePipe.transform(sharedStorageItem.total)}`,
-          footer: () => fileSizePipe.transform(this.dataSource.data.reduce((acc, line) => acc + line.total, 0)),
-        },
-        {
           columnDef: 'avgSize',
           header: 'Average Size',
           cell: (sharedStorageItem: any) => `${fileSizePipe.transform(sharedStorageItem.avgSize)}`,
           footer: () => fileSizePipe.transform(this.dataSource.data.reduce((acc, line) => acc + line.avgSize, 0) / this.dataSource.data.length),
+        },
+        {
+          columnDef: 'total',
+          header: 'Total',
+          cell: (sharedStorageItem: any) => `${fileSizePipe.transform(sharedStorageItem.total)}`,
+          footer: () => fileSizePipe.transform(this.dataSource.data.reduce((acc, line) => acc + line.total, 0)),
         }
       );
     }
