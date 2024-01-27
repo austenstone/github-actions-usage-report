@@ -1,5 +1,4 @@
 import { AfterViewInit, Component, Input, OnChanges, ViewChild } from '@angular/core';
-import { UsageReportLine } from 'github-usage-report/types';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
@@ -11,7 +10,7 @@ interface CopilotUsageItem {
   cost: number;
   pricePerUnit: number;
   owner: string;
-};
+}
 
 @Component({
   selector: 'app-table-copilot-usage',
@@ -29,7 +28,7 @@ export class TableCopilotUsageComponent implements OnChanges, AfterViewInit {
   @Input() data!: CustomUsageReportLine[];
   @Input() currency!: string;
   dataSource: MatTableDataSource<CopilotUsageItem> = new MatTableDataSource<any>(); // Initialize the dataSource property
-  tableType: 'owner' = 'owner';
+  tableType = 'owner';
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -91,8 +90,7 @@ export class TableCopilotUsageComponent implements OnChanges, AfterViewInit {
         }
       });
     });
-    usage = usageItems;
-    console.log('usageItems', usage);
+    usage = usageItems
     this.displayedColumns = this.columns.map(c => c.columnDef);
     this.dataSource.data = usage;
   }
@@ -155,7 +153,6 @@ import { CurrencyPipe, DecimalPipe } from '@angular/common';
   name: 'duration'
 })
 export class DurationPipe implements PipeTransform {
-
   transform(minutes: number): string {
     const seconds = minutes * 60;
     if (seconds < 60) {
@@ -169,6 +166,5 @@ export class DurationPipe implements PipeTransform {
 
 }
 
-const durationPipe = new DurationPipe();
 const decimalPipe = new DecimalPipe('en-US');
 const currencyPipe = new CurrencyPipe('en-US');

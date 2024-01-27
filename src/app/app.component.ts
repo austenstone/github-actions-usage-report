@@ -246,7 +246,6 @@ export class AppComponent implements OnInit {
                         trackBorderColor: '#404043'
                     }
                 };
-            } else {
             }
             Highcharts.setOptions(this.options);
         }

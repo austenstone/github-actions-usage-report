@@ -1,5 +1,4 @@
 import { Component, Input, OnChanges, ViewChild } from '@angular/core';
-import { UsageReportLine } from 'github-usage-report/types';
 import * as Highcharts from 'highcharts';
 import { ThemingService } from 'src/app/theme.service';
 import { CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.service';
@@ -27,20 +26,20 @@ export class ChartLineUsageDailyComponent implements OnChanges {
     subtitle: {
     },
     yAxis: {
-        title: {
-            text: 'Minutes (min)'
-        },
-        min: 0
+      title: {
+        text: 'Minutes (min)'
+      },
+      min: 0
     },
     xAxis: {
-        type: 'datetime',
-        dateTimeLabelFormats: {
-            month: '%e. %b',
-            year: '%b'
-        },
-        title: {
-            text: 'Date'
-        }
+      type: 'datetime',
+      dateTimeLabelFormats: {
+        month: '%e. %b',
+        year: '%b'
+      },
+      title: {
+        text: 'Date'
+      }
     },
     series: [],
     legend: {
@@ -52,7 +51,8 @@ export class ChartLineUsageDailyComponent implements OnChanges {
   };
   updateFromInput: boolean = false;
   chartType: 'repo' | 'total' | 'sku' | 'user' | 'workflow' = 'total';
-  timeType: 'total' | 'daily' | 'weekly' | 'monthly' | 'rolling20' = 'total';
+  timeType: 'total' | 'daily' | 'weekly' | 'monthly' | 'rolling20' | 'rolling7' = 'total';
+  rollingDays = 20;
 
   constructor(
     private themeService: ThemingService,
@@ -65,6 +65,7 @@ export class ChartLineUsageDailyComponent implements OnChanges {
   }
 
   ngOnChanges() {
+    this.rollingDays = Number(this.timeType.split('rolling')[1]);
     const seriesDays = this.data.reduce(
       (acc, line) => {
         let name = 'Total';
@@ -76,7 +77,9 @@ export class ChartLineUsageDailyComponent implements OnChanges {
         } else if (this.timeType === 'monthly') {
           // get key in format YYYY-MM
           timeKey = line.date.toISOString().split('T')[0].slice(0, 7);
-        } else if (this.timeType === 'rolling20') {
+        } else if (this.timeType.startsWith('rolling')) {
+          // get key in format YYYY-MM
+          timeKey = line.date.toISOString().split('T')[0];
         } else if (this.timeType === 'total') {
           timeKey = 'total'
         }
@@ -97,6 +100,8 @@ export class ChartLineUsageDailyComponent implements OnChanges {
           if (timeKey === 'total') {
             const last = series.data[timeKey][series.data[timeKey].length - 1];
             series.data[timeKey].push([new Date(line.date).getTime(), (last[1] + line.value)]);
+          } else if (this.timeType.startsWith('rolling')) {
+            series.data[timeKey].push([new Date(line.date).getTime(), line.value]);
           } else {
             series.data[timeKey].push([new Date(line.date).getTime(), line.value]);
           }
@@ -120,9 +125,31 @@ export class ChartLineUsageDailyComponent implements OnChanges {
       let data: [number, number][] = [];
       if (this.timeType === 'total') {
         data = series.data['total'];
+      } else if (this.timeType.startsWith('rolling')) {
+        const perDay = Object.keys(series.data).reduce((acc, timeKey) => {
+          acc.push({
+            total: series.data[timeKey].reduce((acc, curr) => acc + curr[1], 0),
+            date: new Date(timeKey)
+          });
+          return acc;
+        }, [] as {
+          total: number;
+          date: Date;
+        } []);
+
+        data = perDay.reduce((acc, curr, index) => {
+          acc.push([
+            curr.date.getTime(),
+            perDay.slice(index > this.rollingDays ? index - this.rollingDays : 0, index).reduce((acc, curr) => acc + curr.total, 0)
+          ]);
+          return acc;
+        }, [] as [number, number][]);
       } else {
         data = Object.keys(series.data).reduce((acc, timeKey) => {
-          acc.push([new Date(series.data[timeKey][0][0]).getTime(), series.data[timeKey].reduce((acc, curr) => acc + curr[1], 0)]);
+          acc.push([
+            new Date(series.data[timeKey][0][0]).getTime(),
+            series.data[timeKey].reduce((acc, curr) => acc + curr[1], 0)
+          ]);
           return acc;
         }, [] as [number, number][]);
       }
@@ -155,8 +182,8 @@ export class ChartLineUsageDailyComponent implements OnChanges {
   getWeekOfYear(date: Date) {
     const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
     d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
-    const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-    var weekNo = Math.ceil(( ( (d.getTime() - yearStart.getTime()) / 86400000) + 1)/7);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    const weekNo = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
     return weekNo;
   }
 }

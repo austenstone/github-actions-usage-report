@@ -1,5 +1,4 @@
-import { Component, Input, OnChanges } from '@angular/core';
-import { UsageReport, UsageReportLine } from 'github-usage-report/types';
+import { Component, Input, OnInit } from '@angular/core';
 import { CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.service';
 
 @Component({
@@ -7,7 +6,7 @@ import { CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.
   templateUrl: './actions.component.html',
   styleUrl: './actions.component.scss'
 })
-export class ActionsUsageComponent {
+export class ActionsUsageComponent implements OnInit {
   @Input() data!: CustomUsageReportLine[];
   @Input() currency!: string;
   totalMinutes: number = 0;

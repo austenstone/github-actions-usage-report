@@ -1,12 +1,10 @@
-
 import { Component, Inject } from '@angular/core';
 import {
   MAT_DIALOG_DATA,
-  MatDialog,
   MatDialogRef,
 } from '@angular/material/dialog';
 
-interface DialogData {
+interface DialogDataComponent {
   name: string;
   isEnterprise: boolean;
 }
@@ -15,10 +13,10 @@ interface DialogData {
   selector: 'app-dialog-billing-navigate',
   templateUrl: 'dialog-billing-navigate.html',
 })
-export class DialogOverviewExampleDialog {
+export class DialogBillingNavigateComponent {
   constructor(
-    public dialogRef: MatDialogRef<DialogOverviewExampleDialog>,
-    @Inject(MAT_DIALOG_DATA) public data: DialogData,
+    public dialogRef: MatDialogRef<DialogBillingNavigateComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: DialogDataComponent,
   ) {
     this.data = {
       name: '',

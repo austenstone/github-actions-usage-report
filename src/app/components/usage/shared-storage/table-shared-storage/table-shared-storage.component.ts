@@ -1,5 +1,4 @@
 import { Component, Input, Pipe, PipeTransform, ViewChild, OnChanges, AfterViewInit } from '@angular/core';
-import { UsageReportLine } from 'github-usage-report/types';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
@@ -12,6 +11,10 @@ type SharedStorageUsageItem = {
   avgSize: number;
   total: number;
   cost: number;
+  avgCost: number;
+  costPerDay: number;
+  pricePerUnit: number;
+  multiplier: number;
 };
 
 @Component({
@@ -40,13 +43,14 @@ export class TableSharedStorageComponent implements OnChanges, AfterViewInit {
       const workflowEntry = acc.find(a => a.repo === line.repositorySlug);
       const date = line.date;
       const month: string = date.toLocaleString('default', { month: 'long' });
+      const cost = line.pricePerUnit * line.quantity * line.multiplier;
       if (workflowEntry) {
-        if (workflowEntry[month]) {
-          workflowEntry[month] += line.value;
+        const daysInMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+        if ((workflowEntry as any)[month] as any) {
+          (workflowEntry as any)[month] += this.currency === 'cost' ? line.value * daysInMonth : line.value;
         } else {
-          workflowEntry[month] = line.value;
+          (workflowEntry as any)[month] = this.currency === 'cost' ? line.value * daysInMonth : line.value;
         }
-        workflowEntry.total += line.value;
         if (!this.columns.find(c => c.columnDef === month)) {
           this.columns.push({
             columnDef: month,
@@ -58,29 +62,34 @@ export class TableSharedStorageComponent implements OnChanges, AfterViewInit {
             }
           });
         }
+        workflowEntry.total += line.quantity;
+        workflowEntry.cost += cost * daysInMonth;
         workflowEntry.count++;
-        workflowEntry.cost += line.pricePerUnit * line.quantity * line.multiplier;
       } else {
         acc.push({
           repo: line.repositorySlug,
           total: line.quantity,
           count: 1,
-          cost: line.pricePerUnit * line.quantity * line.multiplier,
+          cost,
           avgSize: 0,
           avgCost: 0,
-          [month]: line.value
+          [month]: line.value,
+          pricePerUnit: line.pricePerUnit,
+          multiplier: line.multiplier,
+          costPerDay: 0,
         });
       }
       return acc;
-    }, [] as any[]);
+    }, [] as SharedStorageUsageItem[]);
 
-    workflowUsage.forEach((sharedStorageItem: any) => {
-      this.columns.forEach((column: any) => {
-        if (!sharedStorageItem[column.columnDef]) {
-          sharedStorageItem[column.columnDef] = 0;
+    workflowUsage.forEach((sharedStorageItem: SharedStorageUsageItem) => {
+      this.columns.forEach((column) => {
+        if (!(sharedStorageItem as any)[column.columnDef]) {
+          (sharedStorageItem as any)[column.columnDef] = 0;
         }
         sharedStorageItem.avgSize = sharedStorageItem.total / sharedStorageItem.count;
         sharedStorageItem.avgCost = sharedStorageItem.cost / sharedStorageItem.count;
+        sharedStorageItem.costPerDay = sharedStorageItem.total * sharedStorageItem.pricePerUnit * sharedStorageItem.multiplier;
       });
     });
 
@@ -94,7 +103,7 @@ export class TableSharedStorageComponent implements OnChanges, AfterViewInit {
   }
 
   initializeColumns() {
-    let columns: {
+    const columns: {
       columnDef: string,
       header: string,
       cell: (sharedStorageItem: SharedStorageUsageItem) => any,
@@ -103,13 +112,13 @@ export class TableSharedStorageComponent implements OnChanges, AfterViewInit {
         {
           columnDef: 'repo',
           header: 'Repository',
-          cell: (sharedStorageItem: any) => `${sharedStorageItem.repo}`,
+          cell: (sharedStorageItem: any) => sharedStorageItem.repo,
           footer: () => 'Total',
         },
         {
           columnDef: 'count',
-          header: 'Artifact Count',
-          cell: (sharedStorageItem: any) => `${sharedStorageItem.count}`,
+          header: 'Count',
+          cell: (sharedStorageItem: any) => sharedStorageItem.count,
           footer: () => this.dataSource.data.reduce((acc, line) => acc + line.count, 0),
         }
       ];
@@ -117,9 +126,15 @@ export class TableSharedStorageComponent implements OnChanges, AfterViewInit {
       columns.push(
         {
           columnDef: 'total',
-          header: 'Cost/Day',
-          cell: (sharedStorageItem: any) => `$${sharedStorageItem.cost.toFixed(2)}`,
-          footer: () => `$${this.dataSource.data.reduce((acc, line) => acc + line.cost, 0).toFixed(2)}`,
+          header: 'Total Cost',
+          cell: (sharedStorageItem: any) => currencyPipe.transform(sharedStorageItem.cost),
+          footer: () => currencyPipe.transform(this.dataSource.data.reduce((acc, line) => acc + line.cost, 0))
+        },
+        {
+          columnDef: 'costPerDay',
+          header: 'Cost Per Day',
+          cell: (sharedStorageItem: SharedStorageUsageItem) => currencyPipe.transform(sharedStorageItem.costPerDay),
+          footer: () => currencyPipe.transform(this.dataSource.data.reduce((acc, line) => acc + line.costPerDay, 0)),
         }
       );
     } else if (this.currency == 'minutes') {
@@ -127,13 +142,13 @@ export class TableSharedStorageComponent implements OnChanges, AfterViewInit {
         {
           columnDef: 'avgSize',
           header: 'Average Size',
-          cell: (sharedStorageItem: any) => `${fileSizePipe.transform(sharedStorageItem.avgSize)}`,
+          cell: (sharedStorageItem: any) => fileSizePipe.transform(sharedStorageItem.avgSize),
           footer: () => fileSizePipe.transform(this.dataSource.data.reduce((acc, line) => acc + line.avgSize, 0) / this.dataSource.data.length),
         },
         {
           columnDef: 'total',
           header: 'Total',
-          cell: (sharedStorageItem: any) => `${fileSizePipe.transform(sharedStorageItem.total)}`,
+          cell: (sharedStorageItem: any) => fileSizePipe.transform(sharedStorageItem.total),
           footer: () => fileSizePipe.transform(this.dataSource.data.reduce((acc, line) => acc + line.total, 0)),
         }
       );

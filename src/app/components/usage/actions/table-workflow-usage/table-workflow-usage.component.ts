@@ -1,5 +1,4 @@
 import { AfterViewInit, Component, Input, OnChanges, ViewChild } from '@angular/core';
-import { UsageReportLine } from 'github-usage-report/types';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
@@ -16,7 +15,7 @@ interface WorkflowUsageItem {
   pricePerUnit: number;
   sku: string;
   username: string;
-};
+}
 
 interface RepoUsageItem {
   avgTime: number;
@@ -25,7 +24,7 @@ interface RepoUsageItem {
   runs: number;
   total: number;
   cost: number;
-};
+}
 
 interface SkuUsageItem {
   avgTime: number;
@@ -34,7 +33,7 @@ interface SkuUsageItem {
   runs: number;
   total: number;
   cost: number;
-};
+}
 
 interface UsageColumn {
   columnDef: string;
@@ -43,12 +42,12 @@ interface UsageColumn {
   footer?: () => any;
   tooltip?: (element: any) => any;
   icon?: (element: any) => string;
-};
+}
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September',
   'October', 'November', 'December',
-];
+]
 
 @Component({
   selector: 'app-table-workflow-usage',
@@ -85,7 +84,7 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
         } else if (this.tableType === 'user') {
           return a.username === line.username;
         }
-        return false;
+        return false
       });
       const month: string = line.date.toLocaleString('default', { month: 'long' });
       if (item) {
@@ -106,10 +105,8 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
             },
           };
           const lastMonth: string = new Date(line.date.getFullYear(), line.date.getMonth() - 1).toLocaleString('default', { month: 'long' });
-          const value = (item as any)[month];
           const lastMonthValue = (item as any)[lastMonth];
           if (lastMonthValue) {
-            const percentageChanged = (item as any)[month + 'PercentChange'];
             column.tooltip = (workflowItem: WorkflowUsageItem) => {
               return (workflowItem as any)[month + 'PercentChange'].toFixed(2) + '%';
             };
@@ -229,7 +226,7 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
           cell: (workflowItem: WorkflowUsageItem) => workflowItem.username,
         },
       ];
-    };
+    }
     columns.push({
       columnDef: 'runs',
       header: 'Runs',
@@ -238,7 +235,7 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
         const total = this.dataSource.data.reduce((acc, item) => acc + item.runs, 0);
         return decimalPipe.transform(total);
       }
-    });
+    })
     if (this.currency === 'minutes') {
       columns.push({
         columnDef: 'avgTime',
@@ -270,11 +267,7 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
   }
 
   calculatePercentageChange(oldValue: number, newValue: number) {
-    if (oldValue === 0) {
-      return 0;
-    }
-    let percentageChange = ((newValue - oldValue) / oldValue) * 100;
-    return percentageChange;
+    return (oldValue === 0) ? 0 : ((newValue - oldValue) / oldValue) * 100;
   }
 }
 

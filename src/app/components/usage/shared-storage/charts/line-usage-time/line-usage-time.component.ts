@@ -1,5 +1,4 @@
 import { Component, Input, OnChanges, ViewChild } from '@angular/core';
-import { UsageReportLine } from 'github-usage-report/types';
 import * as Highcharts from 'highcharts';
 import { ThemingService } from 'src/app/theme.service';
 import { CustomUsageReportLine } from 'src/app/usage-report.service';
@@ -22,7 +21,7 @@ export class LineUsageTimeComponent implements OnChanges {
       }
     },
     title: {
-      text: 'Shared Storage Over Time'
+      text: 'Shared Storage Per Day'
     },
     subtitle: {
     },

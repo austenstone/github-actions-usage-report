@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { UsageReport, UsageReportLine } from 'github-usage-report/types';
-import { BehaviorSubject, Observable, map, tap } from 'rxjs';
+import { BehaviorSubject, Observable, map } from 'rxjs';
 
 const readGithubUsageReport = async (data: string, cb?: (usageReport: UsageReport, percent: number) => void): Promise<UsageReport> => {
   let percent = 0;

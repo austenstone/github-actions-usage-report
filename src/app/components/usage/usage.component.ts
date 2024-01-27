@@ -1,11 +1,9 @@
-import { OnInit, ChangeDetectorRef, Component, Inject, OnDestroy } from '@angular/core';
+import { OnInit, ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
-import { MatIconRegistry } from '@angular/material/icon';
-import { DomSanitizer } from '@angular/platform-browser';
-import { UsageReport, UsageReportLine } from 'github-usage-report/types';
+import { UsageReport } from 'github-usage-report/types';
 import { Observable, Subscription, debounceTime, map, startWith } from 'rxjs';
 import { CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.service';
-import { DialogOverviewExampleDialog } from './dialog-billing-navigate';
+import { DialogBillingNavigateComponent } from './dialog-billing-navigate';
 import { MatDialog } from '@angular/material/dialog';
 
 @Component({
@@ -118,7 +116,7 @@ export class UsageComponent implements OnInit, OnDestroy {
   }
 
   navigateToBilling() {
-    const dialogRef = this.dialog.open(DialogOverviewExampleDialog);
+    const dialogRef = this.dialog.open(DialogBillingNavigateComponent);
 
     dialogRef.afterClosed().subscribe((result: any) => {
       if (result) {

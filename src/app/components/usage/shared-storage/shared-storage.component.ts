@@ -1,5 +1,4 @@
 import { Component, Input } from '@angular/core';
-import { UsageReportLine } from 'github-usage-report/types';
 import { CustomUsageReportLine } from 'src/app/usage-report.service';
 
 @Component({

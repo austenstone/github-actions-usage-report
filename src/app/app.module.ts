@@ -20,7 +20,7 @@ import { SharedStorageComponent } from './components/usage/shared-storage/shared
 import { TableSharedStorageComponent } from './components/usage/shared-storage/table-shared-storage/table-shared-storage.component';
 import { LineUsageTimeComponent } from './components/usage/shared-storage/charts/line-usage-time/line-usage-time.component';
 import { CopilotComponent } from './components/usage/copilot/copilot.component';
-import { DialogOverviewExampleDialog } from './components/usage/dialog-billing-navigate';
+import { DialogBillingNavigateComponent } from './components/usage/dialog-billing-navigate';
 import { TableCopilotUsageComponent } from './components/usage/copilot/table-workflow-usage/table-copilot-usage.component';
 
 @NgModule({
@@ -37,7 +37,7 @@ import { TableCopilotUsageComponent } from './components/usage/copilot/table-wor
     FileUploadComponent,
     TableSharedStorageComponent,
     LineUsageTimeComponent,
-    DialogOverviewExampleDialog,
+    DialogBillingNavigateComponent,
     CopilotComponent,
     TableCopilotUsageComponent
   ],

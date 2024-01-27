@@ -1,5 +1,4 @@
 import { Component, Input, OnChanges } from '@angular/core';
-import { UsageReportLine } from 'github-usage-report/types';
 import * as Highcharts from 'highcharts';
 import { ThemingService } from 'src/app/theme.service';
 import { CustomUsageReportLine } from 'src/app/usage-report.service';
@@ -33,12 +32,12 @@ export class ChartBarTopTimeComponent implements OnChanges {
         }
     },
     series: [{
-      type: 'bar', // Add the type property
+      type: 'bar',
       name: 'Usage',
       data: [
         { name: 'Point 1', y: 1 },
         { name: 'Point 2', y: 2 },
-        { name: 'Point 3', y: null }, // null value for missing data point
+        { name: 'Point 3', y: null },
         { name: 'Point 4', y: 4 }
       ]
     }],

@@ -1,7 +1,5 @@
-import { Component, Input, OnChanges, ViewChild } from '@angular/core';
-import { UsageReportLine } from 'github-usage-report/types';
+import { Component, Input, OnChanges } from '@angular/core';
 import * as Highcharts from 'highcharts';
-import { skip } from 'rxjs';
 import { ThemingService } from 'src/app/theme.service';
 import { CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.service';
 
