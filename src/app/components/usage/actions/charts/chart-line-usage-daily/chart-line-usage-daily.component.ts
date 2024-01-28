@@ -169,7 +169,7 @@ export class ChartLineUsageDailyComponent implements OnChanges {
       }
     };
     this.options.title = {
-      text: `Actions Usage ${this.timeType.toUpperCase()}`
+      text: `Actions ${this.currency === 'cost' ? 'Cost' : 'Usage'} ${this.timeType.toUpperCase()}`
     };
     this.updateFromInput = true;
   }
