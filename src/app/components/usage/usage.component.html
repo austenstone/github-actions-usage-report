@@ -1,5 +1,7 @@
 <div *ngIf="!usage" class="flex-center-horizontally full-width">
-  <h1 class="mat-headline-1" style="user-select: none; font-weight: 800; text-align: center;">Github Usage Report</h1>
+  <h1 class="mat-headline-2" style="user-select: none; font-weight: 800; text-align: center;margin-top:15px;">
+    GitHub Metered Usage Report Viewer
+  </h1>
 </div>
 <div class="flex-center-horizontally full-width">
   <app-file-upload [text]="status" (fileText)="onFileText($event)"></app-file-upload>
