@@ -104,9 +104,9 @@ export class UsageReportService {
   setValueType(value: 'minutes' | 'cost') {
     this.usageReport.lines.forEach(line => {
       if (value === 'minutes') {
-        line.value = (line.quantity * line.multiplier) || 0;
+        line.value = (line.quantity) || 0;
       } else {
-        line.value = (line.quantity * line.pricePerUnit * line.multiplier) || 0;
+        line.value = (line.quantity * line.pricePerUnit) || 0;
       }
     });
     this.usageReportFiltered.next(this.usageReport.lines);

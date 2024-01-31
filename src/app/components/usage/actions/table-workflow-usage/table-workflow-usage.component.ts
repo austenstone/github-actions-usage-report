@@ -123,7 +123,7 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
           }
           this.columns.push(column);
         }
-        item.cost += line.quantity * line.pricePerUnit * line.multiplier;
+        item.cost += line.quantity * line.pricePerUnit;
         item.total += line.quantity;
         item.runs++;
       } else {
@@ -131,10 +131,10 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
           workflow: line.actionsWorkflow,
           repo: line.repositorySlug,
           total: line.quantity,
-          cost: line.quantity * line.pricePerUnit * line.multiplier,
+          cost: line.quantity * line.pricePerUnit,
           runs: 1,
           pricePerUnit: line.pricePerUnit || 0,
-          avgCost: line.quantity * line.pricePerUnit * line.multiplier,
+          avgCost: line.quantity * line.pricePerUnit,
           avgTime: line.value,
           [month]: line.value,
           sku: this.usageReportService.formatSku(line.sku),

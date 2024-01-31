@@ -67,14 +67,14 @@ export class TableCopilotUsageComponent implements OnChanges, AfterViewInit {
             }
           });
         }
-        item.cost += line.quantity * line.pricePerUnit * line.multiplier;
+        item.cost += line.quantity * line.pricePerUnit;
         item.total += line.quantity;
         item.runs++;
       } else {
         acc.push({
           owner: line.owner,
           total: line.quantity,
-          cost: line.quantity * line.pricePerUnit * line.multiplier,
+          cost: line.quantity * line.pricePerUnit,
           runs: 1,
           pricePerUnit: line.pricePerUnit || 0,
           [month]: line.value,
