@@ -7,9 +7,9 @@
     </mat-form-field>
     <div>
       <mat-button-toggle-group name="toggleChart" aria-label="Toggle Chart" [value]="tableType" (change)="tableType = $event.value; ngOnChanges()">
-        <mat-button-toggle value="workflow">Workflow</mat-button-toggle>
-        <mat-button-toggle value="repo">Repo</mat-button-toggle>
         <mat-button-toggle value="sku">Runner</mat-button-toggle>
+        <mat-button-toggle value="repo">Repo</mat-button-toggle>
+        <mat-button-toggle value="workflow">Workflow</mat-button-toggle>
         <mat-button-toggle value="user">User</mat-button-toggle>
       </mat-button-toggle-group>
     </div>
