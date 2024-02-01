@@ -1,3 +1,4 @@
+import { TitleCasePipe } from '@angular/common';
 import { Injectable } from '@angular/core';
 import { UsageReport, UsageReportLine } from 'github-usage-report/types';
 import { BehaviorSubject, Observable, map } from 'rxjs';
@@ -238,8 +239,23 @@ export class UsageReportService {
   }
 
   formatSku(sku: string) {
-    if (sku === 'ubuntu') return 'ubuntu 2';
+    let formatted;
     const skuParts = sku.split('Compute - ');
-    return skuParts.length > 1 ? skuParts[1].toLowerCase().replaceAll('_', ' ').replace(' core', '') : sku;
+    if (skuParts.length < 2) return sku;
+    formatted = skuParts[1].replaceAll('_', ' ').replace(' CORE', '');
+    formatted = titlecasePipe.transform(formatted);
+    formatted = formatted.replace('Macos', 'MacOS');
+    switch(formatted) {
+      case 'Ubuntu':
+        return 'Ubuntu 2';
+      case 'Windows':
+        return 'Windows 2';
+      case 'MacOS':
+        return 'MacOS 3';
+      default:
+        return formatted;
+    }
   }
 }
+
+const titlecasePipe = new TitleCasePipe();

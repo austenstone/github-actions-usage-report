@@ -116,8 +116,13 @@ $light-theme: mat.define-light-theme((
  :root {
    color-scheme: light;
  }
+}
 
- @debug mat.get-theme-color($dark-theme, primary, default);
+.mat-column-user,
+.mat-column-workflow,
+.mat-column-repo,
+.mat-column-sku {
+  background: #e0e0e0 !important;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -146,5 +151,12 @@ $light-theme: mat.define-light-theme((
  .mat-button-toggle-appearance-standard {
   background: #0d1117 !important;
  }
+
+  .mat-column-user,
+  .mat-column-workflow,
+  .mat-column-repo,
+  .mat-column-sku {
+    background: #161b22 !important;
+  }
 }
 

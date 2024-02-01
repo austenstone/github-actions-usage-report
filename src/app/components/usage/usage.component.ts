@@ -42,7 +42,6 @@ export class UsageComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.subscriptions.push(
       this.range.valueChanges.pipe(debounceTime(500)).subscribe(value => {
-        console.log('value', value);
         if (value.start && value.start instanceof Date && !isNaN(value.start.getTime()) &&
           value.end && value.end instanceof Date && !isNaN(value.end.getTime())) {
           this.usageReportService.applyFilter({
