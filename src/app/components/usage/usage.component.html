@@ -1,5 +1,5 @@
 <div *ngIf="!usage" class="flex-center-horizontally full-width">
-  <h1 class="mat-headline-2" style="user-select: none; font-weight: 800; text-align: center;margin-top:15px;">
+  <h1 class="mat-headline-2" style="user-select: none; font-weight: 800; text-align: center;">
     GitHub Metered Usage Report Viewer
   </h1>
 </div>
@@ -21,7 +21,7 @@
       <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
       <mat-date-range-picker #picker></mat-date-range-picker>
     </mat-form-field>
-    <mat-form-field style="width: 100%; max-width: 500px;" *ngIf="tabSelected === 'actions'">
+    <mat-form-field style="flex: 1; max-width: 500px;" *ngIf="tabSelected === 'actions'">
       <mat-label>Workflow</mat-label>
       <input type="text" placeholder="build.yml" aria-label="Number" matInput [formControl]="workflowControl"
         [matAutocomplete]="auto" name="workflow">

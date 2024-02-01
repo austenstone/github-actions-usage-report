@@ -54,3 +54,17 @@ h1 {
 .full-width {
   width: 100%;
 }
+.table-responsive {
+  margin: 1rem 0;
+}
+table {
+  width: 100%;
+  @media (min-width: 767px) {
+    white-space: nowrap !important;
+  }
+}
+
+.table-container {
+  margin-top: 1rem;
+  overflow-x: auto;
+}

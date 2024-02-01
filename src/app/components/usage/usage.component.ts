@@ -29,7 +29,7 @@ export class UsageComponent implements OnInit, OnDestroy {
   status: string = 'Choose File';
   progress: number | null = null;
   subscriptions: Subscription[] = [];
-  currency: 'minutes' | 'cost' = 'minutes';
+  currency: 'minutes' | 'cost' = 'cost';
   tabSelected: 'shared-storage' | 'copilot' | 'actions' = 'actions';
 
   constructor(

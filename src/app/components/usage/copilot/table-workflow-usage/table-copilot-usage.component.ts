@@ -4,12 +4,21 @@ import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
 import { CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.service';
 
+interface UsageColumn {
+  columnDef: string;
+  header: string;
+  cell: (element: any) => any;
+  footer?: () => any;
+  sticky?: boolean;
+}
+
 interface CopilotUsageItem {
   runs: number;
   total: number;
   cost: number;
   pricePerUnit: number;
   owner: string;
+  sticky?: boolean;
 }
 
 @Component({
@@ -18,12 +27,7 @@ interface CopilotUsageItem {
   styleUrl: './table-copilot-usage.component.scss'
 })
 export class TableCopilotUsageComponent implements OnChanges, AfterViewInit {
-  columns = [] as {
-    columnDef: string;
-    header: string;
-    cell: (element: any) => any;
-    footer?: () => any;
-  }[];
+  columns = [] as UsageColumn[];
   displayedColumns = this.columns.map(c => c.columnDef);
   @Input() data!: CustomUsageReportLine[];
   @Input() currency!: string;
@@ -48,7 +52,7 @@ export class TableCopilotUsageComponent implements OnChanges, AfterViewInit {
         }
         return false;
       });
-      const month: string = line.date.toLocaleString('default', { month: 'long' });
+      const month: string = line.date.toLocaleString('default', { month: 'short' });
       if (item) {
         if ((item as any)[month]) {
           (item as any)[month] += line.value;
@@ -110,18 +114,14 @@ export class TableCopilotUsageComponent implements OnChanges, AfterViewInit {
   }
 
   initializeColumns() {
-    let columns: {
-      columnDef: string,
-      header: string,
-      cell: (workflowItem: CopilotUsageItem) => any,
-      footer?: () => any,
-    }[] = [];
+    let columns: UsageColumn[] = [];
     if (this.tableType === 'owner') {
       columns = [
         {
           columnDef: 'owner',
           header: 'Owner',
           cell: (workflowItem: CopilotUsageItem) => `${workflowItem.owner}`,
+          sticky: true
         }
       ];
       if (this.currency === 'minutes') {

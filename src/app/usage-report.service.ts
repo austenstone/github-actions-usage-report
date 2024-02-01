@@ -88,7 +88,42 @@ export class UsageReportService {
   skus: string[] = [];
   products: string[] = [];
   usernames: string[] = [];
-  valueType: BehaviorSubject<'minutes' | 'cost'> = new BehaviorSubject<'minutes' | 'cost'>('minutes');
+  valueType: BehaviorSubject<'minutes' | 'cost'> = new BehaviorSubject<'minutes' | 'cost'>('cost')
+  skuOrder = [
+    'Compute - UBUNTU',
+    'Compute - UBUNTU_4_CORE',
+    'Compute - UBUNTU_8_CORE',
+    'Compute - UBUNTU_16_CORE',
+    'Compute - UBUNTU_32_CORE',
+    'Compute - UBUNTU_64_CORE',
+    'Compute - WINDOWS',
+    // 'Compute - WINDOWS_4_CORE', DOESN'T EXIST
+    'Compute - WINDOWS_8_CORE',
+    'Compute - WINDOWS_16_CORE',
+    'Compute - WINDOWS_32_CORE',
+    'Compute - WINDOWS_64_CORE',
+    'Compute - MACOS',
+    'Compute - MACOS_12_CORE',
+    'Compute - MACOS_LARGE',
+    'Compute - MACOS_XLARGE',
+    'Data Transfer',
+    'Shared Storage',
+    'Copilot Business',
+  ].map(sku => this.formatSku(sku));
+  monthsOrder = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
   
   constructor() {
   }
@@ -145,7 +180,6 @@ export class UsageReportService {
       }
     });
     this.setValueType(this.valueType.value);
-    this.usageReportFiltered.next(this.usageReport.lines);
     return this.usageReport;
   }
 
@@ -210,6 +244,8 @@ export class UsageReportService {
   }
 
   formatSku(sku: string) {
-    return sku.split('Compute - ')[1].toLowerCase().replaceAll('_', ' ')
+    if (sku === 'ubuntu') return 'ubuntu 2';
+    const skuParts = sku.split('Compute - ');
+    return skuParts.length > 1 ? skuParts[1].toLowerCase().replaceAll('_', ' ').replace(' core', '') : sku;
   }
 }

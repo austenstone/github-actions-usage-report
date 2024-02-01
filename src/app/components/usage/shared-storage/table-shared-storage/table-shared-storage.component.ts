@@ -14,7 +14,6 @@ type SharedStorageUsageItem = {
   avgCost: number;
   costPerDay: number;
   pricePerUnit: number;
-  multiplier: number;
 };
 
 @Component({
@@ -28,6 +27,7 @@ export class TableSharedStorageComponent implements OnChanges, AfterViewInit {
     header: string;
     cell: (element: SharedStorageUsageItem) => any;
     footer?: () => any;
+    sticky?: boolean;
   }[] = [];
   displayedColumns = this.columns.map(c => c.columnDef);
   @Input() data!: CustomUsageReportLine[];
@@ -75,7 +75,6 @@ export class TableSharedStorageComponent implements OnChanges, AfterViewInit {
           avgCost: 0,
           [month]: line.value,
           pricePerUnit: line.pricePerUnit,
-          multiplier: line.multiplier,
           costPerDay: 0,
         });
       }
@@ -89,7 +88,7 @@ export class TableSharedStorageComponent implements OnChanges, AfterViewInit {
         }
         sharedStorageItem.avgSize = sharedStorageItem.total / sharedStorageItem.count;
         sharedStorageItem.avgCost = sharedStorageItem.cost / sharedStorageItem.count;
-        sharedStorageItem.costPerDay = sharedStorageItem.total * sharedStorageItem.pricePerUnit * sharedStorageItem.multiplier;
+        sharedStorageItem.costPerDay = sharedStorageItem.total * sharedStorageItem.pricePerUnit;
       });
     });
 
@@ -108,12 +107,14 @@ export class TableSharedStorageComponent implements OnChanges, AfterViewInit {
       header: string,
       cell: (sharedStorageItem: SharedStorageUsageItem) => any,
       footer?: () => any,
+      sticky?: boolean
     }[] = [
         {
           columnDef: 'repo',
           header: 'Repository',
           cell: (sharedStorageItem: any) => sharedStorageItem.repo,
           footer: () => 'Total',
+          sticky: true
         },
         {
           columnDef: 'count',
