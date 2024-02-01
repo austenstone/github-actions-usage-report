@@ -54,6 +54,7 @@ interface UsageColumn {
 })
 export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
   columns = [] as UsageColumn[];
+  monthColumns = [] as UsageColumn[];
   displayedColumns = this.columns.map(c => c.columnDef);
   @Input() data!: CustomUsageReportLine[];
   @Input() currency!: string;
@@ -91,7 +92,6 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
         } else {
           (item as any)[month] = line.value || 0;
         }
-        item.total += line.value;
         if (!this.columns.find(c => c.columnDef === month)) {
           const column: UsageColumn = {
             columnDef: month,
@@ -103,11 +103,11 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
             },
             date: new Date(line.date),
           };
-          const lastMonth: string = new Date(line.date.getFullYear(), line.date.getMonth() - 1).toLocaleString('default', { month: 'long' });
+          const lastMonth: string = new Date(line.date.getFullYear(), line.date.getMonth() - 1).toLocaleString('default', { month: 'short' });
           const lastMonthValue = (item as any)[lastMonth];
           if (lastMonthValue) {
             column.tooltip = (workflowItem: WorkflowUsageItem) => {
-              return (workflowItem as any)[month + 'PercentChange'].toFixed(2) + '%';
+              return (workflowItem as any)[month + 'PercentChange']?.toFixed(2) + '%';
             };
             column.icon = (workflowItem: WorkflowUsageItem) => {
               const percentageChanged = (workflowItem as any)[month + 'PercentChange'];
@@ -121,6 +121,7 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
             };
           }
           this.columns.push(column);
+          this.monthColumns.push(column);
         }
         item.cost += line.quantity * line.pricePerUnit;
         item.total += line.quantity;
@@ -144,11 +145,12 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
     }, [] as WorkflowUsageItem[]);
 
     usageItems.forEach((item) => {
-      this.usageReportService.monthsOrder.forEach((month: string) => {
+      this.monthColumns.forEach((column: UsageColumn) => {
+        const month = column.columnDef;
         if (!(item as any)[month]) {
           (item as any)[month] = 0;
         }
-        const lastMonth: string = new Date(new Date().getFullYear(), this.usageReportService.monthsOrder.indexOf(month) - 1).toLocaleString('default', { month: 'long' });
+        const lastMonth: string = new Date(new Date().getFullYear(), this.usageReportService.monthsOrder.indexOf(month) - 1).toLocaleString('default', { month: 'short' });
         const lastMonthValue = (item as any)[lastMonth];
         const percentageChanged = this.calculatePercentageChange(lastMonthValue, (item as any)[month]);
         (item as any)[month + 'PercentChange'] = percentageChanged;
@@ -158,7 +160,6 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
       item.avgCost = item.cost / item.runs;
     });
     usage = usageItems;
-    // sort the columns by date
     this.columns = this.columns.sort((a, b) => (a.date?.getTime() || 0) - (b.date?.getTime() || 0)); 
     this.displayedColumns = this.columns.map(c => c.columnDef);
     this.dataSource.data = usage;
@@ -276,6 +277,7 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
     }
     columns[0].footer = () => 'Total';
     this.columns = columns;
+    this.monthColumns = [];
     this.displayedColumns = this.columns.map(c => c.columnDef);
   }
 

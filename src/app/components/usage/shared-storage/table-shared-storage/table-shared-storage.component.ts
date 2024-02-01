@@ -42,7 +42,7 @@ export class TableSharedStorageComponent implements OnChanges, AfterViewInit {
     const workflowUsage = this.data.reduce((acc, line) => {
       const workflowEntry = acc.find(a => a.repo === line.repositorySlug);
       const date = line.date;
-      const month: string = date.toLocaleString('default', { month: 'long' });
+      const month: string = date.toLocaleString('default', { month: 'short' });
       const cost = line.pricePerUnit * line.quantity;
       if (workflowEntry) {
         const daysInMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();

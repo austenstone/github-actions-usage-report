@@ -91,7 +91,7 @@ $dark-theme: mat.define-dark-theme((
 
 // #0d1117
 
-$backgroundColor: #0d1117; // GitHub background color
+$backgroundColor: #010409; // GitHub background color
 $foreground: #e6edf3; // GitHub foreground color
 $color: map.get($dark-theme, "color");
 $colorBackground: map.get($color, "background");
@@ -137,14 +137,14 @@ $light-theme: mat.define-light-theme((
  }
  .mat-mdc-paginator,
  .mat-mdc-table tbody, .mat-mdc-table tfoot, .mat-mdc-table thead, .mat-mdc-cell, .mat-mdc-footer-cell, .mat-mdc-header-row, .mat-mdc-row, .mat-mdc-footer-row, .mat-mdc-table .mat-mdc-header-cell {
-  background: #161b22 !important;
+  background: #0d1117 !important;
  }
 
  .mat-button-toggle-appearance-standard.mat-button-toggle-checked {
   background: mat.get-theme-color($dark-theme, primary, 500) !important;
  }
  .mat-button-toggle-appearance-standard {
-  background: #161b22 !important;
+  background: #0d1117 !important;
  }
 }
 

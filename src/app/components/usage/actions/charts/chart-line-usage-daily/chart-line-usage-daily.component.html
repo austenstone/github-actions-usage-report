@@ -3,8 +3,8 @@
     <mat-button-toggle value="total">All</mat-button-toggle>
     <mat-button-toggle value="repo">Repo</mat-button-toggle>
     <mat-button-toggle value="sku">Runner</mat-button-toggle>
-    <mat-button-toggle value="user">User</mat-button-toggle>
     <mat-button-toggle value="workflow">Workflow</mat-button-toggle>
+    <mat-button-toggle value="user">User</mat-button-toggle>
   </mat-button-toggle-group>
   <mat-button-toggle-group name="timeType" aria-label="Toggle Time" [value]="timeType" (change)="timeType = $event.value; redrawChart()">
     <mat-button-toggle value="total">Total</mat-button-toggle>

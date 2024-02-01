@@ -191,21 +191,15 @@ export class UsageReportService {
   }): void {
     Object.assign(this.filters, filter);
     let filtered = this.usageReport.lines;
-    if (this.filters.sku !== '') {
+    if (this.filters.sku) {
       filtered = filtered.filter(line => line.sku === this.filters.sku);
     }
-    if (this.filters.workflow !== '') {
+    if (this.filters.workflow) {
       filtered = filtered.filter(line => line.actionsWorkflow === this.filters.workflow);
     }
     if (this.filters.startDate && this.filters.endDate) {
       filtered = filtered.filter(line => {
-        const lineDate = new Date(line.date);
-        if (this.filters.startDate.getTime() === this.filters.endDate.getTime()) {
-          const day = this.filters.startDate.toISOString().split('T')[0];
-          const lineDay = lineDate.toISOString().split('T')[0];
-          return day === lineDay;
-        }
-        return lineDate >= this.filters.startDate && lineDate <= this.filters.endDate;
+        return line.date >= this.filters.startDate && line.date <= this.filters.endDate;
       });
     }
     this.usageReportFiltered.next(filtered);

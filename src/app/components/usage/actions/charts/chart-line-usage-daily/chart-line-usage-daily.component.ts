@@ -50,8 +50,8 @@ export class ChartLineUsageDailyComponent implements OnChanges {
     },
   };
   updateFromInput: boolean = false;
-  chartType: 'repo' | 'total' | 'sku' | 'user' | 'workflow' = 'total';
-  timeType: 'total' | 'daily' | 'weekly' | 'monthly' | 'rolling20' | 'rolling7' = 'total';
+  chartType: 'repo' | 'total' | 'sku' | 'user' | 'workflow' = 'sku';
+  timeType: 'total' | 'daily' | 'weekly' | 'monthly' | 'rolling20' | 'rolling7' = 'rolling20';
   rollingDays = 20;
 
   constructor(

@@ -1,7 +1,10 @@
-<div *ngIf="!usage" class="flex-center-horizontally full-width">
+<div *ngIf="!usage" class="full-width">
   <h1 class="mat-headline-2" style="user-select: none; font-weight: 800; text-align: center;">
-    GitHub Metered Usage Report Viewer
+    GitHub<br>Usage Report Viewer
   </h1>
+  <!-- <h2 class="mat-h2" style="user-select: none; font-weight: 800; text-align: center;">
+    <i>Visualize your GitHub Metered Usage!</i>
+  </h2> -->
 </div>
 <div class="flex-center-horizontally full-width">
   <app-file-upload [text]="status" (fileText)="onFileText($event)"></app-file-upload>
@@ -20,6 +23,10 @@
       </mat-date-range-input>
       <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
       <mat-date-range-picker #picker></mat-date-range-picker>
+      <button *ngIf="range.controls.start.value !== minDate || range.controls.end.value !== maxDate" mat-icon-button
+        matSuffix (click)="range.setValue({ start: minDate, end: maxDate })">
+        <mat-icon>close</mat-icon>
+      </button>
     </mat-form-field>
     <mat-form-field style="flex: 1; max-width: 500px;" *ngIf="tabSelected === 'actions'">
       <mat-label>Workflow</mat-label>

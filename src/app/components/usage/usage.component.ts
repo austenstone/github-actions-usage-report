@@ -42,6 +42,7 @@ export class UsageComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.subscriptions.push(
       this.range.valueChanges.pipe(debounceTime(500)).subscribe(value => {
+        console.log('value', value);
         if (value.start && value.start instanceof Date && !isNaN(value.start.getTime()) &&
           value.end && value.end instanceof Date && !isNaN(value.end.getTime())) {
           this.usageReportService.applyFilter({
@@ -102,8 +103,11 @@ export class UsageComponent implements OnInit, OnDestroy {
     });
     this.minDate = new Date(usage.lines[0]?.date);
     this.maxDate = new Date(usage.lines[usage.lines.length - 1]?.date);
-    this.range.controls.start.setValue(usage.lines[0]?.date, { emitEvent: false });
-    this.range.controls.end.setValue(usage.lines[usage.lines.length - 1]?.date, { emitEvent: false });
+    // make the date 00:00:00
+    this.minDate.setHours(0, 0, 0, 0);
+    this.maxDate.setHours(0, 0, 0, 0);
+    this.range.controls.start.setValue(this.minDate, { emitEvent: false });
+    this.range.controls.end.setValue(this.maxDate, { emitEvent: false });
     this.status = 'Choose File';
     this.progress = null;
     this.usage = usage;

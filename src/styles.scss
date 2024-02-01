@@ -65,6 +65,28 @@ table {
 }
 
 .table-container {
-  margin-top: 1rem;
   overflow-x: auto;
+  max-height: 700px;
+}
+
+.table-control {
+  display: flex;
+  mat-form-field {
+    margin-right: 15px;
+  }
+}
+
+mat-cell {
+  mat-icon {
+    vertical-align: bottom !important;
+  }
+}
+
+
+.mat-column-user,
+.mat-column-workflow,
+.mat-column-repo,
+.mat-column-sku {
+  background: #161b22 !important;
+  max-width: 350px;
 }
