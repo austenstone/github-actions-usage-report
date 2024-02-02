@@ -1,4 +1,4 @@
-<input type="file" #fileInput name="fileUpload" (change)="onFileSelected($event)" style="display: none;" accept=".csv">
+<input type="file" #fileInput name="fileUpload" (change)="onFileSelected($event)" style="display: none;" accept=".csv" multiple>
 <button mat-fab extended color="primary" (click)="fileInput.click()">
   <mat-icon>upload_file</mat-icon>
   {{ text }}

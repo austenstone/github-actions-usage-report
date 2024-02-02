@@ -2,7 +2,7 @@ import { OnInit, ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { UsageReport } from 'github-usage-report/types';
 import { Observable, Subscription, debounceTime, map, startWith } from 'rxjs';
-import { CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.service';
+import { CustomUsageReport, CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.service';
 import { DialogBillingNavigateComponent } from './dialog-billing-navigate';
 import { MatDialog } from '@angular/material/dialog';
 
@@ -85,21 +85,30 @@ export class UsageComponent implements OnInit, OnDestroy {
     this.subscriptions.forEach(subscription => subscription.unsubscribe());
   }
 
-  async onFileText(fileText: string) {
+  async onFileText(fileText: string[]) {
     this.status = 'Parsing File...';
-    const usage = await this.usageReportService.setUsageReportData(fileText, async (_: any, progress: any): Promise<any> => {
-      return await new Promise((resolve) => {
-        if (progress === this.progress) return resolve('');
-        setTimeout(() => {
-          this.progress = progress;
-          this.status = `Parsing File... ${progress}%`
-          resolve('');
-        }, 0)
+    // await all promises
+    const usage: CustomUsageReport = await Promise.all(
+      fileText.map(
+        (fileText) => this.usageReportService.setUsageReportData(fileText, async (_: any, progress: any): Promise<string> => {
+          return await new Promise((resolve) => {
+            if (progress === this.progress) return resolve('');
+            setTimeout(() => {
+              this.progress = progress;
+              this.status = `Parsing File... ${progress}%`
+              resolve('');
+            }, 0)
+          });
+        })
+      )).then(async (usage) => {
+        console.log('usage', usage)
+        const mergedUsage = usage.reduce((acc, val) => {
+          acc.lines = acc.lines.concat(val.lines);
+          return acc;
+        });
+        this.status = 'Loading... Be patient, this may take a while.';
+        return new Promise<CustomUsageReport>(resolve => setTimeout(() => resolve(mergedUsage), 100));
       });
-    }).then(async (usage) => {
-      this.status = 'Loading... Be patient, this may take a while.';
-      return new Promise<UsageReport>(resolve => setTimeout(() => resolve(usage), 100));
-    });
     this.minDate = new Date(usage.lines[0]?.date);
     this.maxDate = new Date(usage.lines[usage.lines.length - 1]?.date);
     // make the date 00:00:00

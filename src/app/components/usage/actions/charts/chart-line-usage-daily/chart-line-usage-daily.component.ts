@@ -46,7 +46,7 @@ export class ChartLineUsageDailyComponent implements OnChanges {
       align: 'right',
       verticalAlign: 'top',
       layout: 'vertical',
-      y: 0,
+      y: 10,
     },
   };
   updateFromInput: boolean = false;
