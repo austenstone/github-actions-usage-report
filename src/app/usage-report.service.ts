@@ -22,8 +22,10 @@ const readGithubUsageReport = async (data: string, cb?: (usageReport: UsageRepor
       continue;
     }
     const csv = line.split(',');
+    const [year, month, day] = csv[0].split("-").map(Number);
+    const date = new Date(year, month - 1, day);
     const data: UsageReportLine = {
-      date: new Date(Date.parse(csv[0])),
+      date,
       product: csv[1],
       sku: csv[2],
       quantity: Number(csv[3]),
