@@ -51,7 +51,7 @@ export class ChartLineUsageDailyComponent implements OnChanges {
   };
   updateFromInput: boolean = false;
   chartType: 'repo' | 'total' | 'sku' | 'user' | 'workflow' = 'sku';
-  timeType: 'total' | 'daily' | 'weekly' | 'monthly' | 'rolling20' | 'rolling7' = 'rolling20';
+  timeType: 'total' | 'run' | 'daily' | 'weekly' | 'monthly' | 'rolling20' | 'rolling7' = 'rolling20';
   rollingDays = 20;
 
   constructor(
@@ -67,10 +67,12 @@ export class ChartLineUsageDailyComponent implements OnChanges {
   ngOnChanges() {
     this.rollingDays = Number(this.timeType.split('rolling')[1]);
     const seriesDays = this.data.reduce(
-      (acc, line) => {
+      (acc, line, index) => {
         let name = 'Total';
         let timeKey = 'total';
-        if (this.timeType === 'daily') {
+        if (this.timeType === 'run') {
+          timeKey = `${line.actionsWorkflow}${line.date}${index}`;
+        } else if (this.timeType === 'daily') {
           timeKey = line.date.toISOString().split('T')[0];
         } else if (this.timeType === 'weekly') {
           timeKey = this.getWeekOfYear(line.date).toString();

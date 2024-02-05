@@ -8,6 +8,7 @@
   </mat-button-toggle-group>
   <mat-button-toggle-group name="timeType" aria-label="Toggle Time" [value]="timeType" (change)="timeType = $event.value; redrawChart()">
     <mat-button-toggle value="total">Total</mat-button-toggle>
+    <mat-button-toggle value="run">Run</mat-button-toggle>
     <mat-button-toggle value="daily">Day</mat-button-toggle>
     <mat-button-toggle value="weekly">Week</mat-button-toggle>
     <mat-button-toggle value="monthly">Month</mat-button-toggle>
