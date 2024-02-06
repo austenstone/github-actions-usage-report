@@ -51,8 +51,8 @@ export class ChartLineUsageDailyComponent implements OnChanges {
   };
   updateFromInput: boolean = false;
   chartType: 'repo' | 'total' | 'sku' | 'user' | 'workflow' = 'sku';
-  timeType: 'total' | 'run' | 'daily' | 'weekly' | 'monthly' | 'rolling20' | 'rolling7' = 'rolling20';
-  rollingDays = 20;
+  timeType: 'total' | 'run' | 'daily' | 'weekly' | 'monthly' | 'rolling30' | 'rolling7' = 'rolling30';
+  rollingDays = 30;
 
   constructor(
     private themeService: ThemingService,
