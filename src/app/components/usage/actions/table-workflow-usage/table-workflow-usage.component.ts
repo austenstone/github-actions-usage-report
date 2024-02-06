@@ -160,7 +160,7 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
       item.avgCost = item.cost / item.runs;
     });
     usage = usageItems;
-    this.columns = this.columns.sort((a, b) => (a.date?.getTime() || 0) - (b.date?.getTime() || 0)); 
+    this.columns = this.columns.sort((a, b) => (!a.date || !b.date) ? 0 : a.date.getTime() - b.date.getTime()); 
     this.displayedColumns = this.columns.map(c => c.columnDef);
     this.dataSource.data = usage;
   }
