@@ -101,18 +101,18 @@ export class ChartLineUsageDailyComponent implements OnChanges {
           if (!series.data[timeKey]) series.data[timeKey] = [];
           if (timeKey === 'total') {
             const last = series.data[timeKey][series.data[timeKey].length - 1];
-            series.data[timeKey].push([new Date(line.date).getTime(), (last[1] + line.value)]);
+            series.data[timeKey].push([line.date.getTime(), (last[1] + line.value)]);
           } else if (this.timeType.startsWith('rolling')) {
-            series.data[timeKey].push([new Date(line.date).getTime(), line.value]);
+            series.data[timeKey].push([line.date.getTime(), line.value]);
           } else {
-            series.data[timeKey].push([new Date(line.date).getTime(), line.value]);
+            series.data[timeKey].push([line.date.getTime(), line.value]);
           }
           series.total += line.value;
         } else {
           acc.push({
             name,
             data: {
-              [timeKey]: [[new Date(line.date).getTime(), line.value]]
+              [timeKey]: [[line.date.getTime(), line.value]]
             },
             total: line.value
           });
