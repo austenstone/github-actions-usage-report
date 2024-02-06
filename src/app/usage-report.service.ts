@@ -276,7 +276,6 @@ export class UsageReportService {
   formatSku(sku: string) {
     if (!sku) return sku;
     if (this.skuMapping[sku]) return this.skuMapping[sku];
-    console.log(`No mapping for ${sku}`)
     const skuParts = sku.split('Compute - ');
     if (skuParts.length < 2) return sku;
     const runtime = skuParts[1];
