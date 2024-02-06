@@ -28,6 +28,7 @@ const readGithubUsageReport = async (data: string, cb?: (usageReport: UsageRepor
     let month, day, year;
     if (dateDelim === '/') {
       [month, day, year] = csv[0].split('/').map(Number);
+      year = 2000 + year;
     } else if (dateDelim === '-') {
       [year, month, day] = csv[0].split('-').map(Number);
     }
