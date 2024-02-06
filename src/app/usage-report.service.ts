@@ -22,7 +22,7 @@ const readGithubUsageReport = async (data: string, cb?: (usageReport: UsageRepor
       continue;
     }
     const csv = line.split(',');
-    const [year, month, day] = csv[0].split("-").map(Number);
+    const [year, month, day] = csv[0].split(/-|\//).map(Number);
     const date = new Date(year, month - 1, day);
     const data: UsageReportLine = {
       date,
@@ -77,7 +77,7 @@ export class UsageReportService {
   usageReportData!: string;
   usageReport!: CustomUsageReport;
   usageReportFiltered: BehaviorSubject<CustomUsageReportLine[]> = new BehaviorSubject<CustomUsageReportLine[]>([]);
-  usageReportFilteredProduct: {[key: string]: Observable<CustomUsageReportLine[]>} = {};
+  usageReportFilteredProduct: { [key: string]: Observable<CustomUsageReportLine[]> } = {};
   filters: Filter = {
     startDate: new Date(),
     endDate: new Date(),
@@ -92,6 +92,39 @@ export class UsageReportService {
   products: string[] = [];
   usernames: string[] = [];
   valueType: BehaviorSubject<'minutes' | 'cost'> = new BehaviorSubject<'minutes' | 'cost'>('cost')
+  skuMapping: { [key: string]: string } = {
+    "Compute - UBUNTU": 'Ubuntu 2',
+    "Compute - UBUNTU_16_CORE": 'Ubuntu 16',
+    "Compute - UBUNTU_16_CORE_ARM": 'Ubuntu 16 (ARM)',
+    "Compute - UBUNTU_2_CORE_ARM": 'Ubuntu 2 (ARM)',
+    "Compute - UBUNTU_32_CORE": 'Ubuntu 32',
+    "Compute - UBUNTU_32_CORE_ARM": 'Ubuntu 32 (ARM)',
+    "Compute - UBUNTU_4_CORE": 'Ubuntu 4',
+    "Compute - UBUNTU_4_CORE_ARM": 'Ubuntu 4 (ARM)',
+    "Compute - UBUNTU_4_CORE_GPU": 'Ubuntu 4 (GPU)',
+    "Compute - UBUNTU_64_CORE": 'Ubuntu 64',
+    "Compute - UBUNTU_64_CORE_ARM": 'Ubuntu 64 (ARM)',
+    "Compute - UBUNTU_8_CORE": 'Ubuntu 8',
+    "Compute - UBUNTU_8_CORE_ARM": 'Ubuntu 8 (ARM)',
+    "Compute - MACOS": 'MacOS 3',
+    "Compute - MACOS_12_CORE": 'MacOS 12',
+    "Compute - MACOS_8_CORE": 'MacOS 8',
+    "Compute - MACOS_LARGE": 'MacOS 12 (x86)',
+    "Compute - MACOS_XLARGE": 'MacOS 6 (M1)',
+    "Compute - WINDOWS": 'Windows 2',
+    "Compute - WINDOWS_16_CORE": 'Windows 16',
+    "Compute - WINDOWS_16_CORE_ARM": 'Windows 16 (ARM)',
+    "Compute - WINDOWS_2_CORE_ARM": 'Windows 2 (ARM)',
+    "Compute - WINDOWS_32_CORE": 'Windows 32',
+    "Compute - WINDOWS_32_CORE_ARM": 'Windows 32 (ARM)',
+    "Compute - WINDOWS_4_CORE": 'Windows 4',
+    "Compute - WINDOWS_4_CORE_ARM": 'Windows 4 (ARM)',
+    "Compute - WINDOWS_4_CORE_GPU": 'Windows 4 (GPU)',
+    "Compute - WINDOWS_64_CORE": 'Windows 64',
+    "Compute - WINDOWS_64_CORE_ARM": 'Windows 64 (ARM)',
+    "Compute - WINDOWS_8_CORE": 'Windows 8',
+    "Compute - WINDOWS_8_CORE_ARM": 'Windows 8 (ARM)',
+  };
   skuOrder = [
     'Compute - UBUNTU',
     'Compute - UBUNTU_4_CORE',
@@ -127,7 +160,7 @@ export class UsageReportService {
     'November',
     'December',
   ];
-  
+
   constructor() {
   }
 
@@ -241,22 +274,19 @@ export class UsageReportService {
   }
 
   formatSku(sku: string) {
-    let formatted;
+    if (!sku) return sku;
+    if (this.skuMapping[sku]) return this.skuMapping[sku];
+    console.log(`No mapping for ${sku}`)
     const skuParts = sku.split('Compute - ');
     if (skuParts.length < 2) return sku;
-    formatted = skuParts[1].replaceAll('_', ' ').replace(' CORE', '');
+    const runtime = skuParts[1];
+    let formatted = runtime.replaceAll('_', ' ').replace(' CORE', '');
     formatted = titlecasePipe.transform(formatted);
     formatted = formatted.replace('Macos', 'MacOS');
-    switch(formatted) {
-      case 'Ubuntu':
-        return 'Ubuntu 2';
-      case 'Windows':
-        return 'Windows 2';
-      case 'MacOS':
-        return 'MacOS 3';
-      default:
-        return formatted;
+    if (formatted.includes('ARM')) {
+      return `${formatted} (ARM)`
     }
+    return formatted;
   }
 }
 
