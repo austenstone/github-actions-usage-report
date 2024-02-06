@@ -19,7 +19,7 @@ jobs:
     - run: npm ci
     - run: npm run build -- --configuration production --base-href /${{ github.event.repository.name }}/
     # - run: npm test -- --no-watch --no-progress --browsers=ChromeHeadless 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: dist
         path: dist/${{ github.event.repository.name }}
