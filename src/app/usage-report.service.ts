@@ -16,26 +16,14 @@ const readGithubUsageReport = async (data: string, cb?: (usageReport: UsageRepor
 
   const lines = data.split('\n');
   total = lines.length;
-  const first = lines[1].split(',')[0];
-  const dateDelim = first.includes('-') ? '-' : first.includes('/') ? '/' : null;
-  if (dateDelim == null) throw new Error('Invalid date delimiter');
   for (const line of lines) {
     if (index == 0) {
       index++;
       continue;
     }
     const csv = line.split(',');
-    let month, day, year;
-    if (dateDelim === '/') {
-      [month, day, year] = csv[0].split('/').map(Number);
-      year = 2000 + year;
-    } else if (dateDelim === '-') {
-      [year, month, day] = csv[0].split('-').map(Number);
-    }
-    if (!year || !month || !day) throw new Error('Invalid date');
-    const date = new Date(year, month - 1, day);
     const data: UsageReportLine = {
-      date,
+      date: new Date(Date.parse(csv[0])),
       product: csv[1],
       sku: csv[2],
       quantity: Number(csv[3]),
