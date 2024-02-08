@@ -51,7 +51,7 @@ export class LineUsageTimeComponent implements OnChanges {
     series: []
   };
   updateFromInput: boolean = false;
-  chartType: 'perRepo' | 'total' = 'total';
+  chartType: 'perRepo' | 'total' = 'perRepo';
 
   constructor(
     private themeService: ThemingService
@@ -81,7 +81,9 @@ export class LineUsageTimeComponent implements OnChanges {
           gbs += line.value;
           if (acc.find(a => a.name === line.repositorySlug)) {
             const existing = acc.find(a => a.name === line.repositorySlug);
-            existing?.data.push([line.date.getTime(), existing.data[existing.data.length - 1][1] + line.value]);
+            if (existing && line.value !== 0) {
+              existing.data.push([line.date.getTime(), line.value]);
+            }
           } else {
             acc.push({
               name: line.repositorySlug,
@@ -97,6 +99,22 @@ export class LineUsageTimeComponent implements OnChanges {
         return b.data[b.data.length - 1][1] - a.data[a.data.length - 1][1];
       }).slice(0, 50);
       if (this.options.legend) this.options.legend.enabled = true;
+    }
+    this.options.title = {
+      text: this.currency === 'cost' ? 'Shared Storage Cost Per Day' : 'Shared Storage Size'
+    };
+    this.options.yAxis = {
+      ...this.options.yAxis,
+      title: {
+        text: this.currency === 'cost' ? 'Dollars ($)' : 'Gigabits (Gb)'
+      },
+    };
+    this.options = {
+        ...this.options,
+        tooltip: {
+            ...this.options.tooltip,
+            pointFormat: `${this.options.series!.length > 1 ? '<b>{series.name}</b><br>' : ''}${this.currency === 'cost' ? '${point.y:.2f}/day' : '{point.y:.2f} GB/day'}`,
+        }
     }
     this.updateFromInput = true;
   }

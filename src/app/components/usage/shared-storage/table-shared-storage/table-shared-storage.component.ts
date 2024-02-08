@@ -10,10 +10,10 @@ type SharedStorageUsageItem = {
   count: number;
   avgSize: number;
   total: number;
-  cost: number;
+  totalCost: number;
   avgCost: number;
-  costPerDay: number;
   pricePerUnit: number;
+  costPerDay: number;
 };
 
 @Component({
@@ -43,13 +43,12 @@ export class TableSharedStorageComponent implements OnChanges, AfterViewInit {
       const workflowEntry = acc.find(a => a.repo === line.repositorySlug);
       const date = line.date;
       const month: string = date.toLocaleString('default', { month: 'short' });
-      const cost = line.pricePerUnit * line.quantity;
+      const cost = line.quantity * line.pricePerUnit;
       if (workflowEntry) {
-        const daysInMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
         if ((workflowEntry as any)[month] as any) {
-          (workflowEntry as any)[month] += this.currency === 'cost' ? line.value * daysInMonth : line.value;
+          (workflowEntry as any)[month] += line.value;
         } else {
-          (workflowEntry as any)[month] = this.currency === 'cost' ? line.value * daysInMonth : line.value;
+          (workflowEntry as any)[month] = line.value;
         }
         if (!this.columns.find(c => c.columnDef === month)) {
           this.columns.push({
@@ -63,19 +62,20 @@ export class TableSharedStorageComponent implements OnChanges, AfterViewInit {
           });
         }
         workflowEntry.total += line.quantity;
-        workflowEntry.cost += cost;
+        workflowEntry.totalCost += cost;
         workflowEntry.count++;
+        workflowEntry.costPerDay = cost;
       } else {
         acc.push({
           repo: line.repositorySlug,
           total: line.quantity,
           count: 1,
-          cost,
+          totalCost: cost,
           avgSize: 0,
           avgCost: 0,
           [month]: line.value,
           pricePerUnit: line.pricePerUnit,
-          costPerDay: 0,
+          costPerDay: cost
         });
       }
       return acc;
@@ -87,8 +87,7 @@ export class TableSharedStorageComponent implements OnChanges, AfterViewInit {
           (sharedStorageItem as any)[column.columnDef] = 0;
         }
         sharedStorageItem.avgSize = sharedStorageItem.total / sharedStorageItem.count;
-        sharedStorageItem.avgCost = sharedStorageItem.cost / sharedStorageItem.count;
-        sharedStorageItem.costPerDay = sharedStorageItem.total * sharedStorageItem.pricePerUnit;
+        sharedStorageItem.avgCost = sharedStorageItem.totalCost / sharedStorageItem.count;
       });
     });
 
@@ -128,8 +127,8 @@ export class TableSharedStorageComponent implements OnChanges, AfterViewInit {
         {
           columnDef: 'total',
           header: 'Total Cost',
-          cell: (sharedStorageItem: any) => currencyPipe.transform(sharedStorageItem.cost),
-          footer: () => currencyPipe.transform(this.dataSource.data.reduce((acc, line) => acc + line.cost, 0))
+          cell: (sharedStorageItem: any) => currencyPipe.transform(sharedStorageItem.totalCost),
+          footer: () => currencyPipe.transform(this.dataSource.data.reduce((acc, line) => acc + line.totalCost, 0))
         },
         {
           columnDef: 'costPerDay',
