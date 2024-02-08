@@ -63,7 +63,7 @@ export class TableSharedStorageComponent implements OnChanges, AfterViewInit {
           });
         }
         workflowEntry.total += line.quantity;
-        workflowEntry.cost += cost * daysInMonth;
+        workflowEntry.cost += cost;
         workflowEntry.count++;
       } else {
         acc.push({
