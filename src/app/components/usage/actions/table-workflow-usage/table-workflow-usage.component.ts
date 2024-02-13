@@ -85,7 +85,7 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
         }
         return false
       });
-      const month: string = line.date.toLocaleString('default', { month: 'short'});
+      const month: string = line.date.toLocaleString('default', { month: 'short', year: '2-digit'});
       if (item) {
         if ((item as any)[month]) {
           (item as any)[month] += line.value;
