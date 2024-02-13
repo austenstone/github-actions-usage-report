@@ -13,7 +13,12 @@
 <mat-progress-bar *ngIf="progress && progress < 99" mode="determinate" [value]="progress"></mat-progress-bar>
 <mat-progress-bar *ngIf="progress && progress >= 99" mode="indeterminate"></mat-progress-bar>
 
-<ng-container *ngIf="usage">
+<button mat-button *ngIf="usage" (click)="exportHtml()">
+  <mat-icon>download</mat-icon>
+  Export
+</button>
+
+<div id="usage-report" *ngIf="usage">
   <form class="mat-app-background">
     <mat-form-field appearance="fill">
       <mat-label>Choose a date range</mat-label>
@@ -61,7 +66,7 @@
       </ng-template>
       <ng-template matTabContent>
         <div style="margin-top: 25px;"></div>
-        <app-actions [data]="usageLinesActions" [currency]="currency"></app-actions>
+        <app-actions [data]="this.usageLines.actions" [currency]="currency"></app-actions>
       </ng-template>
     </mat-tab>
     <mat-tab>
@@ -71,7 +76,7 @@
       </ng-template>
       <ng-template matTabContent>
         <div style="margin-top: 25px;"></div>
-        <app-shared-storage [data]="usageLinesSharedStorage" [currency]="currency"></app-shared-storage>
+        <app-shared-storage [data]="this.usageLines.sharedStorage" [currency]="currency"></app-shared-storage>
       </ng-template>
     </mat-tab>
     <mat-tab>
@@ -81,12 +86,11 @@
       </ng-template>
       <ng-template matTabContent>
         <div style="margin-top: 25px;"></div>
-        <app-copilot [data]="usageLinesCopilot" [currency]="currency"></app-copilot>
+        <app-copilot [data]="this.usageLines.copilot" [currency]="currency"></app-copilot>
       </ng-template>
     </mat-tab>
   </mat-tab-group>
-
-</ng-container>
+</div>
 
 <ng-container *ngIf="!usage && !progress">
   <div class="flex-center-column full-width" style="text-align: center;">

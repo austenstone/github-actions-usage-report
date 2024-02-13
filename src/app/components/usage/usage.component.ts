@@ -13,9 +13,12 @@ import { MatDialog } from '@angular/material/dialog';
 })
 export class UsageComponent implements OnInit, OnDestroy {
   usage!: UsageReport;
-  usageLinesSharedStorage!: CustomUsageReportLine[];
-  usageLinesCopilot!: CustomUsageReportLine[];
-  usageLinesActions!: CustomUsageReportLine[];
+  usageLines = {} as {
+    sharedStorage: CustomUsageReportLine[],
+    codespaces: CustomUsageReportLine[],
+    copilot: CustomUsageReportLine[],
+    actions: CustomUsageReportLine[],
+  };
   range = new FormGroup({
     start: new FormControl(),
     end: new FormControl()
@@ -67,13 +70,16 @@ export class UsageComponent implements OnInit, OnDestroy {
 
     this.subscriptions.push(
       this.usageReportService.getUsageFilteredByProduct('Actions').subscribe((usageLines) => {
-        this.usageLinesActions = usageLines;
+        this.usageLines.actions = usageLines;
       }),
       this.usageReportService.getUsageFilteredByProduct('Shared Storage').subscribe((usageLines) => {
-        this.usageLinesSharedStorage = usageLines;
+        this.usageLines.sharedStorage = usageLines;
       }),
       this.usageReportService.getUsageFilteredByProduct('Copilot').subscribe((usageLines) => {
-        this.usageLinesCopilot = usageLines;
+        this.usageLines.copilot = usageLines;
+      }),
+      this.usageReportService.getUsageFilteredByProduct('Codespaces').subscribe((usageLines) => {
+        this.usageLines.codespaces = usageLines;
       }),
       this.usageReportService.getWorkflowsFiltered().subscribe((workflows) => {
         this.workflows = workflows;
@@ -145,5 +151,36 @@ export class UsageComponent implements OnInit, OnDestroy {
     } else if (event.index === 2) {
       this.tabSelected = 'copilot';
     }
+  }
+
+  exportHtml() {
+    function getStyles(doc: any) {
+      var styles = '';
+      for (var i = 0; i < doc.styleSheets.length; i++) {
+        try {
+          var rules = doc.styleSheets[i].cssRules;
+          for (var j = 0; j < rules.length; j++) {
+            styles += rules[j].cssText + '\n';
+          }
+        } catch (e) {
+          console.warn('Unable to access CSS rules:', e);
+        }
+      }
+      return styles;
+    }
+
+    const a = document.createElement('a');
+    a.download = `usage-report-${this.tabSelected}-${new Date().toISOString()}.html`;
+
+    const clone = document.documentElement.cloneNode(true);
+    const style = document.createElement('style');
+    style.innerHTML = getStyles(document);
+    (clone as any).querySelector('head').appendChild(style);
+
+    const bb = new Blob([(clone as any).outerHTML], { type: 'text/html' });
+    a.href = window.URL.createObjectURL(bb);
+    document.body.appendChild(a);
+    a.click();
+    (a as any).parentNode.removeChild(a);
   }
 }

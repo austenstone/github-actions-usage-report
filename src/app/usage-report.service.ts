@@ -58,7 +58,7 @@ interface Filter {
   sku: string;
 }
 
-type Product = 'Shared Storage' | 'Copilot' | 'Actions';
+type Product = 'Shared Storage' | 'Packages' | 'Copilot' | 'Actions' | 'Codespaces';
 
 export interface CustomUsageReportLine extends UsageReportLine {
   value: number;
@@ -243,9 +243,10 @@ export class UsageReportService {
     return this.usageReportFiltered.asObservable();
   }
 
-  getUsageFilteredByProduct(product: Product): Observable<CustomUsageReportLine[]> {
+  getUsageFilteredByProduct(product: Product | Product[]): Observable<CustomUsageReportLine[]> {
+    const _product = Array.isArray(product) ? product : [product];
     return this.getUsageReportFiltered().pipe(
-      map(lines => lines.filter(line => line.product === product))
+      map(lines => lines.filter(line => _product.includes(line.product as Product))),
     );
   }
 
