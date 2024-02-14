@@ -58,38 +58,24 @@
       </mat-button-toggle-group>
     </div>
   </form>
-  <mat-tab-group (selectedTabChange)="tabChanged($event)">
-    <mat-tab *ngIf="this.usageLines.actions.length > 0">
-      <ng-template mat-tab-label>
-        <mat-icon class="tab-icon">commit</mat-icon>
-        Actions
-      </ng-template>
-      <ng-template matTabContent>
-        <div style="margin-top: 25px;"></div>
-        <app-actions [data]="this.usageLines.actions" [currency]="currency"></app-actions>
-      </ng-template>
-    </mat-tab>
-    <mat-tab *ngIf="this.usageLines.sharedStorage.length > 0">
-      <ng-template mat-tab-label>
-        <mat-icon class="tab-icon">backup</mat-icon>
-        Shared Storage
-      </ng-template>
-      <ng-template matTabContent>
-        <div style="margin-top: 25px;"></div>
-        <app-shared-storage [data]="this.usageLines.sharedStorage" [currency]="currency"></app-shared-storage>
-      </ng-template>
-    </mat-tab>
-    <mat-tab *ngIf="this.usageLines.copilot.length > 0">
-      <ng-template mat-tab-label>
-        <mat-icon class="tab-icon" svgIcon="copilot"></mat-icon>
-        Copilot
-      </ng-template>
-      <ng-template matTabContent>
-        <div style="margin-top: 25px;"></div>
-        <app-copilot [data]="this.usageLines.copilot" [currency]="currency"></app-copilot>
-      </ng-template>
-    </mat-tab>
-  </mat-tab-group>
+  <nav mat-tab-nav-bar [tabPanel]="tabPanel">
+    <a mat-tab-link *ngIf="this.usageLines.actions.length > 0" [routerLink]="['actions']">
+      <mat-icon class="tab-icon">commit</mat-icon>
+      Actions
+    </a>
+    <a mat-tab-link *ngIf="this.usageLines.sharedStorage.length > 0" [routerLink]="['shared-storage']">
+      <mat-icon class="tab-icon">backup</mat-icon>
+      Shared Storage
+    </a>
+    <a mat-tab-link *ngIf="this.usageLines.copilot.length > 0" [routerLink]="['copilot']">
+      <mat-icon class="tab-icon" svgIcon="copilot"></mat-icon>
+      Copilot
+    </a>
+  </nav>
+
+  <mat-tab-nav-panel #tabPanel>
+    <router-outlet></router-outlet>
+  </mat-tab-nav-panel>
 </div>
 
 <ng-container *ngIf="!usage && !progress">
