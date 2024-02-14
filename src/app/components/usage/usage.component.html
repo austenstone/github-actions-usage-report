@@ -59,7 +59,7 @@
     </div>
   </form>
   <mat-tab-group (selectedTabChange)="tabChanged($event)">
-    <mat-tab>
+    <mat-tab *ngIf="this.usageLines.actions.length > 0">
       <ng-template mat-tab-label>
         <mat-icon class="tab-icon">commit</mat-icon>
         Actions
@@ -69,7 +69,7 @@
         <app-actions [data]="this.usageLines.actions" [currency]="currency"></app-actions>
       </ng-template>
     </mat-tab>
-    <mat-tab>
+    <mat-tab *ngIf="this.usageLines.sharedStorage.length > 0">
       <ng-template mat-tab-label>
         <mat-icon class="tab-icon">backup</mat-icon>
         Shared Storage
@@ -79,7 +79,7 @@
         <app-shared-storage [data]="this.usageLines.sharedStorage" [currency]="currency"></app-shared-storage>
       </ng-template>
     </mat-tab>
-    <mat-tab>
+    <mat-tab *ngIf="this.usageLines.copilot.length > 0">
       <ng-template mat-tab-label>
         <mat-icon class="tab-icon" svgIcon="copilot"></mat-icon>
         Copilot
