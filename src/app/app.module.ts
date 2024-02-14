@@ -15,13 +15,15 @@ import { ChartLineUsageDailyComponent } from './components/usage/actions/charts/
 import { HttpClientModule } from '@angular/common/http';
 import { ChartPieSkuComponent } from './components/usage/actions/charts/chart-pie-sku/chart-pie-sku.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { ActionsUsageComponent } from './components/usage/actions/actions.component';
+import { ActionsComponent } from './components/usage/actions/actions.component';
 import { SharedStorageComponent } from './components/usage/shared-storage/shared-storage.component';
 import { TableSharedStorageComponent } from './components/usage/shared-storage/table-shared-storage/table-shared-storage.component';
 import { LineUsageTimeComponent } from './components/usage/shared-storage/charts/line-usage-time/line-usage-time.component';
 import { CopilotComponent } from './components/usage/copilot/copilot.component';
 import { DialogBillingNavigateComponent } from './components/usage/dialog-billing-navigate';
 import { TableCopilotUsageComponent } from './components/usage/copilot/table-workflow-usage/table-copilot-usage.component';
+import { AppRoutingModule } from './app-routing.module';
+import { RouterModule } from '@angular/router';
 
 @NgModule({
   declarations: [
@@ -32,7 +34,7 @@ import { TableCopilotUsageComponent } from './components/usage/copilot/table-wor
     ChartBarTopTimeComponent,
     TableWorkflowUsageComponent,
     ChartPieSkuComponent,
-    ActionsUsageComponent,
+    ActionsComponent,
     SharedStorageComponent,
     FileUploadComponent,
     TableSharedStorageComponent,
@@ -48,7 +50,13 @@ import { TableCopilotUsageComponent } from './components/usage/copilot/table-wor
     HighchartsChartModule,
     HttpClientModule,
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    AppRoutingModule,
+    RouterModule.forRoot([
+      { path: 'actions', component: ActionsComponent },
+      { path: 'copilot', component: CopilotComponent },
+      { path: 'shared-storage', component: SharedStorageComponent },
+    ])
   ],
   providers: [],
   bootstrap: [AppComponent]

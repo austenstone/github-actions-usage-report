@@ -6,7 +6,7 @@ import { CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.
   templateUrl: './actions.component.html',
   styleUrl: './actions.component.scss'
 })
-export class ActionsUsageComponent implements OnInit {
+export class ActionsComponent implements OnInit {
   @Input() data!: CustomUsageReportLine[];
   @Input() currency!: string;
   totalMinutes: number = 0;
