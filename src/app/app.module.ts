@@ -22,8 +22,6 @@ import { LineUsageTimeComponent } from './components/usage/shared-storage/charts
 import { CopilotComponent } from './components/usage/copilot/copilot.component';
 import { DialogBillingNavigateComponent } from './components/usage/dialog-billing-navigate';
 import { TableCopilotUsageComponent } from './components/usage/copilot/table-workflow-usage/table-copilot-usage.component';
-import { AppRoutingModule } from './app-routing.module';
-import { RouterModule } from '@angular/router';
 
 @NgModule({
   declarations: [
@@ -50,13 +48,7 @@ import { RouterModule } from '@angular/router';
     HighchartsChartModule,
     HttpClientModule,
     FormsModule,
-    ReactiveFormsModule,
-    AppRoutingModule,
-    RouterModule.forRoot([
-      { path: 'actions', component: ActionsComponent },
-      { path: 'copilot', component: CopilotComponent },
-      { path: 'shared-storage', component: SharedStorageComponent },
-    ])
+    ReactiveFormsModule
   ],
   providers: [],
   bootstrap: [AppComponent]
