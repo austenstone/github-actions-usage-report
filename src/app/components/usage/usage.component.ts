@@ -29,7 +29,7 @@ export class UsageComponent implements OnInit, OnDestroy {
   workflow!: string;
   _filteredWorkflows!: Observable<string[]>;
   workflowControl = new FormControl('');
-  status: string = 'Choose File';
+  status: string = 'Usage Report';
   progress: number | null = null;
   subscriptions: Subscription[] = [];
   currency: 'minutes' | 'cost' = 'cost';
@@ -113,7 +113,7 @@ export class UsageComponent implements OnInit, OnDestroy {
     this.maxDate.setHours(0, 0, 0, 0);
     this.range.controls.start.setValue(this.minDate, { emitEvent: false });
     this.range.controls.end.setValue(this.maxDate, { emitEvent: false });
-    this.status = 'Choose File';
+    this.status = 'Usage Report';
     this.progress = null;
     this.usage = usage;
     this.cdr.detectChanges();
