@@ -79,6 +79,16 @@
         <app-shared-storage [data]="this.usageLines.sharedStorage" [currency]="currency"></app-shared-storage>
       </ng-template>
     </mat-tab>
+    <mat-tab *ngIf="this.usageLines.codespaces.length > 0">
+      <ng-template mat-tab-label>
+        <mat-icon class="tab-icon">computer</mat-icon>
+        Codespaces
+      </ng-template>
+      <ng-template matTabContent>
+        <div style="margin-top: 25px;"></div>
+        <app-codespaces [data]="this.usageLines.codespaces" [currency]="currency"></app-codespaces>
+      </ng-template>
+    </mat-tab>
     <mat-tab *ngIf="this.usageLines.copilot.length > 0">
       <ng-template mat-tab-label>
         <mat-icon class="tab-icon" svgIcon="copilot"></mat-icon>

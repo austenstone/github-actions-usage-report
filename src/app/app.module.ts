@@ -22,6 +22,8 @@ import { LineUsageTimeComponent } from './components/usage/shared-storage/charts
 import { CopilotComponent } from './components/usage/copilot/copilot.component';
 import { DialogBillingNavigateComponent } from './components/usage/dialog-billing-navigate';
 import { TableCopilotUsageComponent } from './components/usage/copilot/table-workflow-usage/table-copilot-usage.component';
+import { CodespacesComponent } from './components/usage/codespaces/codespaces.component';
+import { TableCodespacesUsageComponent } from './components/usage/codespaces/table-codespaces-usage/table-codespaces-usage.component';
 
 @NgModule({
   declarations: [
@@ -39,7 +41,9 @@ import { TableCopilotUsageComponent } from './components/usage/copilot/table-wor
     LineUsageTimeComponent,
     DialogBillingNavigateComponent,
     CopilotComponent,
-    TableCopilotUsageComponent
+    TableCopilotUsageComponent,
+    CodespacesComponent,
+    TableCodespacesUsageComponent
   ],
   imports: [
     BrowserModule,

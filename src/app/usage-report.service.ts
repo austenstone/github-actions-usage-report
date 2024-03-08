@@ -244,9 +244,9 @@ export class UsageReportService {
   }
 
   getUsageFilteredByProduct(product: Product | Product[]): Observable<CustomUsageReportLine[]> {
-    const _product = Array.isArray(product) ? product : [product];
+    const _products = Array.isArray(product) ? product : [product];
     return this.getUsageReportFiltered().pipe(
-      map(lines => lines.filter(line => _product.includes(line.product as Product))),
+      map(lines => lines.filter(line => _products.some(p => line.product.includes(p)))),
     );
   }
 
