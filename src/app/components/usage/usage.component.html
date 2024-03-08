@@ -13,11 +13,6 @@
 <mat-progress-bar *ngIf="progress && progress < 99" mode="determinate" [value]="progress"></mat-progress-bar>
 <mat-progress-bar *ngIf="progress && progress >= 99" mode="indeterminate"></mat-progress-bar>
 
-<button mat-button *ngIf="usage" (click)="exportHtml()">
-  <mat-icon>download</mat-icon>
-  Export
-</button>
-
 <div id="usage-report" *ngIf="usage">
   <form class="mat-app-background">
     <mat-form-field appearance="fill">
@@ -57,6 +52,10 @@
         <mat-button-toggle value="cost">Cost</mat-button-toggle>
       </mat-button-toggle-group>
     </div>
+    <button mat-button *ngIf="usage" (click)="exportHtml()" style="margin-left: auto;">
+      <mat-icon>download</mat-icon>
+      Export
+    </button>
   </form>
   <mat-tab-group (selectedTabChange)="tabChanged($event)">
     <mat-tab *ngIf="this.usageLines.actions.length > 0">

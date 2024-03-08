@@ -139,7 +139,7 @@ export class TableCodespacesUsageComponent implements OnChanges, AfterViewInit {
     } else if (this.tableType === 'repo') {
       columns = [
         {
-          columnDef: 'repositorySlug',
+          columnDef: 'repo',
           header: 'Repository',
           cell: (workflowItem: CodespacesUsageItem) => `${workflowItem.repositorySlug}`,
           sticky: true
