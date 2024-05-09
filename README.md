@@ -1,4 +1,4 @@
-# GitHub Usage Report
+# [GitHub Usage Report Viewer](https://austenstone.github.io/github-actions-usage-report/)
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 15.2.6.
 
