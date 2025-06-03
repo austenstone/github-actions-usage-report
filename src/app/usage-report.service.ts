@@ -1,7 +1,7 @@
 import { TitleCasePipe } from '@angular/common';
 import { Injectable } from '@angular/core';
 import { readGithubUsageReport, UsageReport, UsageReportLine } from 'github-usage-report';
-import { BehaviorSubject, Observable, map } from 'rxjs';
+import { BehaviorSubject, Observable, combineLatest, distinctUntilChanged, map, shareReplay, tap } from 'rxjs';
 
 interface Filter {
   startDate: Date;
@@ -12,12 +12,17 @@ interface Filter {
 
 type Product = 'git_lfs' | 'packages' | 'copilot' | 'actions' | 'codespaces';
 
-export interface CustomUsageReportLine extends UsageReportLine {
-  value: number;
-}
+export type GroupBy = keyof UsageReportLine;
 
-export interface CustomUsageReport extends UsageReport {
-  lines: CustomUsageReportLine[];
+export type UsageReportItem = UsageReportLine & {
+  line: UsageReportLine;
+  workflow: UsageReportLine & {
+    avgTime: number;
+    avgCost: number;
+    totalRuns: number;
+    totalCost: number;
+  };
+  value: number; // This can be minutes or cost based on the valueType
 }
 
 @Injectable({
@@ -25,15 +30,16 @@ export interface CustomUsageReport extends UsageReport {
 })
 export class UsageReportService {
   usageReportData!: string;
-  usageReport!: CustomUsageReport;
-  usageReportFiltered: BehaviorSubject<CustomUsageReportLine[]> = new BehaviorSubject<CustomUsageReportLine[]>([]);
-  usageReportFilteredProduct: { [key: string]: Observable<CustomUsageReportLine[]> } = {};
+  usageReport!: UsageReport;
+  usageReportFiltered: BehaviorSubject<UsageReportLine[]> = new BehaviorSubject<UsageReportLine[]>([]);
+  usageItemsFiltered: BehaviorSubject<UsageReportItem[]> = new BehaviorSubject<UsageReportItem[]>([]);
   filters: Filter = {
     startDate: new Date(),
     endDate: new Date(),
     workflow: '',
     sku: '',
   } as Filter;
+  groupBy: GroupBy = 'organization';
   days = 0;
   owners: string[] = [];
   repositories: string[] = [];
@@ -130,20 +136,14 @@ export class UsageReportService {
   }
 
   setValueType(value: 'minutes' | 'cost') {
-    this.usageReport.lines.forEach(line => {
-      if (value === 'minutes') {
-        line.value = (line.quantity) || 0;
-      } else {
-        line.value = (line.quantity * line.pricePerUnit) || 0;
-      }
-    });
     this.usageReportFiltered.next(this.usageReport.lines);
+    this.usageItemsFiltered.next(this.calculateCopilotUsageItems(this.usageReport.lines));
     this.valueType.next(value);
   }
 
-  async setUsageReportData(usageReportData: string, cb?: (usageReport: CustomUsageReport, percent: number) => void): Promise<CustomUsageReport> {
+  async setUsageReportData(usageReportData: string, cb?: (usageReport: UsageReport, percent: number) => void): Promise<UsageReport> {
     this.usageReportData = usageReportData;
-    this.usageReport = await readGithubUsageReport(this.usageReportData) as CustomUsageReport;
+    this.usageReport = await readGithubUsageReport(this.usageReportData) as UsageReport;
     cb?.(this.usageReport, 100);
     this.filters.startDate = this.usageReport.startDate;
     this.filters.endDate = this.usageReport.endDate;
@@ -174,7 +174,6 @@ export class UsageReportService {
       }
     });
     this.setValueType(this.valueType.value);
-    console.log('Usage Report Loaded:', this.usageReport);
     return this.usageReport;
   }
 
@@ -184,6 +183,7 @@ export class UsageReportService {
     workflow?: string,
     sku?: string,
   }): void {
+    console.log()
     Object.assign(this.filters, filter);
     let filtered = this.usageReport.lines;
     if (this.filters.sku) {
@@ -198,17 +198,40 @@ export class UsageReportService {
       });
     }
     this.usageReportFiltered.next(filtered);
+    this.usageItemsFiltered.next(this.calculateCopilotUsageItems(filtered));
   }
 
-  getUsageReportFiltered(): Observable<CustomUsageReportLine[]> {
+  setGroupBy(groupBy: GroupBy): void {
+    this.groupBy = groupBy;
+    this.usageReportFiltered.next(this.usageReport.lines);
+    this.usageItemsFiltered.next(this.calculateCopilotUsageItems(this.usageReport.lines));
+  }
+
+  private getUsageReportFiltered(): Observable<UsageReportLine[]> {
     return this.usageReportFiltered.asObservable();
   }
 
-  getUsageFilteredByProduct(product: Product | Product[]): Observable<CustomUsageReportLine[]> {
+  getUsageFilteredByProduct(product: Product | Product[]): Observable<UsageReportLine[]> {
     const _products = Array.isArray(product) ? product : [product];
     return this.getUsageReportFiltered().pipe(
       map(lines => lines.filter(line => _products.some(p => line.product.includes(p)))),
     );
+  }
+
+  private getUsageItemsFiltered(): Observable<UsageReportItem[]> {
+    return this.usageItemsFiltered.asObservable();
+  }
+
+  getUsageItemsFilteredByProduct(product: Product | Product[]): Observable<UsageReportItem[]> {
+    const _products = Array.isArray(product) ? product : [product];
+    const groupBy = this.groupBy; // Default grouping
+    return this.usageItemsFiltered.pipe(
+      map(lines => lines.filter(line => _products.some(p => line.product.includes(p)))),
+    ).pipe(
+      tap(() => {
+        console.log('Getting Usage Items Filtered by Product:', product, 'Group By:', groupBy);
+      })
+    )
   }
 
   getWorkflowsFiltered(): Observable<string[]> {
@@ -247,6 +270,55 @@ export class UsageReportService {
     }
     return formatted;
   }
+
+  calculateCopilotUsageItems(usage: UsageReportLine[]): UsageReportItem[] {
+    const groupBy = this.groupBy;
+    return usage.reduce((acc, line) => {
+        const item = acc.find(a => {
+          if (groupBy === 'workflowName') {
+            return a.workflowName === line.workflowName;
+          } else if (groupBy === 'repositoryName') {
+            return a.repositoryName === line.repositoryName;
+          } else if (groupBy === 'sku') {
+            return a.sku === this.formatSku(line.sku);
+          } else if (groupBy === 'username') {
+            return a.username === line.username;
+          } else if (groupBy === 'costCenterName') {
+            return a.costCenterName === line.costCenterName;
+          } else if (groupBy === 'organization') {
+            return a.organization === line.organization;
+          } else if (groupBy === 'date') {
+            return a.date?.toDateString() === line.date.toDateString();
+          }
+          return false;
+        });
+        if (item) {
+          item.value += this.valueType.value === 'minutes' ? line.quantity : line.quantity * line.pricePerUnit;
+          item.line = line;
+          item.workflow = {
+            ...line,
+            avgTime: 0, // Placeholder, can be calculated later
+            avgCost: 0, // Placeholder, can be calculated later
+            totalRuns: (item.workflow.totalRuns || 1) + 1,
+            totalCost: (item.workflow.totalCost || 0) + (this.valueType.value === 'minutes' ? line.quantity : line.quantity * line.pricePerUnit),
+          };
+        } else {
+          acc.push({
+            ...line,
+            value: this.valueType.value === 'minutes' ? line.quantity : line.quantity * line.pricePerUnit,
+            line: line,
+            workflow: {
+              ...line,
+              avgTime: 0, // Placeholder, can be calculated later
+              avgCost: 0, // Placeholder, can be calculated later
+              totalRuns: 1, // First run
+              totalCost: this.valueType.value === 'minutes' ? line.quantity : line.quantity * line.pricePerUnit,
+            }
+          });
+        }
+        return acc;
+      }, [] as UsageReportItem[]);
+    }
 }
 
 const titlecasePipe = new TitleCasePipe();

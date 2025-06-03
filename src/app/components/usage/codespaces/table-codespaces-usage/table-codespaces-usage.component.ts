@@ -2,12 +2,13 @@ import { AfterViewInit, Component, Input, OnChanges, ViewChild } from '@angular/
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
-import { CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.service';
+import { UsageReportItem, UsageReportService } from 'src/app/usage-report.service';
 
 interface UsageColumn {
   columnDef: string;
   header: string;
   cell: (element: any) => any;
+  link?: (element: any) => string;
   footer?: () => any;
   sticky?: boolean;
 }
@@ -34,7 +35,7 @@ interface CodespacesUsageItem {
 export class TableCodespacesUsageComponent implements OnChanges, AfterViewInit {
   columns = [] as UsageColumn[];
   displayedColumns = this.columns.map(c => c.columnDef);
-  @Input() data!: CustomUsageReportLine[];
+  @Input() data!: UsageReportItem[];
   @Input() currency!: string;
   dataSource: MatTableDataSource<CodespacesUsageItem> = new MatTableDataSource<any>(); // Initialize the dataSource property
   tableType: 'sku' | 'repo' | 'user' = 'sku';
@@ -51,7 +52,7 @@ export class TableCodespacesUsageComponent implements OnChanges, AfterViewInit {
     let usage: CodespacesUsageItem[] = [];
     let usageItems: CodespacesUsageItem[] = (usage as CodespacesUsageItem[]);
     usageItems = this.data.reduce((acc, line) => {
-      const item = acc.find(a => {
+      const item = acc.find((a: any) => {
         if (this.tableType === 'sku') {
           return a.sku === line.sku;
         } else if (this.tableType === 'repo') {

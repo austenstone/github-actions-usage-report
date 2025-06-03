@@ -2,7 +2,8 @@ import { OnInit, ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { UsageReport } from 'github-usage-report/src/types';
 import { Observable, Subscription, debounceTime, map, startWith } from 'rxjs';
-import { CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.service';
+import { UsageReportItem, UsageReportService } from 'src/app/usage-report.service';
+import { UsageReportLine } from 'github-usage-report';
 import { DialogBillingNavigateComponent } from './dialog-billing-navigate';
 import { MatDialog } from '@angular/material/dialog';
 
@@ -15,15 +16,22 @@ import { MatDialog } from '@angular/material/dialog';
 export class UsageComponent implements OnInit, OnDestroy {
   usage!: UsageReport;
   usageLines = {} as {
-    sharedStorage: CustomUsageReportLine[],
-    codespaces: CustomUsageReportLine[],
-    copilot: CustomUsageReportLine[],
-    actions: CustomUsageReportLine[],
+    sharedStorage: UsageReportLine[],
+    codespaces: UsageReportLine[],
+    copilot: UsageReportLine[],
+    actions: UsageReportLine[],
+  };
+  usageItems = {} as {
+    sharedStorage: UsageReportItem[],
+    codespaces: UsageReportItem[],
+    copilot: UsageReportItem[],
+    actions: UsageReportItem[],
   };
   range = new FormGroup({
     start: new FormControl(),
     end: new FormControl()
   });
+  groupByControl = new FormControl('groupBy');
   minDate!: Date;
   maxDate!: Date;
   workflows: string[] = [];
@@ -53,6 +61,9 @@ export class UsageComponent implements OnInit, OnDestroy {
             endDate: value.end,
           });
         }
+      }),
+      this.groupByControl.valueChanges.subscribe(value => {
+        this.usageReportService.setGroupBy(value as keyof UsageReportLine);
       })
     );
 
@@ -68,6 +79,12 @@ export class UsageComponent implements OnInit, OnDestroy {
       startWith(''),
       map(value => this._filterWorkflows(value || '')),
     );
+
+    this.subscriptions.push(
+      this.usageReportService.getUsageItemsFilteredByProduct('actions').subscribe((items) => {
+        this.usageItems.actions = items;
+      }),
+    )
 
     this.subscriptions.push(
       this.usageReportService.getUsageFilteredByProduct('actions').subscribe((usageLines) => {

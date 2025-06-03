@@ -1,7 +1,7 @@
 import { Component, Input, OnChanges, ViewChild } from '@angular/core';
 import * as Highcharts from 'highcharts';
 import { ThemingService } from 'src/app/theme.service';
-import { CustomUsageReportLine } from 'src/app/usage-report.service';
+import { UsageReportItem } from 'src/app/usage-report.service';
 
 @Component({
     selector: 'app-line-usage-time',
@@ -10,7 +10,7 @@ import { CustomUsageReportLine } from 'src/app/usage-report.service';
     standalone: false
 })
 export class LineUsageTimeComponent implements OnChanges {
-  @Input() data!: CustomUsageReportLine[];
+  @Input() data!: UsageReportItem[];
   @Input() currency!: string;
   Highcharts: typeof Highcharts = Highcharts;
   @ViewChild('chart') chartRef!: any;
@@ -80,8 +80,8 @@ export class LineUsageTimeComponent implements OnChanges {
       (this.options.series as any) = this.data.reduce(
         (acc, line) => {
           gbs += line.value;
-          if (acc.find(a => a.name === line.repositoryName)) {
-            const existing = acc.find(a => a.name === line.repositoryName);
+          if (acc.find((a: any) => a.name === line.repositoryName)) {
+            const existing = acc.find((a: any) => a.name === line.repositoryName);
             if (existing && line.value !== 0) {
               existing.data.push([line.date.getTime(), line.value]);
             }

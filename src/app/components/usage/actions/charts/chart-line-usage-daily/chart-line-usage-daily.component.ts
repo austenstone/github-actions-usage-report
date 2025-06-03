@@ -1,7 +1,7 @@
 import { Component, Input, OnChanges, ViewChild } from '@angular/core';
 import * as Highcharts from 'highcharts';
 import { ThemingService } from 'src/app/theme.service';
-import { CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.service';
+import { UsageReportItem, UsageReportService } from 'src/app/usage-report.service';
 
 @Component({
     selector: 'app-chart-line-usage-daily',
@@ -10,7 +10,7 @@ import { CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.
     standalone: false
 })
 export class ChartLineUsageDailyComponent implements OnChanges {
-  @Input() data!: CustomUsageReportLine[];
+  @Input() data!: UsageReportItem[];
   @Input() currency!: string;
   @ViewChild('chart') chartRef!: any;
   Highcharts: typeof Highcharts = Highcharts;
@@ -124,16 +124,16 @@ export class ChartLineUsageDailyComponent implements OnChanges {
     ).sort((a: any, b: any) => {
       return b.total - a.total;
     }).slice(0, 50);
-    (this.options.series as { name: string; data: [number, number][] }[]) = seriesDays.map((series) => {
+    (this.options.series as { name: string; data: [number, number][] }[]) = seriesDays.map((series: { name: string; data: { [key: string]: [number, number][] }, total: number }) => {
       let data: [number, number][] = [];
       if (this.timeType === 'total') {
         data = series.data['total'];
       } else if (this.timeType.startsWith('rolling')) {
         const perDay = Object.keys(series.data).reduce((acc, timeKey) => {
-          acc.push({
-            total: series.data[timeKey].reduce((acc, curr) => acc + curr[1], 0),
+            acc.push({
+            total: series.data[timeKey].reduce((acc: number, curr: [number, number]) => acc + curr[1], 0),
             date: new Date(timeKey)
-          });
+            });
           return acc;
         }, [] as {
           total: number;
@@ -151,7 +151,7 @@ export class ChartLineUsageDailyComponent implements OnChanges {
         data = Object.keys(series.data).reduce((acc, timeKey) => {
           acc.push([
             new Date(series.data[timeKey][0][0]).getTime(),
-            series.data[timeKey].reduce((acc, curr) => acc + curr[1], 0)
+            series.data[timeKey].reduce((acc: number, curr: [number, number]) => acc + curr[1], 0)
           ]);
           return acc;
         }, [] as [number, number][]);

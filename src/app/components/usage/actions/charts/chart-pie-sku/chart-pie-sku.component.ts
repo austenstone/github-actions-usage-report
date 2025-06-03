@@ -1,7 +1,7 @@
 import { Component, Input, OnChanges } from '@angular/core';
 import * as Highcharts from 'highcharts';
 import { ThemingService } from 'src/app/theme.service';
-import { CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.service';
+import { UsageReportItem, UsageReportService } from 'src/app/usage-report.service';
 
 @Component({
     selector: 'app-chart-pie-sku',
@@ -10,7 +10,7 @@ import { CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.
     standalone: false
 })
 export class ChartPieSkuComponent implements OnChanges {
-  @Input() data!: CustomUsageReportLine[];
+  @Input() data!: UsageReportItem[];
   @Input() currency!: string;
   Highcharts: typeof Highcharts = Highcharts;
   options: Highcharts.Options = {
@@ -52,14 +52,14 @@ export class ChartPieSkuComponent implements OnChanges {
       name: 'Usage',
       data: this.data.reduce((acc, line) => {
         const formattedSku = this.usageReportService.formatSku(line.sku);
-        const index = acc.findIndex((item) => item[0] === formattedSku);
+        const index = acc.findIndex((item: [string, number]) => item[0] === formattedSku);
         if (index === -1) {
           acc.push([formattedSku, line.value]);
         } else {
           acc[index][1] += line.value;
         }
         return acc;
-      }, [] as [string, number][]).sort((a, b) => b[1] - a[1])
+      }, [] as [string, number][]).sort((a: [string, number], b: [string, number]) => b[1] - a[1])
     }];
     this.options.title = {
       text: `${this.currency === 'minutes' ? 'Usage' : 'Cost'} by runner type`

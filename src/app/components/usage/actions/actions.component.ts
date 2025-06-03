@@ -1,5 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.service';
+import { GroupBy, UsageReportItem, UsageReportService } from 'src/app/usage-report.service';
+
 
 @Component({
     selector: 'app-actions',
@@ -8,8 +9,9 @@ import { CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.
     standalone: false
 })
 export class ActionsComponent implements OnInit {
-  @Input() data!: CustomUsageReportLine[];
+  @Input() data!: UsageReportItem[];
   @Input() currency!: string;
+  @Input() groupBy!: GroupBy;
   totalMinutes: number = 0;
   totalCost: number = 0;
 

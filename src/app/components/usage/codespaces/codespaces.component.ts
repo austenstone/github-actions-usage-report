@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { CustomUsageReportLine } from 'src/app/usage-report.service';
+import { UsageReportItem } from 'src/app/usage-report.service';
 
 @Component({
     selector: 'app-codespaces',
@@ -8,6 +8,6 @@ import { CustomUsageReportLine } from 'src/app/usage-report.service';
     standalone: false
 })
 export class CodespacesComponent {
-  @Input() data!: CustomUsageReportLine[];
+  @Input() data!: UsageReportItem[];
   @Input() currency!: string;
 }

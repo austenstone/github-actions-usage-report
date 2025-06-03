@@ -1,7 +1,7 @@
 import { Component, Input, OnChanges } from '@angular/core';
 import * as Highcharts from 'highcharts';
 import { ThemingService } from 'src/app/theme.service';
-import { CustomUsageReportLine } from 'src/app/usage-report.service';
+import { UsageReportItem } from 'src/app/usage-report.service';
 
 @Component({
     selector: 'app-chart-bar-top-time',
@@ -10,7 +10,7 @@ import { CustomUsageReportLine } from 'src/app/usage-report.service';
     standalone: false
 })
 export class ChartBarTopTimeComponent implements OnChanges {
-  @Input() data!: CustomUsageReportLine[];
+  @Input() data!: UsageReportItem[];
   @Input() currency!: string;
   Highcharts: typeof Highcharts = Highcharts;
   options: Highcharts.Options = {
@@ -70,7 +70,7 @@ export class ChartBarTopTimeComponent implements OnChanges {
           acc.push({ name: line.repositoryName, y: line.value });
         }
         return acc;
-      }, [] as { name: string, y: number }[]).sort((a, b) => b.y - a.y).slice(0, 10)
+      }, [] as { name: string, y: number }[]).sort((a: { name: string, y: number }, b: { name: string, y: number }) => b.y - a.y).slice(0, 10)
     }];
     this.options.xAxis = {
       ...this.options.xAxis,

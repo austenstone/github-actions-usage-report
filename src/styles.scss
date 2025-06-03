@@ -29,6 +29,25 @@ html {
   );
 }
 
+body {
+  --mat-sys-background: #0d1117;
+  --mat-table-header-headline-color: #9198a1;
+  .mat-mdc-header-row {
+    background-color: #151b23;
+  }
+  .mat-mdc-table {
+    border: 1px solid rgb(61, 68, 77);
+    box-sizing: border-box;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  background: var(--mat-sys-background);
+
+  a {
+    text-decoration: none;
+  }
+}
+
 html,
 body {
   height: 100%;  

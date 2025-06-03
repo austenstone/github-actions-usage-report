@@ -1,7 +1,7 @@
 import { Component, Input, OnChanges } from '@angular/core';
 import * as Highcharts from 'highcharts';
 import { ThemingService } from 'src/app/theme.service';
-import { CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.service';
+import { UsageReportItem, UsageReportService } from 'src/app/usage-report.service';
 
 @Component({
     selector: 'app-chart-pie-user',
@@ -10,7 +10,7 @@ import { CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.
     standalone: false
 })
 export class ChartPieUserComponent implements OnChanges {
-  @Input() data!: CustomUsageReportLine[];
+  @Input() data!: UsageReportItem[];
   @Input() currency!: string;
   Highcharts: typeof Highcharts = Highcharts;
   options: Highcharts.Options = {

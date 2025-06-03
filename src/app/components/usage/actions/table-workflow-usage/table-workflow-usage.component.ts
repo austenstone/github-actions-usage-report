@@ -2,25 +2,29 @@ import { AfterViewInit, Component, Input, OnChanges, ViewChild } from '@angular/
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
-import { CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.service';
+import { GroupBy, UsageReportItem, UsageReportService } from 'src/app/usage-report.service';
 
-interface WorkflowUsageItem {
-  workflow: string;
+export interface WorkflowUsageItem {
+  workflowName: string;
+  workflowPath: string;
   avgTime: number;
   avgCost: number;
   runs: number;
-  repo: string;
+  repositoryName: string;
   total: number;
   cost: number;
   pricePerUnit: number;
   sku: string;
   username: string;
+  organization: string;
+  costCenterName: string;
+  date?: Date;
 }
 
 interface RepoUsageItem {
   avgTime: number;
   avgCost: number;
-  repo: string;
+  repositoryName: string;
   runs: number;
   total: number;
   cost: number;
@@ -41,6 +45,7 @@ interface UsageColumn {
   columnDef: string;
   header: string;
   cell: (element: any) => any;
+  link?: (element: any) => string;
   footer?: () => any;
   tooltip?: (element: any) => any;
   icon?: (element: any) => string;
@@ -57,32 +62,43 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
   columns = [] as UsageColumn[];
   monthColumns = [] as UsageColumn[];
   displayedColumns = this.columns.map(c => c.columnDef);
-  @Input() data!: CustomUsageReportLine[];
+  @Input() data!: UsageReportItem[];
   @Input() currency!: string;
+  @Input() groupBy!: GroupBy;
   dataSource: MatTableDataSource<WorkflowUsageItem | RepoUsageItem | SkuUsageItem> = new MatTableDataSource<any>(); // Initialize the dataSource property
-  tableType: 'workflow' | 'repo' | 'sku' | 'user' = 'sku';
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
   constructor(
     private usageReportService: UsageReportService,
-  ) { }
+  ) {
+    this.usageReportService.groupBy
+  }
 
   ngOnChanges() {
+    this.groupBy = this.usageReportService.groupBy;
     this.initializeColumns();
     let usage: WorkflowUsageItem[] | RepoUsageItem[] | SkuUsageItem[] = [];
     let usageItems: WorkflowUsageItem[] = (usage as WorkflowUsageItem[]);
+    console.log('Data received:', this.data);
+    if (!this.data) return;
     usageItems = this.data.reduce((acc, line) => {
       const item = acc.find(a => {
-        if (this.tableType === 'workflow') {
-          return a.workflow === line.workflowName
-        } else if (this.tableType === 'repo') {
-          return a.repo === line.repositoryName;
-        } else if (this.tableType === 'sku') {
+        if (this.groupBy === 'workflowName') {
+          return a.workflowName === line.workflowName
+        } else if (this.groupBy === 'repositoryName') {
+          return a.repositoryName === line.repositoryName;
+        } else if (this.groupBy === 'sku') {
           return a.sku === this.usageReportService.formatSku(line.sku);
-        } else if (this.tableType === 'user') {
+        } else if (this.groupBy === 'username') {
           return a.username === line.username;
+        } else if (this.groupBy === 'costCenterName') {
+          return a.costCenterName === line.costCenterName;
+        } else if (this.groupBy === 'organization') {
+          return a.organization === line.organization;
+        } else if (this.groupBy === 'date') {
+          return a.date?.toDateString() === line.date.toDateString();
         }
         return false
       });
@@ -110,16 +126,6 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
             column.tooltip = (workflowItem: WorkflowUsageItem) => {
               return (workflowItem as any)[month + 'PercentChange']?.toFixed(2) + '%';
             };
-            column.icon = (workflowItem: WorkflowUsageItem) => {
-              const percentageChanged = (workflowItem as any)[month + 'PercentChange'];
-              if (percentageChanged > 0) {
-                return 'trending_up';
-              } else if (percentageChanged < 0) {
-                return 'trending_down';
-              } else {
-                return 'trending_flat';
-              }
-            };
           }
           this.columns.push(column);
           this.monthColumns.push(column);
@@ -129,8 +135,12 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
         item.runs++;
       } else {
         acc.push({
-          workflow: line.workflowName,
-          repo: line.repositoryName,
+          workflowName: line.workflowName,
+          workflowPath: line.workflowPath,
+          username: line.username,
+          organization: line.organization,
+          costCenterName: line.costCenterName,
+          repositoryName: line.repositoryName,
           total: line.quantity,
           cost: line.quantity * line.pricePerUnit,
           runs: 1,
@@ -139,13 +149,13 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
           avgTime: line.value,
           [month]: line.value,
           sku: this.usageReportService.formatSku(line.sku),
-          username: line.username,
+          date: line.date,
         });
       }
       return acc;
     }, [] as WorkflowUsageItem[]);
 
-    usageItems.forEach((item) => {
+    this.data.forEach((item) => {
       this.monthColumns.forEach((column: UsageColumn) => {
         const month = column.columnDef;
         if (!(item as any)[month]) {
@@ -156,9 +166,6 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
         const percentageChanged = this.calculatePercentageChange(lastMonthValue, (item as any)[month]);
         (item as any)[month + 'PercentChange'] = percentageChanged;
       });
-
-      item.avgTime = item.total / item.runs;
-      item.avgCost = item.cost / item.runs;
     });
     usage = usageItems;
     this.columns = this.columns.sort((a, b) => (!a.date || !b.date) ? 0 : a.date.getTime() - b.date.getTime()); 
@@ -173,7 +180,7 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
     this.dataSource.sortData = (data: (WorkflowUsageItem | RepoUsageItem | SkuUsageItem)[], sort: MatSort) => {
       switch (sort.active) {
         case 'sku':
-          return data.sort((a, b) => {          
+          return data.sort((a, b) => {
             const orderA = this.usageReportService.skuOrder.indexOf(a.sku);
             const orderB = this.usageReportService.skuOrder.indexOf(b.sku);
             return sort.direction === 'asc' ? orderA - orderB : orderB - orderA;
@@ -195,18 +202,21 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
 
   initializeColumns() {
     let columns: UsageColumn[] = [];
-    if (this.tableType === 'workflow') {
+    console.log('Initializing columns with groupBy:', this.groupBy);
+    if (this.groupBy === 'workflowName') {
       columns = [
         {
-          columnDef: 'workflow',
+          columnDef: 'workflowName',
           header: 'Workflow',
-          cell: (workflowItem: WorkflowUsageItem) => `${workflowItem.workflow}`,
+          cell: (workflowItem: WorkflowUsageItem) => `${workflowItem.workflowName}`,
+          link: (workflowItem: WorkflowUsageItem) => `https://github.com/${workflowItem.organization}/${workflowItem.repositoryName}/actions/workflows/${workflowItem.workflowPath}`,
           sticky: true,
         },
         {
-          columnDef: 'repo',
+          columnDef: 'repositoryName',
           header: 'Repository',
-          cell: (workflowItem: WorkflowUsageItem) => `${workflowItem.repo}`,
+          cell: (workflowItem: WorkflowUsageItem) => `${workflowItem.repositoryName}`,
+          link: (workflowItem: WorkflowUsageItem) => `https://github.com/${workflowItem.organization}/${workflowItem.repositoryName}`,
         },
         {
           columnDef: 'runner',
@@ -214,16 +224,17 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
           cell: (workflowItem: WorkflowUsageItem) => `${workflowItem.sku}`,
         },
       ];
-    } else if (this.tableType === 'repo') {
+    } else if (this.groupBy === 'repositoryName') {
       columns = [
         {
-          columnDef: 'repo',
+          columnDef: 'repositoryName',
           header: 'Source repository',
-          cell: (workflowItem: WorkflowUsageItem) => `${workflowItem.repo}`,
+          cell: (workflowItem: WorkflowUsageItem) => `${workflowItem.repositoryName}`,
+          link: (workflowItem: WorkflowUsageItem) => `https://github.com/${workflowItem.organization}/${workflowItem.repositoryName}`,
           sticky: true,
         },
       ];
-    } else if (this.tableType === 'sku') {
+    } else if (this.groupBy === 'sku') {
       columns = [
         {
           columnDef: 'sku',
@@ -232,16 +243,47 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
           sticky: true,
         },
       ];
-    } else if (this.tableType === 'user') {
+    } else if (this.groupBy === 'username') {
       columns = [
         {
           columnDef: 'username',
           header: 'User',
           cell: (workflowItem: WorkflowUsageItem) => workflowItem.username,
+          link: (workflowItem: WorkflowUsageItem) => `https://github.com/${workflowItem.username}`,
           sticky: true,
         },
       ];
+    } else if (this.groupBy === 'costCenterName') {
+      columns = [
+        {
+          columnDef: 'costCenterName',
+          header: 'Cost Center',
+          cell: (workflowItem: WorkflowUsageItem) => workflowItem.costCenterName,
+          sticky: true,
+        },
+      ];
+    } else if (this.groupBy === 'organization') {
+      columns = [
+        {
+          columnDef: 'organization',
+          header: 'Organization',
+          cell: (workflowItem: WorkflowUsageItem) => workflowItem.organization,
+          link: (workflowItem: WorkflowUsageItem) => `https://github.com/${workflowItem.organization}`,
+          sticky: true,
+        },
+      ];
+    } else if (this.groupBy === 'date') {
+      columns = [
+        {
+          columnDef: 'date',
+          header: 'Date',
+          cell: (workflowItem: WorkflowUsageItem) => workflowItem.date ? workflowItem.date.toLocaleDateString() : '',
+          sticky: true,
+          date: new Date(),
+        },
+      ];
     }
+
     columns.push({
       columnDef: 'runs',
       header: 'Runs',

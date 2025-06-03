@@ -2,11 +2,14 @@
   <div class="table-control">
     <mat-form-field>
       <mat-label>Grouping</mat-label>
-      <mat-select  [(value)]="tableType" (selectionChange)="tableType = $event.value; ngOnChanges()">
+      <mat-select  [(value)]="groupBy" (selectionChange)="groupBy = $event.value; ngOnChanges()">
         <mat-option value="sku">Runner</mat-option>
         <mat-option value="repo">Repo</mat-option>
         <mat-option value="workflow">Workflow</mat-option>
         <mat-option value="user">User</mat-option>
+        <mat-option value="costCenter">Cost Center</mat-option>
+        <mat-option value="organization">Organization</mat-option>
+        <mat-option value="date">Date</mat-option>
       </mat-select>
     </mat-form-field>
 
@@ -34,7 +37,12 @@
           {{column.header}}
         </th>
         <td mat-cell *matCellDef="let row">
-          {{column.cell(row)}}
+          <ng-container *ngIf="column.link; else noLink">
+            <a [href]="column.link(row)">{{column.cell(row)}}</a>
+          </ng-container>
+          <ng-template #noLink>
+            {{column.cell(row)}}
+          </ng-template>
           <!-- <ng-container *ngIf="column.icon">
             <mat-icon [matTooltip]="column.tooltip ? column.tooltip(row) : ''" inline="true">{{ column.icon(row)
               }}</mat-icon>

@@ -2,12 +2,13 @@ import { AfterViewInit, Component, Input, OnChanges, ViewChild, ChangeDetectorRe
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
-import { CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.service';
+import { UsageReportItem, UsageReportService } from 'src/app/usage-report.service';
 
 interface UsageColumn {
   columnDef: string;
   header: string;
   cell: (element: any) => any;
+  link?: (element: any) => string;
   footer?: () => any;
   sticky?: boolean;
 }
@@ -17,23 +18,26 @@ interface CopilotUsageItem {
   total: number;
   cost: number;
   pricePerUnit: number;
-  owner: string;
+  costCenter?: string;
+  organization?: string;
+  username?: string;
   sticky?: boolean;
 }
 
 @Component({
-    selector: 'app-table-copilot-usage',
-    templateUrl: './table-copilot-usage.component.html',
-    styleUrl: './table-copilot-usage.component.scss',
-    standalone: false
+  selector: 'app-table-copilot-usage',
+  templateUrl: './table-copilot-usage.component.html',
+  styleUrl: './table-copilot-usage.component.scss',
+  standalone: false
 })
 export class TableCopilotUsageComponent implements OnChanges, AfterViewInit {
   columns = [] as UsageColumn[];
   displayedColumns: string[] = [];
-  @Input() data!: CustomUsageReportLine[];
+  @Input() data!: UsageReportItem[];
   @Input() currency!: string;
+  @Input() groupBy!: 'costCenter' | 'organization' | 'username' | 'workflow' | 'repo' | 'sku' | 'user' | 'date';
   dataSource: MatTableDataSource<CopilotUsageItem> = new MatTableDataSource<any>(); // Initialize the dataSource property
-  tableType = 'owner';
+  tableType: 'organization' | 'costCenter' | 'username' = 'organization';
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -41,7 +45,7 @@ export class TableCopilotUsageComponent implements OnChanges, AfterViewInit {
   constructor(
     private usageReportService: UsageReportService,
     private cdr: ChangeDetectorRef
-  ) { 
+  ) {
     this.initializeColumns();
   }
 
@@ -49,14 +53,18 @@ export class TableCopilotUsageComponent implements OnChanges, AfterViewInit {
     if (!this.data) {
       return; // Avoid processing if data is not available yet
     }
-    
+
     this.initializeColumns();
     let usage: CopilotUsageItem[] = [];
     let usageItems: CopilotUsageItem[] = (usage as CopilotUsageItem[]);
     usageItems = this.data.reduce((acc, line) => {
-      const item = acc.find(a => {
-        if (this.tableType === 'owner') {
-          return a.owner === line.organization;
+      const item = acc.find((a: any) => {
+        if (this.groupBy === 'username') {
+          return a.username === line.username;
+        } else if (this.groupBy === 'costCenter') {
+          return a.costCenter === line.costCenterName;
+        } else if (this.groupBy === 'organization') {
+          return a.organization === line.organization;
         }
         return false;
       });
@@ -85,7 +93,9 @@ export class TableCopilotUsageComponent implements OnChanges, AfterViewInit {
         item.runs++;
       } else {
         acc.push({
-          owner: line.organization,
+          username: line.username,
+          organization: line.organization,
+          costCenter: line.costCenterName,
           total: line.quantity,
           cost: line.quantity * line.pricePerUnit,
           runs: 1,
@@ -104,13 +114,13 @@ export class TableCopilotUsageComponent implements OnChanges, AfterViewInit {
       });
     });
     usage = usageItems;
-    
+
     // Update displayedColumns first
     this.displayedColumns = this.columns.map(c => c.columnDef);
-    
+
     // Then update the data source
     this.dataSource = new MatTableDataSource<CopilotUsageItem>(usage);
-    
+
     // Apply sort and pagination immediately, without setTimeout
     if (this.sort) {
       this.dataSource.sort = this.sort;
@@ -118,7 +128,7 @@ export class TableCopilotUsageComponent implements OnChanges, AfterViewInit {
     if (this.paginator) {
       this.dataSource.paginator = this.paginator;
     }
-    
+
     // Mark for check to ensure proper change detection
     this.cdr.markForCheck();
   }
@@ -144,44 +154,63 @@ export class TableCopilotUsageComponent implements OnChanges, AfterViewInit {
 
   initializeColumns() {
     let columns: UsageColumn[] = [];
-    if (this.tableType === 'owner') {
+    if (this.tableType === 'organization') {
       columns = [
         {
-          columnDef: 'owner',
-          header: 'Owner',
-          cell: (workflowItem: CopilotUsageItem) => `${workflowItem.owner}`,
+          columnDef: 'organization',
+          header: 'Organization',
+          cell: (workflowItem: CopilotUsageItem) => `${workflowItem.organization}`,
           sticky: true
         }
       ];
-      if (this.currency === 'minutes') {
-        columns.push({
-          columnDef: 'total',
-          header: 'Total seats',
-          cell: (workflowItem: CopilotUsageItem) => decimalPipe.transform(Math.floor(workflowItem.total)),
-          footer: () => {
-            if (!this.data) return '';
-            return decimalPipe.transform(this.data.reduce((acc, line) => acc += line.value, 0));
-          }
-        });
-      } else if (this.currency === 'cost') {
-        columns.push({
-          columnDef: 'cost',
-          header: 'Total cost',
-          cell: (workflowItem: CopilotUsageItem) => currencyPipe.transform(workflowItem.cost),
-          footer: () => {
-            if (!this.data) return '';
-            return currencyPipe.transform(this.data.reduce((acc, line) => acc += line.value, 0));
-          }
-        });
-      }
+    } else if (this.tableType === 'costCenter') {
+      columns = [
+        {
+          columnDef: 'costCenter',
+          header: 'Cost Center',
+          cell: (workflowItem: CopilotUsageItem) => `${workflowItem.costCenter}`,
+          sticky: true
+        }
+      ];
+    } else if (this.tableType === 'username') {
+      columns = [
+        {
+          columnDef: 'username',
+          header: 'Username',
+          cell: (workflowItem: CopilotUsageItem) => `${workflowItem.username}`,
+          link: (workflowItem: CopilotUsageItem) => `https://github.com/${workflowItem.username}`,
+          sticky: true
+        }
+      ];
     }
-    
+    if (this.currency === 'minutes') {
+      columns.push({
+        columnDef: 'total',
+        header: 'Total seats',
+        cell: (workflowItem: CopilotUsageItem) => decimalPipe.transform(Math.floor(workflowItem.total)),
+        footer: () => {
+          if (!this.data) return '';
+          return decimalPipe.transform(this.data.reduce((acc, line) => acc += line.value, 0));
+        }
+      });
+    } else if (this.currency === 'cost') {
+      columns.push({
+        columnDef: 'cost',
+        header: 'Total cost',
+        cell: (workflowItem: CopilotUsageItem) => currencyPipe.transform(workflowItem.cost),
+        footer: () => {
+          if (!this.data) return '';
+          return currencyPipe.transform(this.data.reduce((acc, line) => acc += line.value, 0));
+        }
+      });
+    }
+
     // Important: Clear columns before setting new ones
     this.columns = [];
-    
+
     // Set new columns
     this.columns = columns;
-    
+
     // Update displayedColumns immediately after updating columns
     this.displayedColumns = this.columns.map(c => c.columnDef);
   }
@@ -191,8 +220,8 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { CurrencyPipe, DecimalPipe } from '@angular/common';
 
 @Pipe({
-    name: 'duration',
-    standalone: false
+  name: 'duration',
+  standalone: false
 })
 export class DurationPipe implements PipeTransform {
   transform(minutes: number): string {

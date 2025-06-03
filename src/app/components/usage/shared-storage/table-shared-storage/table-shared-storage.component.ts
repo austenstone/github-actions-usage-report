@@ -2,8 +2,8 @@ import { Component, Input, Pipe, PipeTransform, ViewChild, OnChanges, AfterViewI
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
-import { CustomUsageReportLine } from 'src/app/usage-report.service';
 import { CurrencyPipe } from '@angular/common';
+import { UsageReportItem } from 'src/app/usage-report.service';
 
 type SharedStorageUsageItem = {
   repo: string;
@@ -27,11 +27,12 @@ export class TableSharedStorageComponent implements OnChanges, AfterViewInit {
     columnDef: string;
     header: string;
     cell: (element: SharedStorageUsageItem) => any;
+    link?: (element: SharedStorageUsageItem) => string;
     footer?: () => any;
     sticky?: boolean;
   }[] = [];
   displayedColumns: string[] = [];
-  @Input() data!: CustomUsageReportLine[];
+  @Input() data!: UsageReportItem[];
   @Input() currency!: string;
   dataSource: MatTableDataSource<SharedStorageUsageItem> = new MatTableDataSource<any>();
 
@@ -50,7 +51,7 @@ export class TableSharedStorageComponent implements OnChanges, AfterViewInit {
     this.initializeColumns();
     
     const workflowUsage = this.data.reduce((acc, line) => {
-      const workflowEntry = acc.find(a => a.repo === line.repositoryName);
+      const workflowEntry = acc.find((a: any) => a.repo === line.repositoryName);
       const date = line.date;
       const month: string = date.toLocaleString('default', { month: 'short' });
       const cost = line.quantity * line.pricePerUnit;
@@ -135,6 +136,7 @@ export class TableSharedStorageComponent implements OnChanges, AfterViewInit {
       columnDef: string,
       header: string,
       cell: (sharedStorageItem: SharedStorageUsageItem) => any,
+      link?: (sharedStorageItem: SharedStorageUsageItem) => string,
       footer?: () => any,
       sticky?: boolean
     }[] = [
@@ -142,6 +144,7 @@ export class TableSharedStorageComponent implements OnChanges, AfterViewInit {
           columnDef: 'repo',
           header: 'Repository',
           cell: (sharedStorageItem: any) => sharedStorageItem.repo,
+          link: (sharedStorageItem: any) => `https://github.com/${sharedStorageItem.organization}/${sharedStorageItem.repo}`,
           footer: () => 'Total',
           sticky: true
         },

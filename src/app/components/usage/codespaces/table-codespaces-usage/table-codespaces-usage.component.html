@@ -22,7 +22,12 @@
           {{column.header}}
         </th>
         <td mat-cell *matCellDef="let row">
-          {{column.cell(row)}}
+          <ng-container *ngIf="column.link; else noLink">
+            <a [href]="column.link(row)">{{column.cell(row)}}</a>
+          </ng-container>
+          <ng-template #noLink>
+            {{column.cell(row)}}
+          </ng-template>
         </td>
         <td mat-footer-cell *matFooterCellDef> <b>{{ column.footer ? column.footer() : '' }}</b> </td>
       </ng-container>
