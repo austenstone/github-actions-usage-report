@@ -71,16 +71,16 @@ $github-purple-palette: (
   )
 );
 
-$typography: mat.define-typography-config(
+$typography: mat.m2-define-typography-config(
   $font-family: '"Noto Sans", sans-serif'
 );
 @include mat.typography-hierarchy($typography);
 @include mat.all-component-typographies($typography);
 
-$primary: mat.define-palette($github-palette);
-$accent: mat.define-palette($github-purple-palette);
+$primary: mat.m2-define-palette($github-palette);
+$accent: mat.m2-define-palette($github-purple-palette);
 
-$dark-theme: mat.define-dark-theme((
+$dark-theme: mat.m2-define-dark-theme((
  color: (
   primary: $primary,
   accent: $accent,
@@ -99,7 +99,7 @@ $colorBackground: map.set($colorBackground, "background", $backgroundColor);
 $color: map.set($color, "background", $colorBackground);
 $dark-theme: map.set($dark-theme, "color", $color);
 
-$light-theme: mat.define-light-theme((
+$light-theme: mat.m2-define-light-theme((
  color: (
   primary: $primary,
   accent: $accent,
