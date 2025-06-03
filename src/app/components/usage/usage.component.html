@@ -7,7 +7,7 @@
   </h2> -->
 </div>
 <div class="flex-center-horizontally full-width">
-  <app-file-upload [text]="status" (fileText)="onFileText($event)"></app-file-upload>
+  <app-file-upload [text]="status" (fileText)="onFileText($event.fileText, $event.type)"></app-file-upload>
 </div>
 
 <mat-progress-bar *ngIf="progress && progress < 99" mode="determinate" [value]="progress"></mat-progress-bar>

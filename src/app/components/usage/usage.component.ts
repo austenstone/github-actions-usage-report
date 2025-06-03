@@ -5,15 +5,17 @@ import { Observable, Subscription, debounceTime, map, startWith } from 'rxjs';
 import { CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.service';
 import { DialogBillingNavigateComponent } from './dialog-billing-navigate';
 import { MatDialog } from '@angular/material/dialog';
+import { ModelUsageReport } from 'github-usage-report';
 
 @Component({
-    selector: 'app-usage',
-    templateUrl: './usage.component.html',
-    styleUrls: ['./usage.component.scss'],
-    standalone: false
+  selector: 'app-usage',
+  templateUrl: './usage.component.html',
+  styleUrls: ['./usage.component.scss'],
+  standalone: false
 })
 export class UsageComponent implements OnInit, OnDestroy {
   usage!: UsageReport;
+  usageCopilotPremiumRequests!: ModelUsageReport;
   usageLines = {} as {
     sharedStorage: CustomUsageReportLine[],
     codespaces: CustomUsageReportLine[],
@@ -92,31 +94,38 @@ export class UsageComponent implements OnInit, OnDestroy {
     this.subscriptions.forEach(subscription => subscription.unsubscribe());
   }
 
-  async onFileText(fileText: string) {
+  async onFileText(fileText: string, type: 'metered' | 'copilot_premium_requests') {
     this.status = 'Parsing File...';
-    const usage = await this.usageReportService.setUsageReportData(fileText, async (_: any, progress: any): Promise<any> => {
-      return await new Promise((resolve) => {
-        if (progress === this.progress) return resolve('');
-        setTimeout(() => {
-          this.progress = progress;
-          this.status = `Parsing File... ${progress}%`
-          resolve('');
-        }, 0)
-      });
-    }).then(async (usage) => {
-      this.status = 'Loading... Be patient, this may take a while.';
-      return new Promise<UsageReport>(resolve => setTimeout(() => resolve(usage), 100));
-    });
-    this.minDate = new Date(usage.lines[0]?.date);
-    this.maxDate = new Date(usage.lines[usage.lines.length - 1]?.date);
+
+    const progressFunction = async (_: any, progress: any): Promise<any> => {
+        return await new Promise((resolve) => {
+          if (progress === this.progress) return resolve('');
+            this.progress = progress;
+            this.status = `Parsing File... ${progress}%`
+            resolve(''); 
+        });
+      };
+    const usage = await (type === 'metered' ? this.usageReportService.setUsageReportData(fileText, progressFunction) : type === 'copilot_premium_requests' ? this.usageReportService.setUsageReportCopilotPremiumRequests(fileText, progressFunction) : null);
+    if (!usage) {
+      this.status = 'Error parsing file. Please check the file format.';
+      return;
+    }
+    const firstLine = usage.lines[0];
+    const lastLine = usage.lines[usage.lines.length - 1];
+    this.minDate = new Date(firstLine && 'date' in firstLine ? firstLine.date : new Date());
+    this.maxDate = new Date(lastLine && 'date' in lastLine ? lastLine.date : new Date());
     // make the date 00:00:00
     this.minDate.setHours(0, 0, 0, 0);
     this.maxDate.setHours(0, 0, 0, 0);
     this.range.controls.start.setValue(this.minDate, { emitEvent: false });
     this.range.controls.end.setValue(this.maxDate, { emitEvent: false });
+    if (type === 'copilot_premium_requests') {
+      this.usageCopilotPremiumRequests = usage as ModelUsageReport;
+    } else {
+      this.usage = usage as UsageReport;
+    }
     this.status = 'Usage Report';
     this.progress = null;
-    this.usage = usage;
     this.cdr.detectChanges();
   }
 

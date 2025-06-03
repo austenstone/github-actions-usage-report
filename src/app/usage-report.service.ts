@@ -1,6 +1,6 @@
 import { TitleCasePipe } from '@angular/common';
 import { Injectable } from '@angular/core';
-import { readGithubUsageReport, UsageReport, UsageReportLine } from 'github-usage-report';
+import { ModelUsageReport, readGithubUsageReport, readModelUsageReport, UsageReport, UsageReportLine } from 'github-usage-report';
 import { BehaviorSubject, Observable, map } from 'rxjs';
 
 interface Filter {
@@ -25,7 +25,9 @@ export interface CustomUsageReport extends UsageReport {
 })
 export class UsageReportService {
   usageReportData!: string;
+  usageReportPremiumRequestsData!: string;
   usageReport!: CustomUsageReport;
+  usageReportCopilotPremiumRequests!: ModelUsageReport;
   usageReportFiltered: BehaviorSubject<CustomUsageReportLine[]> = new BehaviorSubject<CustomUsageReportLine[]>([]);
   usageReportFilteredProduct: { [key: string]: Observable<CustomUsageReportLine[]> } = {};
   filters: Filter = {
@@ -139,6 +141,14 @@ export class UsageReportService {
     });
     this.usageReportFiltered.next(this.usageReport.lines);
     this.valueType.next(value);
+  }
+
+  async setUsageReportCopilotPremiumRequests(usageReportData: string, cb?: (usageReport: CustomUsageReport, percent: number) => void): Promise<ModelUsageReport> {
+    this.usageReportPremiumRequestsData = usageReportData;
+    await readModelUsageReport(this.usageReportPremiumRequestsData).then((report) => {
+      this.usageReportCopilotPremiumRequests = report;
+    });
+    return this.usageReportCopilotPremiumRequests;
   }
 
   async setUsageReportData(usageReportData: string, cb?: (usageReport: CustomUsageReport, percent: number) => void): Promise<CustomUsageReport> {

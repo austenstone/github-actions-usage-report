@@ -1,5 +1,13 @@
 <input type="file" #fileInput name="fileUpload" (change)="onFileSelected($event)" style="display: none;" accept=".csv">
-<button mat-fab extended color="primary" (click)="fileInput.click()">
+<button style="margin: 40px 20px;" mat-fab extended color="primary" [matMenuTriggerFor]="menu">
   <mat-icon>upload_file</mat-icon>
   {{ text }}
 </button>
+<mat-menu #menu="matMenu">
+  <button (click)="this.type = 'metered'; fileInput.click()" mat-menu-item>
+    Metered billing usage report
+  </button>
+  <button disabled (click)="this.type = 'copilot_premium_requests'; fileInput.click()" mat-menu-item>
+    Copilot premium requests usage report
+  </button>
+</mat-menu>

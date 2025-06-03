@@ -36,16 +36,16 @@ const yAxisConfig: Highcharts.YAxisOptions = {
   ...xAxisConfig
 };
 export const colors = (style: string = 'emphasis') => [
-  `var()`,
-  `var()`,
-  `var()`,
-  `var()`,
-  `var()`,
-  `var()`,
-  `var()`,
-  `var()`,
-  `var()`,
-  `var()`,
+  `var(--data-blue-color-${style}, var(--data-blue-color))`,
+  `var(--data-green-color-${style}, var(--data-green-color))`,
+  `var(--data-orange-color-${style}, var(--data-orange-color))`,
+  `var(--data-pink-color-${style}, var(--data-pink-color))`,
+  `var(--data-yellow-color-${style}, var(--data-yellow-color))`,
+  `var(--data-red-color-${style}, var(--data-red-color))`,
+  `var(--data-purple-color-${style}, var(--data-purple-color))`,
+  `var(--data-auburn-color-${style}, var(--data-auburn-color))`,
+  `var(--data-teal-color-${style}, var(--data-teal-color))`,
+  `var(--data-gray-color-${style}, var(--data-gray-color))`,
 ]
 const theme: Highcharts.Options = {
   colors: [
