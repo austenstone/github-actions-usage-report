@@ -45,7 +45,7 @@ export class ChartPieSkuComponent implements OnChanges {
   }
 
   ngOnChanges() {
-    this.data = this.data.filter((line) => line.unitType === 'minute');
+    this.data = this.data.filter((line) => line.unitType === 'minutes');
     this.options.series = [{
       type: 'pie', // Add the type property
       name: 'Usage',

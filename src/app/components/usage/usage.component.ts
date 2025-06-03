@@ -1,6 +1,6 @@
 import { OnInit, ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
-import { UsageReport } from 'github-usage-report/types';
+import { UsageReport } from 'github-usage-report/src/types';
 import { Observable, Subscription, debounceTime, map, startWith } from 'rxjs';
 import { CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.service';
 import { DialogBillingNavigateComponent } from './dialog-billing-navigate';
@@ -69,16 +69,16 @@ export class UsageComponent implements OnInit, OnDestroy {
     );
 
     this.subscriptions.push(
-      this.usageReportService.getUsageFilteredByProduct('Actions').subscribe((usageLines) => {
+      this.usageReportService.getUsageFilteredByProduct('actions').subscribe((usageLines) => {
         this.usageLines.actions = usageLines;
       }),
-      this.usageReportService.getUsageFilteredByProduct('Shared Storage').subscribe((usageLines) => {
+      this.usageReportService.getUsageFilteredByProduct('git_lfs').subscribe((usageLines) => {
         this.usageLines.sharedStorage = usageLines;
       }),
-      this.usageReportService.getUsageFilteredByProduct('Copilot').subscribe((usageLines) => {
+      this.usageReportService.getUsageFilteredByProduct('copilot').subscribe((usageLines) => {
         this.usageLines.copilot = usageLines;
       }),
-      this.usageReportService.getUsageFilteredByProduct('Codespaces').subscribe((usageLines) => {
+      this.usageReportService.getUsageFilteredByProduct('codespaces').subscribe((usageLines) => {
         this.usageLines.codespaces = usageLines;
       }),
       this.usageReportService.getWorkflowsFiltered().subscribe((workflows) => {

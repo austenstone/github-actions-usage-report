@@ -1,55 +1,7 @@
 import { TitleCasePipe } from '@angular/common';
 import { Injectable } from '@angular/core';
-import { UsageReport, UsageReportLine } from 'github-usage-report/types';
+import { readGithubUsageReport, UsageReport, UsageReportLine } from 'github-usage-report';
 import { BehaviorSubject, Observable, map } from 'rxjs';
-
-const readGithubUsageReport = async (data: string, cb?: (usageReport: UsageReport, percent: number) => void): Promise<UsageReport> => {
-  let percent = 0;
-  let total = 0;
-  let index = 0;
-  const usageReport: UsageReport = {
-    days: 0,
-    startDate: new Date(),
-    endDate: new Date(),
-    lines: [],
-  };
-
-  const lines = data.split('\n');
-  total = lines.length;
-  for (const line of lines) {
-    if (index == 0) {
-      index++;
-      continue;
-    }
-    const csv = line.split(',');
-    const data: UsageReportLine = {
-      date: new Date(Date.parse(csv[0])),
-      product: csv[1],
-      sku: csv[2],
-      quantity: Number(csv[3]),
-      unitType: csv[4],
-      pricePerUnit: Number(csv[5]),
-      multiplier: Number(csv[6]),
-      owner: csv[7],
-      repositorySlug: csv[8],
-      username: csv[9],
-      actionsWorkflow: csv[10] || 'deleted',
-      notes: csv[11],
-    };
-    if (data.product != null) {
-      if (cb) {
-        await cb(usageReport, percent);
-      }
-      usageReport.lines.push(data);
-    }
-    index++;
-    percent = Math.round((index / (total - 1)) * 100);
-  }
-  usageReport.startDate = usageReport.lines[0].date;
-  usageReport.endDate = usageReport.lines[usageReport.lines.length - 1].date;
-  usageReport.days = (usageReport.endDate.getTime() - usageReport.startDate.getTime()) / (1000 * 60 * 60 * 24);
-  return Promise.resolve(usageReport)
-};
 
 interface Filter {
   startDate: Date;
@@ -58,7 +10,7 @@ interface Filter {
   sku: string;
 }
 
-type Product = 'Shared Storage' | 'Packages' | 'Copilot' | 'Actions' | 'Codespaces';
+type Product = 'git_lfs' | 'packages' | 'copilot' | 'actions' | 'codespaces';
 
 export interface CustomUsageReportLine extends UsageReportLine {
   value: number;
@@ -184,7 +136,8 @@ export class UsageReportService {
 
   async setUsageReportData(usageReportData: string, cb?: (usageReport: CustomUsageReport, percent: number) => void): Promise<CustomUsageReport> {
     this.usageReportData = usageReportData;
-    this.usageReport = await readGithubUsageReport(this.usageReportData, cb as any) as CustomUsageReport;
+    this.usageReport = await readGithubUsageReport(this.usageReportData) as CustomUsageReport;
+    cb?.(this.usageReport, 100);
     this.filters.startDate = this.usageReport.startDate;
     this.filters.endDate = this.usageReport.endDate;
     this.owners = [];
@@ -194,14 +147,14 @@ export class UsageReportService {
     this.products = [];
     this.usernames = [];
     this.usageReport.lines.forEach(line => {
-      if (!this.owners.includes(line.owner)) {
-        this.owners.push(line.owner);
+      if (!this.owners.includes(line.organization)) {
+        this.owners.push(line.organization);
       }
-      if (!this.repositories.includes(line.repositorySlug)) {
-        this.repositories.push(line.repositorySlug);
+      if (!this.repositories.includes(line.repositoryName)) {
+        this.repositories.push(line.repositoryName);
       }
-      if (!this.workflows.includes(line.actionsWorkflow)) {
-        this.workflows.push(line.actionsWorkflow);
+      if (!this.workflows.includes(line.workflowName)) {
+        this.workflows.push(line.workflowName);
       }
       if (!this.skus.includes(line.sku)) {
         this.skus.push(line.sku);
@@ -214,6 +167,7 @@ export class UsageReportService {
       }
     });
     this.setValueType(this.valueType.value);
+    console.log('Usage Report Loaded:', this.usageReport);
     return this.usageReport;
   }
 
@@ -229,7 +183,7 @@ export class UsageReportService {
       filtered = filtered.filter(line => line.sku === this.filters.sku);
     }
     if (this.filters.workflow) {
-      filtered = filtered.filter(line => line.actionsWorkflow === this.filters.workflow);
+      filtered = filtered.filter(line => line.workflowName === this.filters.workflow);
     }
     if (this.filters.startDate && this.filters.endDate) {
       filtered = filtered.filter(line => {
@@ -251,19 +205,19 @@ export class UsageReportService {
   }
 
   getWorkflowsFiltered(): Observable<string[]> {
-    return this.getUsageFilteredByProduct('Actions').pipe(
-      map(lines => lines.map(line => line.actionsWorkflow).filter((workflow, index, self) => self.indexOf(workflow) === index)),
+    return this.getUsageFilteredByProduct('actions').pipe(
+      map(lines => lines.map(line => line.workflowName).filter((workflow, index, self) => self.indexOf(workflow) === index)),
     )
   }
 
   getActionsTotalMinutes(): Observable<number> {
-    return this.getUsageFilteredByProduct('Actions').pipe(
+    return this.getUsageFilteredByProduct('actions').pipe(
       map(lines => lines.reduce((total, line) => total + line.quantity, 0)),
     )
   }
 
   getActionsTotalCost(): Observable<number> {
-    return this.getUsageFilteredByProduct('Actions').pipe(
+    return this.getUsageFilteredByProduct('actions').pipe(
       map(lines => lines.reduce((total, line) => total + line.pricePerUnit, 0))
     )
   }

@@ -48,7 +48,7 @@ export class TableCopilotUsageComponent implements OnChanges, AfterViewInit {
     usageItems = this.data.reduce((acc, line) => {
       const item = acc.find(a => {
         if (this.tableType === 'owner') {
-          return a.owner === line.owner;
+          return a.owner === line.organization;
         }
         return false;
       });
@@ -76,7 +76,7 @@ export class TableCopilotUsageComponent implements OnChanges, AfterViewInit {
         item.runs++;
       } else {
         acc.push({
-          owner: line.owner,
+          owner: line.organization,
           total: line.quantity,
           cost: line.quantity * line.pricePerUnit,
           runs: 1,

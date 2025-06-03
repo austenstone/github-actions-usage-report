@@ -54,7 +54,7 @@ export class TableCodespacesUsageComponent implements OnChanges, AfterViewInit {
         if (this.tableType === 'sku') {
           return a.sku === line.sku;
         } else if (this.tableType === 'repo') {
-          return a.repositorySlug === line.repositorySlug;
+          return a.repositorySlug === line.repositoryName;
         } else if (this.tableType === 'user') {
           return a.username === line.username;
         }
@@ -84,7 +84,7 @@ export class TableCodespacesUsageComponent implements OnChanges, AfterViewInit {
         item.runs++;
       } else {
         acc.push({
-          owner: line.owner,
+          owner: line.organization,
           total: line.quantity,
           cost: line.quantity * line.pricePerUnit,
           runs: 1,
@@ -92,7 +92,7 @@ export class TableCodespacesUsageComponent implements OnChanges, AfterViewInit {
           [month]: line.value,
           sku: line.sku,
           unitType: line.unitType,
-          repositorySlug: line.repositorySlug,
+          repositorySlug: line.repositoryName,
           username: line.username
         });
       }

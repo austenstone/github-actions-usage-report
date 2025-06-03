@@ -40,7 +40,7 @@ export class TableSharedStorageComponent implements OnChanges, AfterViewInit {
   ngOnChanges() {
     this.initializeColumns();
     const workflowUsage = this.data.reduce((acc, line) => {
-      const workflowEntry = acc.find(a => a.repo === line.repositorySlug);
+      const workflowEntry = acc.find(a => a.repo === line.repositoryName);
       const date = line.date;
       const month: string = date.toLocaleString('default', { month: 'short' });
       const cost = line.quantity * line.pricePerUnit;
@@ -67,7 +67,7 @@ export class TableSharedStorageComponent implements OnChanges, AfterViewInit {
         workflowEntry.costPerDay = cost;
       } else {
         acc.push({
-          repo: line.repositorySlug,
+          repo: line.repositoryName,
           total: line.quantity,
           count: 1,
           totalCost: cost,

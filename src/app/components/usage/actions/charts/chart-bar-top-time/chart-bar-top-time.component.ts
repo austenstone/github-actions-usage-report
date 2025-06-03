@@ -57,16 +57,16 @@ export class ChartBarTopTimeComponent implements OnChanges {
   }
 
   ngOnChanges() {
-    this.data = this.data.filter((line) => line.unitType === 'minute');
+    this.data = this.data.filter((line) => line.unitType === 'minutes');
     this.options.series = [{
       type: 'bar',
       name: 'Usage',
       data: this.data.reduce((acc, line) => {
-        const existingItem = acc.find((a) => a.name === line.repositorySlug);
+        const existingItem = acc.find((a) => a.name === line.repositoryName);
         if (existingItem) {
           existingItem.y += line.value;
         } else {
-          acc.push({ name: line.repositorySlug, y: line.value });
+          acc.push({ name: line.repositoryName, y: line.value });
         }
         return acc;
       }, [] as { name: string, y: number }[]).sort((a, b) => b.y - a.y).slice(0, 10)

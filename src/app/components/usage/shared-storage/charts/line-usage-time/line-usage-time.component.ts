@@ -79,14 +79,14 @@ export class LineUsageTimeComponent implements OnChanges {
       (this.options.series as any) = this.data.reduce(
         (acc, line) => {
           gbs += line.value;
-          if (acc.find(a => a.name === line.repositorySlug)) {
-            const existing = acc.find(a => a.name === line.repositorySlug);
+          if (acc.find(a => a.name === line.repositoryName)) {
+            const existing = acc.find(a => a.name === line.repositoryName);
             if (existing && line.value !== 0) {
               existing.data.push([line.date.getTime(), line.value]);
             }
           } else {
             acc.push({
-              name: line.repositorySlug,
+              name: line.repositoryName,
               data: [
                 [line.date.getTime(), line.value]
               ]
