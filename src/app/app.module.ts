@@ -12,7 +12,7 @@ import { TableWorkflowUsageComponent } from './components/usage/actions/table-wo
 import { HighchartsChartModule } from 'highcharts-angular';
 import { ChartBarTopTimeComponent } from './components/usage/actions/charts/chart-bar-top-time/chart-bar-top-time.component';
 import { ChartLineUsageDailyComponent } from './components/usage/actions/charts/chart-line-usage-daily/chart-line-usage-daily.component';
-import { HttpClientModule } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { ChartPieSkuComponent } from './components/usage/actions/charts/chart-pie-sku/chart-pie-sku.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ActionsComponent } from './components/usage/actions/actions.component';
@@ -25,36 +25,29 @@ import { TableCopilotUsageComponent } from './components/usage/copilot/table-wor
 import { CodespacesComponent } from './components/usage/codespaces/codespaces.component';
 import { TableCodespacesUsageComponent } from './components/usage/codespaces/table-codespaces-usage/table-codespaces-usage.component';
 
-@NgModule({
-  declarations: [
-    AppComponent,
-    UsageComponent,
-    ChartPieUserComponent,
-    ChartLineUsageDailyComponent,
-    ChartBarTopTimeComponent,
-    TableWorkflowUsageComponent,
-    ChartPieSkuComponent,
-    ActionsComponent,
-    SharedStorageComponent,
-    FileUploadComponent,
-    TableSharedStorageComponent,
-    LineUsageTimeComponent,
-    DialogBillingNavigateComponent,
-    CopilotComponent,
-    TableCopilotUsageComponent,
-    CodespacesComponent,
-    TableCodespacesUsageComponent
-  ],
-  imports: [
-    BrowserModule,
-    MaterialModule,
-    BrowserAnimationsModule,
-    HighchartsChartModule,
-    HttpClientModule,
-    FormsModule,
-    ReactiveFormsModule
-  ],
-  providers: [],
-  bootstrap: [AppComponent]
-})
+@NgModule({ declarations: [
+        AppComponent,
+        UsageComponent,
+        ChartPieUserComponent,
+        ChartLineUsageDailyComponent,
+        ChartBarTopTimeComponent,
+        TableWorkflowUsageComponent,
+        ChartPieSkuComponent,
+        ActionsComponent,
+        SharedStorageComponent,
+        FileUploadComponent,
+        TableSharedStorageComponent,
+        LineUsageTimeComponent,
+        DialogBillingNavigateComponent,
+        CopilotComponent,
+        TableCopilotUsageComponent,
+        CodespacesComponent,
+        TableCodespacesUsageComponent
+    ],
+    bootstrap: [AppComponent], imports: [BrowserModule,
+        MaterialModule,
+        BrowserAnimationsModule,
+        HighchartsChartModule,
+        FormsModule,
+        ReactiveFormsModule], providers: [provideHttpClient(withInterceptorsFromDi())] })
 export class AppModule { }
