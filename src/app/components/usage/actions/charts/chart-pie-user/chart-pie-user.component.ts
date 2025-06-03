@@ -43,10 +43,8 @@ export class ChartPieUserComponent implements OnChanges {
 
   ngOnChanges() {
     this.data = this.data.filter((line) => line.unitType === 'minutes');
-    this.options.series = [{
-      type: 'pie',
-      name: 'Usage',
-      data: this.data.reduce((acc, line) => {
+
+    const aggregatedData = this.data.reduce((acc, line) => {
         const index = acc.findIndex((item) => item[0] === line.username);
         if (index === -1) {
           acc.push([line.username, line.value]);
@@ -54,7 +52,24 @@ export class ChartPieUserComponent implements OnChanges {
           acc[index][1] += line.value;
         }
         return acc;
-      }, [] as [string, number][]).sort((a, b) => b[1] - a[1])
+      }, [] as [string, number][])
+      .sort((a, b) => b[1] - a[1]);
+
+    // Take top 20 and group the rest as "Other"
+    const topNo = 29;
+    const topX = aggregatedData.slice(0, topNo);
+    const remaining = aggregatedData.slice(topNo);
+
+    const data = [...topX];
+    if (remaining.length > 0) {
+      const otherTotal = remaining.reduce((sum, item) => sum + item[1], 0);
+      data.push(['Other', otherTotal]);
+    }
+    
+    this.options.series = [{
+      type: 'pie',
+      name: 'Usage',
+      data
     }];
     this.options.title = {
       text: `${this.currency === 'minutes' ? 'Usage' : 'Cost'} by username`

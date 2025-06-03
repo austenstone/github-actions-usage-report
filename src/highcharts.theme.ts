@@ -1,7 +1,7 @@
 import * as Highcharts from 'highcharts';
 
 const tooltipHeaderFormat =
-  '<table><tr><th style="color: var(--sys-on-surface-variant); font-weight: 600; padding-bottom: 2px">{point.key}</th></tr>';
+  '<table><tr><th style="color: var(--mat-sys-on-surface-variant); font-weight: 600; padding-bottom: 2px">{point.key}</th></tr>';
 
 const tooltipPointFormat =
   '<tr><td style="padding: 0.25rem;"><span style="color:{point.color}">●</span> {series.name}: <strong>{point.y}</strong></td></tr>';
@@ -11,48 +11,59 @@ const tooltipFooterFormat = '</table>';
 const xAxisConfig: Highcharts.XAxisOptions = {
   tickWidth: 0,
   lineWidth: 0,
-  gridLineColor: 'var(--sys-outline)',
+  gridLineColor: 'var(--mat-sys-outline)',
   gridLineDashStyle: 'Dot',
-  // lineColor: 'var(--sys-outline)',
+  // lineColor: 'var(--mat-sys-outline)',
   labels: {
     style: {
-      color: 'var(--sys-on-surface)',
-      font: 'var(--sys-body-large)'
+      color: 'var(--mat-sys-on-surface)',
+      font: 'var(--mat-sys-body-large)'
     }
   },
   title: {
     text: undefined,
     style: {
-      color: 'var(--sys-on-surface-variant)',
-      font: 'var(--sys-body-large)'
+      color: 'var(--mat-sys-on-surface-variant)',
+      font: 'var(--mat-sys-body-large)'
     }
   },
-  lineColor: 'var(--sys-outline-variant)',
-  tickColor: 'var(--sys-outline-variant)'
+  lineColor: 'var(--mat-sys-outline-variant)',
+  tickColor: 'var(--mat-sys-outline-variant)'
 };
 
 const yAxisConfig: Highcharts.YAxisOptions = {
   // Same config as xAxis but with YAxis type
   ...xAxisConfig
 };
-
+export const colors = (style: string = 'emphasis') => [
+  `var()`,
+  `var()`,
+  `var()`,
+  `var()`,
+  `var()`,
+  `var()`,
+  `var()`,
+  `var()`,
+  `var()`,
+  `var()`,
+]
 const theme: Highcharts.Options = {
   colors: [
-    'var(--sys-primary)',
-    'var(--sys-secondary)',
-    'var(--sys-tertiary)',
-    'var(--sys-primary-container)',
-    'var(--sys-secondary-container)',
-    'var(--sys-tertiary-container)',
-    'var(--sys-inverse-primary)',
-    'var(--sys-error)',
-    'var(--sys-on-error)'
+    'var(--mat-sys-primary)',
+    'var(--mat-sys-secondary)',
+    'var(--mat-sys-tertiary)',
+    'var(--mat-sys-primary-container)',
+    'var(--mat-sys-secondary-container)',
+    'var(--mat-sys-tertiary-container)',
+    'var(--mat-sys-inverse-primary)',
+    'var(--mat-sys-error)',
+    'var(--mat-sys-on-error)'
   ],
   chart: {
-    backgroundColor: undefined, // 'var(--sys-surface)',
+    backgroundColor: undefined, // 'var(--mat-sys-surface)',
     borderRadius: 16,
     style: {
-      fontFamily: 'var(--sys-body-large-font)'
+      fontFamily: 'var(--mat-sys-body-large-font)'
     },
     animation: {
       duration: 300
@@ -109,46 +120,46 @@ const theme: Highcharts.Options = {
         align: 'right'
       },
       buttonTheme: {
-        // fill: 'var(--sys-surface-container)',
+        // fill: 'var(--mat-sys-surface-container)',
         style: {
-          color: 'var(--sys-primary)',
-          fontFamily: 'var(--sys-body-large-font)',
-          fontWeight: 'var(--sys-body-large-weight)'
+          color: 'var(--mat-sys-primary)',
+          fontFamily: 'var(--mat-sys-body-large-font)',
+          fontWeight: 'var(--mat-sys-body-large-weight)'
         },
-        // stroke: 'var(--sys-outline)',
+        // stroke: 'var(--mat-sys-outline)',
         // 'stroke-width': 1,
         states: {
           hover: {
-            fill: 'var(--sys-surface-container)',
+            fill: 'var(--mat-sys-surface-container)',
             style: {
-              color: 'var(--sys-on-surface)'
+              color: 'var(--mat-sys-on-surface)'
             }
           },
           select: {
-            // fill: 'var(--sys-surface-container-highest)',
+            // fill: 'var(--mat-sys-surface-container-highest)',
             style: {
-              color: 'var(--sys-on-surface)'
+              color: 'var(--mat-sys-on-surface)'
             }
           }
         }
       },
       separator: {
         style: {
-          color: 'var(--sys-on-surface-variant)',
+          color: 'var(--mat-sys-on-surface-variant)',
         }
       }
     },
     activeAxisLabelStyle: {
-      color: 'var(--sys-primary)',
+      color: 'var(--mat-sys-primary)',
       textDecoration: 'none',
-      fontWeight: 'var(--sys-title-medium-weight)',
+      fontWeight: 'var(--mat-sys-title-medium-weight)',
       textOutline: 'none',
       cursor: 'pointer'
     },
     activeDataLabelStyle: {
-      color: 'var(--sys-primary)',
+      color: 'var(--mat-sys-primary)',
       textDecoration: 'none',
-      fontWeight: 'var(--sys-title-medium-weight)',
+      fontWeight: 'var(--mat-sys-title-medium-weight)',
       textOutline: 'none',
       cursor: 'pointer'
     },
@@ -159,13 +170,13 @@ const theme: Highcharts.Options = {
     //     x: 0
     //   },
     //   theme: {
-    //     fill: 'var(--sys-surface-container)',
+    //     fill: 'var(--mat-sys-surface-container)',
     //     'stroke-width': 1,
-    //     stroke: 'var(--sys-outline)',
+    //     stroke: 'var(--mat-sys-outline)',
     //     r: 4,
     //     states: {
     //       hover: {
-    //         fill: 'var(--sys-surface-container-high)'
+    //         fill: 'var(--mat-sys-surface-container-high)'
     //       }
     //     }
     //   }
@@ -178,16 +189,16 @@ const theme: Highcharts.Options = {
     text: undefined,
     align: 'left',
     style: {
-      color: 'var(--sys-on-surface)',
-      font: 'var(--sys-title-large)',
+      color: 'var(--mat-sys-on-surface)',
+      font: 'var(--mat-sys-title-large)',
       padding: '0 0 0.6em 0',
     }
   },
   subtitle: {
     align: 'left',
     style: {
-      color: 'var(--sys-on-surface-variant)',
-      font: 'var(--sys-title-medium)',
+      color: 'var(--mat-sys-on-surface-variant)',
+      font: 'var(--mat-sys-title-medium)',
     }
   },
   xAxis: xAxisConfig,
@@ -196,28 +207,28 @@ const theme: Highcharts.Options = {
     align: 'left',
     verticalAlign: 'top',
     itemStyle: {
-      color: 'var(--sys-on-surface)',
-      font: 'var(--sys-body-large)'
+      color: 'var(--mat-sys-on-surface)',
+      font: 'var(--mat-sys-body-large)'
     },
     itemHoverStyle: {
-      color: 'var(--sys-primary)'
+      color: 'var(--mat-sys-primary)'
     },
-    backgroundColor: 'var(--sys-surface-container)'
+    backgroundColor: 'var(--mat-sys-surface-container)'
   },
   tooltip: {
-    backgroundColor: 'var(--sys-surface-container)',
-    borderColor: 'var(--sys-outline)',
+    backgroundColor: 'var(--mat-sys-surface-container)',
+    borderColor: 'var(--mat-sys-outline)',
     borderRadius: 4,
     padding: 12,
     shadow: {
-      color: 'var(--sys-shadow)',
+      color: 'var(--mat-sys-shadow)',
       offsetX: 2,
       offsetY: 2,
       opacity: 0.2
     },
     style: {
-      color: 'var(--sys-on-surface)',
-      font: 'var(--sys-body-medium)',
+      color: 'var(--mat-sys-on-surface)',
+      font: 'var(--mat-sys-body-medium)',
       fontSize: '14px'
     },
     useHTML: true,
@@ -235,16 +246,16 @@ const theme: Highcharts.Options = {
       borderRadius: 4,
       dataLabels: {
         style: {
-          font: 'var(--sys-label-large)',
-          color: 'var(--sys-on-surface)',
+          font: 'var(--mat-sys-label-large)',
+          color: 'var(--mat-sys-on-surface)',
           fontSize: '14px',
           opacity: 0.87,
-          fontWeight: 'var(--sys-label-large-weight)',
+          fontWeight: 'var(--mat-sys-label-large-weight)',
           textOutline: 'none',
         },
         distance: 20,
         connectorWidth: 1,
-        connectorColor: 'var(--sys-outline-variant)'
+        connectorColor: 'var(--mat-sys-outline-variant)'
       }
     }
   },
@@ -257,45 +268,45 @@ const theme: Highcharts.Options = {
   navigation: {
     buttonOptions: {
       theme: {
-        fill: 'var(--sys-surface-container)',
-        stroke: 'var(--sys-outline)',
+        fill: 'var(--mat-sys-surface-container)',
+        stroke: 'var(--mat-sys-outline)',
         states: {
           hover: {
-            fill: 'var(--sys-surface-container-high)',
+            fill: 'var(--mat-sys-surface-container-high)',
             style: {
-              color: 'var(--sys-on-surface)'
+              color: 'var(--mat-sys-on-surface)'
             }
           },
           select: {
-            fill: 'var(--sys-surface-container-highest)',
+            fill: 'var(--mat-sys-surface-container-highest)',
             style: {
-              color: 'var(--sys-on-surface)'
+              color: 'var(--mat-sys-on-surface)'
             }
           }
         },
       }
     } as Highcharts.NavigationButtonOptions,
     menuStyle: {
-      background: 'var(--sys-surface-container)',
-      color: 'var(--sys-on-surface)',
-      border: '0px solid var(--sys-outline)',
+      background: 'var(--mat-sys-surface-container)',
+      color: 'var(--mat-sys-on-surface)',
+      border: '0px solid var(--mat-sys-outline)',
       borderRadius: 4,
       padding: '8px 0',
       boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
       zIndex: 1000,
     },
     menuItemHoverStyle: {
-      background: 'var(--sys-surface-container-highest)',
-      color: 'var(--sys-on-surface)',
+      background: 'var(--mat-sys-surface-container-highest)',
+      color: 'var(--mat-sys-on-surface)',
       cursor: 'pointer',
       transition: 'background 200ms cubic-bezier(0.4, 0, 0.2, 1)'
     },
     menuItemStyle: {
-      color: 'var(--sys-on-surface)',
+      color: 'var(--mat-sys-on-surface)',
       fontSize: '14px',
       padding: '8px 16px',
-      fontFamily: 'var(--sys-body-large-font)',
-      fontWeight: 'var(--sys-body-large-weight)',
+      fontFamily: 'var(--mat-sys-body-large-font)',
+      fontWeight: 'var(--mat-sys-body-large-weight)',
       transition: 'background 200ms cubic-bezier(0.4, 0, 0.2, 1)',
     }
   },
@@ -307,11 +318,11 @@ const theme: Highcharts.Options = {
     buttons: {
       contextButton: {
         symbol: 'menu',
-        symbolStroke: 'var(--sys-on-surface)',
+        symbolStroke: 'var(--mat-sys-on-surface)',
         symbolStrokeWidth: 2,
         theme: {
-          fill: 'var(--sys-surface-container)',
-          stroke: '0px var(--sys-outline)'
+          fill: 'var(--mat-sys-surface-container)',
+          stroke: '0px var(--mat-sys-outline)'
         },
       }
     },

@@ -168,12 +168,15 @@ export class ChartLineUsageDailyComponent implements OnChanges {
         text: this.currency === 'minutes' ? 'Minutes (min)' : 'Cost (USD)'
       },
       labels: {
-        format: this.currency === 'cost' ? '${value}' : '{value}',
+        format: this.currency === 'cost' ? '${value:,.2f}' : '{value}',
       }
     };
     this.options.title = {
       text: `Actions ${this.currency === 'cost' ? 'Cost' : 'Usage'} ${this.timeType.toUpperCase()}`
     };
+    this.options.tooltip = {
+      format: `<b>{series.name}</b><br/>{point.x:%Y-%m-%d}<br>${this.currency === 'cost' ? '${point.y:,.2f}' : '{point.y} mins'}`,
+    }
     this.updateFromInput = true;
   }
 

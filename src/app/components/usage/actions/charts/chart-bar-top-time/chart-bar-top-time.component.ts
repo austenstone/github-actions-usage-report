@@ -29,7 +29,7 @@ export class ChartBarTopTimeComponent implements OnChanges {
     },
     xAxis: {
         title: {
-            text: 'Repository'
+        
         }
     },
     series: [{
@@ -87,6 +87,9 @@ export class ChartBarTopTimeComponent implements OnChanges {
       labels: {
         format: this.currency === 'cost' ? '${value}' : '{value}',
       }
+    };
+    this.options.tooltip = {
+      format: `{point.name}</b><br>${this.currency === 'cost' ? '$<b>{point.y:.2f}</b>' : '<b>{point.y}</b> mins'}`,
     };
     this.updateFromInput = true;
   }
