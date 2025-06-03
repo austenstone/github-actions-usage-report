@@ -24,7 +24,7 @@
     "github-usage-report": "3.0",
     "highcharts": "^11.2.0",
     "highcharts-angular": "^4.0.0",
-    "jspdf": "^2.5.1",
+    "jspdf": "^3.0.1",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.1"
