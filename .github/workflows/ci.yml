@@ -22,7 +22,7 @@ jobs:
     - uses: actions/upload-artifact@v4
       with:
         name: dist
-        path: dist/${{ github.event.repository.name }}
+        path: dist/${{ github.event.repository.name }}/browser
 
   deploy:
     needs: build
@@ -40,13 +40,13 @@ jobs:
         with:
           name: dist
       - name: Setup Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v3
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v1
         with:
           path: '.'
       - name: 404 GitHub Pages
         run: cp index.html 404.html
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v2
