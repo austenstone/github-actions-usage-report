@@ -227,7 +227,7 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
         {
           columnDef: 'sku',
           header: 'Runner',
-          cell: (workflowItem: WorkflowUsageItem) => workflowItem.sku,
+          cell: (workflowItem: WorkflowUsageItem) => this.usageReportService.formatSku(workflowItem.sku),
           sticky: true,
         },
       ];

@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, Input, OnChanges, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, Input, OnChanges, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
@@ -39,6 +39,7 @@ export class TableCopilotUsageComponent implements OnChanges, AfterViewInit {
 
   constructor(
     private usageReportService: UsageReportService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnChanges() {
@@ -66,6 +67,7 @@ export class TableCopilotUsageComponent implements OnChanges, AfterViewInit {
             header: month,
             cell: (workflowItem: any) => this.currency === 'cost' ? currencyPipe.transform(workflowItem[month]) : decimalPipe.transform(workflowItem[month]),
             footer: () => {
+              if (!this.dataSource?.data) return '';
               const total = this.dataSource.data.reduce((acc, item) => acc + (item as any)[month], 0);
               return this.currency === 'cost' ? currencyPipe.transform(total) : decimalPipe.transform(total);
             }
@@ -95,8 +97,15 @@ export class TableCopilotUsageComponent implements OnChanges, AfterViewInit {
       });
     });
     usage = usageItems
-    this.displayedColumns = this.columns.map(c => c.columnDef);
+    
+    // Update dataSource first
     this.dataSource.data = usage;
+    
+    // Then update displayedColumns in the next tick to avoid ExpressionChangedAfterItHasBeenCheckedError
+    setTimeout(() => {
+      this.displayedColumns = this.columns.map(c => c.columnDef);
+      this.cdr.detectChanges();
+    });
   }
 
   ngAfterViewInit() {
@@ -129,20 +138,24 @@ export class TableCopilotUsageComponent implements OnChanges, AfterViewInit {
           columnDef: 'total',
           header: 'Total seats',
           cell: (workflowItem: CopilotUsageItem) => decimalPipe.transform(Math.floor(workflowItem.total)),
-          footer: () => decimalPipe.transform(this.data.reduce((acc, line) => acc += line.value, 0))
+          footer: () => {
+            if (!this.data) return '';
+            return decimalPipe.transform(this.data.reduce((acc, line) => acc += line.value, 0));
+          }
         });
       } else if (this.currency === 'cost') {
         columns.push({
           columnDef: 'cost',
           header: 'Total cost',
           cell: (workflowItem: CopilotUsageItem) => currencyPipe.transform(workflowItem.cost),
-          footer: () => currencyPipe.transform(this.data.reduce((acc, line) => acc += line.value, 0))
+          footer: () => {
+            if (!this.data) return '';
+            return currencyPipe.transform(this.data.reduce((acc, line) => acc += line.value, 0));
+          }
         });
       }
     }
-    // columns[0].footer = () => 'Total';
     this.columns = columns;
-    this.displayedColumns = this.columns.map(c => c.columnDef);
   }
 }
 

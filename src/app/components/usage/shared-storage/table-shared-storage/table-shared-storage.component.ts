@@ -1,4 +1,4 @@
-import { Component, Input, Pipe, PipeTransform, ViewChild, OnChanges, AfterViewInit } from '@angular/core';
+import { Component, Input, Pipe, PipeTransform, ViewChild, OnChanges, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
@@ -37,6 +37,8 @@ export class TableSharedStorageComponent implements OnChanges, AfterViewInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
+  constructor(private cdr: ChangeDetectorRef) {}
+
   ngOnChanges() {
     this.initializeColumns();
     const workflowUsage = this.data.reduce((acc, line) => {
@@ -56,6 +58,7 @@ export class TableSharedStorageComponent implements OnChanges, AfterViewInit {
             header: month,
             cell: (sharedStorageItem: any) => this.currency === 'cost' ? currencyPipe.transform(sharedStorageItem[month]) : fileSizePipe.transform(sharedStorageItem[month]),
             footer: () => {
+              if (!this.dataSource?.data) return '';
               const total = this.dataSource.data.reduce((acc, item) => acc + (item as any)[month], 0);
               return this.currency === 'cost' ? currencyPipe.transform(total) : fileSizePipe.transform(total);
             }
@@ -91,8 +94,14 @@ export class TableSharedStorageComponent implements OnChanges, AfterViewInit {
       });
     });
 
-    this.displayedColumns = this.columns.map(c => c.columnDef);
-    this.dataSource ? this.dataSource.data = workflowUsage : this.dataSource = new MatTableDataSource();
+    // Update dataSource first
+    this.dataSource.data = workflowUsage;
+    
+    // Then update displayedColumns in the next tick to avoid ExpressionChangedAfterItHasBeenCheckedError
+    setTimeout(() => {
+      this.displayedColumns = this.columns.map(c => c.columnDef);
+      this.cdr.detectChanges();
+    });
   }
 
   ngAfterViewInit() {
@@ -119,7 +128,10 @@ export class TableSharedStorageComponent implements OnChanges, AfterViewInit {
           columnDef: 'count',
           header: 'Count',
           cell: (sharedStorageItem: any) => sharedStorageItem.count,
-          footer: () => this.dataSource.data.reduce((acc, line) => acc + line.count, 0),
+          footer: () => {
+            if (!this.dataSource?.data) return '';
+            return this.dataSource.data.reduce((acc, line) => acc + line.count, 0);
+          },
         }
       ];
     if (this.currency == 'cost') {
@@ -128,13 +140,19 @@ export class TableSharedStorageComponent implements OnChanges, AfterViewInit {
           columnDef: 'total',
           header: 'Total Cost',
           cell: (sharedStorageItem: any) => currencyPipe.transform(sharedStorageItem.totalCost),
-          footer: () => currencyPipe.transform(this.dataSource.data.reduce((acc, line) => acc + line.totalCost, 0))
+          footer: () => {
+            if (!this.dataSource?.data) return '';
+            return currencyPipe.transform(this.dataSource.data.reduce((acc, line) => acc + line.totalCost, 0));
+          }
         },
         {
           columnDef: 'costPerDay',
           header: 'Cost Per Day',
           cell: (sharedStorageItem: SharedStorageUsageItem) => currencyPipe.transform(sharedStorageItem.costPerDay),
-          footer: () => currencyPipe.transform(this.dataSource.data.reduce((acc, line) => acc + line.costPerDay, 0)),
+          footer: () => {
+            if (!this.dataSource?.data) return '';
+            return currencyPipe.transform(this.dataSource.data.reduce((acc, line) => acc + line.costPerDay, 0));
+          },
         }
       );
     } else if (this.currency == 'minutes') {
@@ -143,18 +161,23 @@ export class TableSharedStorageComponent implements OnChanges, AfterViewInit {
           columnDef: 'avgSize',
           header: 'Average Size',
           cell: (sharedStorageItem: any) => fileSizePipe.transform(sharedStorageItem.avgSize),
-          footer: () => fileSizePipe.transform(this.dataSource.data.reduce((acc, line) => acc + line.avgSize, 0) / this.dataSource.data.length),
+          footer: () => {
+            if (!this.dataSource?.data || this.dataSource.data.length === 0) return '';
+            return fileSizePipe.transform(this.dataSource.data.reduce((acc, line) => acc + line.avgSize, 0) / this.dataSource.data.length);
+          },
         },
         {
           columnDef: 'total',
           header: 'Total',
           cell: (sharedStorageItem: any) => fileSizePipe.transform(sharedStorageItem.total),
-          footer: () => fileSizePipe.transform(this.dataSource.data.reduce((acc, line) => acc + line.total, 0)),
+          footer: () => {
+            if (!this.dataSource?.data) return '';
+            return fileSizePipe.transform(this.dataSource.data.reduce((acc, line) => acc + line.total, 0));
+          },
         }
       );
     }
     this.columns = columns;
-    this.displayedColumns = this.columns.map(c => c.columnDef);
   }
 
   applyFilter(event: Event) {
