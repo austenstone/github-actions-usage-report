@@ -10,8 +10,9 @@ interface DialogDataComponent {
 }
 
 @Component({
-  selector: 'app-dialog-billing-navigate',
-  templateUrl: 'dialog-billing-navigate.html',
+    selector: 'app-dialog-billing-navigate',
+    templateUrl: 'dialog-billing-navigate.html',
+    standalone: false
 })
 export class DialogBillingNavigateComponent {
   constructor(

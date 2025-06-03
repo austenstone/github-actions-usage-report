@@ -7,9 +7,10 @@ import { DialogBillingNavigateComponent } from './dialog-billing-navigate';
 import { MatDialog } from '@angular/material/dialog';
 
 @Component({
-  selector: 'app-usage',
-  templateUrl: './usage.component.html',
-  styleUrls: ['./usage.component.scss']
+    selector: 'app-usage',
+    templateUrl: './usage.component.html',
+    styleUrls: ['./usage.component.scss'],
+    standalone: false
 })
 export class UsageComponent implements OnInit, OnDestroy {
   usage!: UsageReport;

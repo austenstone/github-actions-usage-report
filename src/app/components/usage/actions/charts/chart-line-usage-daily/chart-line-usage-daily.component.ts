@@ -4,9 +4,10 @@ import { ThemingService } from 'src/app/theme.service';
 import { CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.service';
 
 @Component({
-  selector: 'app-chart-line-usage-daily',
-  templateUrl: './chart-line-usage-daily.component.html',
-  styleUrl: './chart-line-usage-daily.component.scss'
+    selector: 'app-chart-line-usage-daily',
+    templateUrl: './chart-line-usage-daily.component.html',
+    styleUrl: './chart-line-usage-daily.component.scss',
+    standalone: false
 })
 export class ChartLineUsageDailyComponent implements OnChanges {
   @Input() data!: CustomUsageReportLine[];

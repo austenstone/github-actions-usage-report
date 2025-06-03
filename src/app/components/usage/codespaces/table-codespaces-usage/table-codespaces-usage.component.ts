@@ -26,9 +26,10 @@ interface CodespacesUsageItem {
 }
 
 @Component({
-  selector: 'app-table-codespaces-usage',
-  templateUrl: './table-codespaces-usage.component.html',
-  styleUrl: './table-codespaces-usage.component.scss'
+    selector: 'app-table-codespaces-usage',
+    templateUrl: './table-codespaces-usage.component.html',
+    styleUrl: './table-codespaces-usage.component.scss',
+    standalone: false
 })
 export class TableCodespacesUsageComponent implements OnChanges, AfterViewInit {
   columns = [] as UsageColumn[];
@@ -179,7 +180,8 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { CurrencyPipe, DecimalPipe } from '@angular/common';
 
 @Pipe({
-  name: 'duration'
+    name: 'duration',
+    standalone: false
 })
 export class DurationPipe implements PipeTransform {
   transform(minutes: number): string {

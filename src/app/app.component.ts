@@ -20,6 +20,7 @@ const COPILOT_ICON = `<svg width="256px" height="208px" viewBox="0 0 256 208" ve
     selector: 'app-root',
     templateUrl: './app.component.html',
     styleUrls: ['./app.component.scss'],
+    standalone: false
 })
 export class AppComponent implements OnInit {
     theme!: 'light-theme' | 'dark-theme';

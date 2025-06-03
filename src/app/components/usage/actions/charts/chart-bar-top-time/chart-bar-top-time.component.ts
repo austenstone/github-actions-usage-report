@@ -4,9 +4,10 @@ import { ThemingService } from 'src/app/theme.service';
 import { CustomUsageReportLine } from 'src/app/usage-report.service';
 
 @Component({
-  selector: 'app-chart-bar-top-time',
-  templateUrl: './chart-bar-top-time.component.html',
-  styleUrl: './chart-bar-top-time.component.scss'
+    selector: 'app-chart-bar-top-time',
+    templateUrl: './chart-bar-top-time.component.html',
+    styleUrl: './chart-bar-top-time.component.scss',
+    standalone: false
 })
 export class ChartBarTopTimeComponent implements OnChanges {
   @Input() data!: CustomUsageReportLine[];

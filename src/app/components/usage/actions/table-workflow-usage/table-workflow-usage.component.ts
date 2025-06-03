@@ -48,9 +48,10 @@ interface UsageColumn {
 }
 
 @Component({
-  selector: 'app-table-workflow-usage',
-  templateUrl: './table-workflow-usage.component.html',
-  styleUrl: './table-workflow-usage.component.scss'
+    selector: 'app-table-workflow-usage',
+    templateUrl: './table-workflow-usage.component.html',
+    styleUrl: './table-workflow-usage.component.scss',
+    standalone: false
 })
 export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
   columns = [] as UsageColumn[];
@@ -290,7 +291,8 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { CurrencyPipe, DecimalPipe } from '@angular/common';
 
 @Pipe({
-  name: 'duration'
+    name: 'duration',
+    standalone: false
 })
 export class DurationPipe implements PipeTransform {
 

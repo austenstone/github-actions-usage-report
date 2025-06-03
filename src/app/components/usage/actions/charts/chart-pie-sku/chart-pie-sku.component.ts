@@ -4,9 +4,10 @@ import { ThemingService } from 'src/app/theme.service';
 import { CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.service';
 
 @Component({
-  selector: 'app-chart-pie-sku',
-  templateUrl: './chart-pie-sku.component.html',
-  styleUrl: './chart-pie-sku.component.scss'
+    selector: 'app-chart-pie-sku',
+    templateUrl: './chart-pie-sku.component.html',
+    styleUrl: './chart-pie-sku.component.scss',
+    standalone: false
 })
 export class ChartPieSkuComponent implements OnChanges {
   @Input() data!: CustomUsageReportLine[];

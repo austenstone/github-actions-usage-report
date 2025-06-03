@@ -17,9 +17,10 @@ type SharedStorageUsageItem = {
 };
 
 @Component({
-  selector: 'app-table-shared-storage',
-  templateUrl: './table-shared-storage.component.html',
-  styleUrl: './table-shared-storage.component.scss'
+    selector: 'app-table-shared-storage',
+    templateUrl: './table-shared-storage.component.html',
+    styleUrl: './table-shared-storage.component.scss',
+    standalone: false
 })
 export class TableSharedStorageComponent implements OnChanges, AfterViewInit {
   columns: {
@@ -227,7 +228,8 @@ const defaultPrecisionMap: unitPrecisionMap = {
 };
 
 @Pipe({
-  name: 'formatFileSize'
+    name: 'formatFileSize',
+    standalone: false
 })
 export class FormatFileSizePipe implements PipeTransform {
   private readonly units: unit[] = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB'];

@@ -4,9 +4,10 @@ import { ThemingService } from 'src/app/theme.service';
 import { CustomUsageReportLine } from 'src/app/usage-report.service';
 
 @Component({
-  selector: 'app-line-usage-time',
-  templateUrl: './line-usage-time.component.html',
-  styleUrl: './line-usage-time.component.scss'
+    selector: 'app-line-usage-time',
+    templateUrl: './line-usage-time.component.html',
+    styleUrl: './line-usage-time.component.scss',
+    standalone: false
 })
 export class LineUsageTimeComponent implements OnChanges {
   @Input() data!: CustomUsageReportLine[];

@@ -2,9 +2,10 @@ import { Component, Input, OnInit } from '@angular/core';
 import { CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.service';
 
 @Component({
-  selector: 'app-actions',
-  templateUrl: './actions.component.html',
-  styleUrl: './actions.component.scss'
+    selector: 'app-actions',
+    templateUrl: './actions.component.html',
+    styleUrl: './actions.component.scss',
+    standalone: false
 })
 export class ActionsComponent implements OnInit {
   @Input() data!: CustomUsageReportLine[];
