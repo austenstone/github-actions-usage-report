@@ -28,7 +28,7 @@ interface CopilotUsageItem {
 })
 export class TableCopilotUsageComponent implements OnChanges, AfterViewInit {
   columns = [] as UsageColumn[];
-  displayedColumns = this.columns.map(c => c.columnDef);
+  displayedColumns: string[] = [];
   @Input() data!: CustomUsageReportLine[];
   @Input() currency!: string;
   dataSource: MatTableDataSource<CopilotUsageItem> = new MatTableDataSource<any>(); // Initialize the dataSource property
@@ -40,9 +40,15 @@ export class TableCopilotUsageComponent implements OnChanges, AfterViewInit {
   constructor(
     private usageReportService: UsageReportService,
     private cdr: ChangeDetectorRef
-  ) { }
+  ) { 
+    this.initializeColumns();
+  }
 
   ngOnChanges() {
+    if (!this.data) {
+      return; // Avoid processing if data is not available yet
+    }
+    
     this.initializeColumns();
     let usage: CopilotUsageItem[] = [];
     let usageItems: CopilotUsageItem[] = (usage as CopilotUsageItem[]);
@@ -96,21 +102,34 @@ export class TableCopilotUsageComponent implements OnChanges, AfterViewInit {
         }
       });
     });
-    usage = usageItems
+    usage = usageItems;
     
-    // Update dataSource first
-    this.dataSource.data = usage;
+    // Update displayedColumns first
+    this.displayedColumns = this.columns.map(c => c.columnDef);
     
-    // Then update displayedColumns in the next tick to avoid ExpressionChangedAfterItHasBeenCheckedError
-    setTimeout(() => {
-      this.displayedColumns = this.columns.map(c => c.columnDef);
-      this.cdr.detectChanges();
-    });
+    // Then update the data source
+    this.dataSource = new MatTableDataSource<CopilotUsageItem>(usage);
+    
+    // Apply sort and pagination immediately, without setTimeout
+    if (this.sort) {
+      this.dataSource.sort = this.sort;
+    }
+    if (this.paginator) {
+      this.dataSource.paginator = this.paginator;
+    }
+    
+    // Mark for check to ensure proper change detection
+    this.cdr.markForCheck();
   }
 
   ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
+    // We use next tick to avoid the ExpressionChangedAfterItHasBeenCheckedError
+    Promise.resolve().then(() => {
+      if (this.dataSource) {
+        this.dataSource.paginator = this.paginator;
+        this.dataSource.sort = this.sort;
+      }
+    });
   }
 
   applyFilter(event: Event) {
@@ -155,7 +174,15 @@ export class TableCopilotUsageComponent implements OnChanges, AfterViewInit {
         });
       }
     }
+    
+    // Important: Clear columns before setting new ones
+    this.columns = [];
+    
+    // Set new columns
     this.columns = columns;
+    
+    // Update displayedColumns immediately after updating columns
+    this.displayedColumns = this.columns.map(c => c.columnDef);
   }
 }
 

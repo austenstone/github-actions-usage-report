@@ -29,7 +29,7 @@ export class TableSharedStorageComponent implements OnChanges, AfterViewInit {
     footer?: () => any;
     sticky?: boolean;
   }[] = [];
-  displayedColumns = this.columns.map(c => c.columnDef);
+  displayedColumns: string[] = [];
   @Input() data!: CustomUsageReportLine[];
   @Input() currency!: string;
   dataSource: MatTableDataSource<SharedStorageUsageItem> = new MatTableDataSource<any>();
@@ -37,10 +37,17 @@ export class TableSharedStorageComponent implements OnChanges, AfterViewInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-  constructor(private cdr: ChangeDetectorRef) {}
+  constructor(private cdr: ChangeDetectorRef) {
+    this.initializeColumns();
+  }
 
   ngOnChanges() {
+    if (!this.data) {
+      return; // Avoid processing if data is not available yet
+    }
+    
     this.initializeColumns();
+    
     const workflowUsage = this.data.reduce((acc, line) => {
       const workflowEntry = acc.find(a => a.repo === line.repositoryName);
       const date = line.date;
@@ -94,19 +101,32 @@ export class TableSharedStorageComponent implements OnChanges, AfterViewInit {
       });
     });
 
-    // Update dataSource first
-    this.dataSource.data = workflowUsage;
+    // Update displayedColumns first
+    this.displayedColumns = this.columns.map(c => c.columnDef);
     
-    // Then update displayedColumns in the next tick to avoid ExpressionChangedAfterItHasBeenCheckedError
-    setTimeout(() => {
-      this.displayedColumns = this.columns.map(c => c.columnDef);
-      this.cdr.detectChanges();
-    });
+    // Then update the data source
+    this.dataSource = new MatTableDataSource<SharedStorageUsageItem>(workflowUsage);
+    
+    // Apply sort and pagination immediately, without setTimeout
+    if (this.sort) {
+      this.dataSource.sort = this.sort;
+    }
+    if (this.paginator) {
+      this.dataSource.paginator = this.paginator;
+    }
+    
+    // Mark for check to ensure proper change detection
+    this.cdr.markForCheck();
   }
 
   ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
+    // We use next tick to avoid the ExpressionChangedAfterItHasBeenCheckedError
+    Promise.resolve().then(() => {
+      if (this.dataSource) {
+        this.dataSource.paginator = this.paginator;
+        this.dataSource.sort = this.sort;
+      }
+    });
   }
 
   initializeColumns() {
@@ -178,6 +198,8 @@ export class TableSharedStorageComponent implements OnChanges, AfterViewInit {
       );
     }
     this.columns = columns;
+    // Update displayedColumns immediately after updating columns
+    this.displayedColumns = this.columns.map(c => c.columnDef);
   }
 
   applyFilter(event: Event) {
