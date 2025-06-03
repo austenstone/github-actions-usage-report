@@ -5,6 +5,7 @@ import { ThemingService } from './theme.service';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { UsageReportService } from './usage-report.service';
+// import '../highcharts.theme';
 
 ExportingModule(Highcharts);
 
