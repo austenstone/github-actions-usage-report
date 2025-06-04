@@ -9,5 +9,5 @@ import { CustomUsageReportLine } from 'src/app/usage-report.service';
 })
 export class CodespacesComponent {
   @Input() data!: CustomUsageReportLine[];
-  @Input() currency!: string;
+  @Input() currency!: 'minutes' | 'cost';
 }

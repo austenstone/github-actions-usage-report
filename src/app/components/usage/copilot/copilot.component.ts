@@ -9,5 +9,6 @@ import { CustomUsageReportLine } from 'src/app/usage-report.service';
 })
 export class CopilotComponent {
   @Input() data!: CustomUsageReportLine[];
-  @Input() currency!: string;
+  @Input() currency!: 'minutes' | 'cost';
+  @Input() grouping!: 'workflow' | 'repo' | 'sku' | 'user';
 }

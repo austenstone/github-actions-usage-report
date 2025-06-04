@@ -80,7 +80,8 @@ export interface UsageColumn {
 
 export interface AggregatedUsageData {
   items: WorkflowUsageItem[] | RepoUsageItem[] | SkuUsageItem[] | UserUsageItem[];
-  monthColumns: UsageColumn[];
+  availableMonths: string[]; // Just the month keys, let components build columns
+  dateRange: { start: Date; end: Date };
 }
 
 export type AggregationType = 'workflow' | 'repo' | 'sku' | 'user';
@@ -95,6 +96,7 @@ export class UsageReportService {
   usageReportCopilotPremiumRequests!: ModelUsageReport;
   usageReportFiltered: BehaviorSubject<CustomUsageReportLine[]> = new BehaviorSubject<CustomUsageReportLine[]>([]);
   usageReportFilteredProduct: { [key: string]: Observable<CustomUsageReportLine[]> } = {};
+  
   filters: Filter = {
     startDate: new Date(),
     endDate: new Date(),
@@ -220,6 +222,7 @@ export class UsageReportService {
   async setUsageReportData(usageReportData: string, cb?: (usageReport: CustomUsageReport, percent: number) => void): Promise<CustomUsageReport> {
     this.usageReportData = usageReportData;
     this.usageReport = await readGithubUsageReport(this.usageReportData) as CustomUsageReport;
+    
     cb?.(this.usageReport, 100);
     this.filters.startDate = this.usageReport.startDate;
     this.filters.endDate = this.usageReport.endDate;
@@ -261,6 +264,7 @@ export class UsageReportService {
     sku?: string,
   }): void {
     Object.assign(this.filters, filter);
+    
     let filtered = this.usageReport.lines;
     if (this.filters.sku) {
       filtered = filtered.filter(line => line.sku === this.filters.sku);
@@ -330,13 +334,19 @@ export class UsageReportService {
 
   getAggregatedUsageData(aggregationType: AggregationType, product?: Product | Product[]): Observable<AggregatedUsageData> {
     const productFilter = product || 'actions';
+    
     return this.getUsageFilteredByProduct(productFilter).pipe(
-      map(data => this.aggregateUsageData(data, aggregationType))
+      map(data => {
+        // Calculate aggregated data directly without caching
+        return this.aggregateUsageData(data, aggregationType);
+      })
     );
   }
 
   private aggregateUsageData(data: CustomUsageReportLine[], aggregationType: AggregationType): AggregatedUsageData {
-    const monthColumns: UsageColumn[] = [];
+    const availableMonths: string[] = [];
+    const dateRange = { start: new Date(), end: new Date() };
+    
     const usageItems = data.reduce((acc, line) => {
       const item = acc.find(a => {
         switch (aggregationType) {
@@ -355,26 +365,20 @@ export class UsageReportService {
 
       const month: string = line.date.toLocaleString('default', { month: 'short', year: '2-digit'});
       
+      // Track available months
+      if (!availableMonths.includes(month)) {
+        availableMonths.push(month);
+      }
+      
+      // Track date range
+      if (line.date < dateRange.start) dateRange.start = line.date;
+      if (line.date > dateRange.end) dateRange.end = line.date;
+      
       if (item) {
         if ((item as any)[month]) {
           (item as any)[month] += line.value;
         } else {
           (item as any)[month] = line.value || 0;
-        }
-        
-        // Add month column if it doesn't exist
-        if (!monthColumns.find(c => c.columnDef === month)) {
-          const column: UsageColumn = {
-            columnDef: month,
-            header: month,
-            cell: (workflowItem: any) => workflowItem[month],
-            footer: () => {
-              const total = acc.reduce((sum, item) => sum + ((item as any)[month] || 0), 0);
-              return total;
-            },
-            date: new Date(line.date),
-          };
-          monthColumns.push(column);
         }
 
         item.cost += line.quantity * line.pricePerUnit;
@@ -416,22 +420,18 @@ export class UsageReportService {
       return acc;
     }, [] as any[]);
 
-    // Calculate averages and percentage changes
+    // Calculate averages and ensure all items have all month properties
     usageItems.forEach((item) => {
-      monthColumns.forEach((column: UsageColumn) => {
-        const month = column.columnDef;
+      availableMonths.forEach((month: string) => {
         if (!(item as any)[month]) {
           (item as any)[month] = 0;
         }
         
-        // Calculate percentage change from previous month
-        // Find the previous month in the actual data
-        const currentDate = new Date(column.date || new Date());
-        const previousMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1);
-        const previousMonthKey = previousMonth.toLocaleString('default', { month: 'short', year: '2-digit'});
-        
-        if (monthColumns.find(c => c.columnDef === previousMonthKey)) {
-          const lastMonthValue = (item as any)[previousMonthKey] || 0;
+        // Calculate percentage change from previous month if needed
+        const monthIndex = availableMonths.indexOf(month);
+        if (monthIndex > 0) {
+          const previousMonth = availableMonths[monthIndex - 1];
+          const lastMonthValue = (item as any)[previousMonth] || 0;
           const percentageChanged = this.calculatePercentageChange(lastMonthValue, (item as any)[month]);
           (item as any)[month + 'PercentChange'] = percentageChanged;
         }
@@ -441,28 +441,32 @@ export class UsageReportService {
       item.avgCost = item.runs > 0 ? item.cost / item.runs : 0;
     });
 
-    // Sort month columns by date
-    monthColumns.sort((a, b) => (!a.date || !b.date) ? 0 : a.date.getTime() - b.date.getTime());
+    // Sort months chronologically
+    availableMonths.sort((a, b) => {
+      const dateA = new Date(a);
+      const dateB = new Date(b);
+      return dateA.getTime() - dateB.getTime();
+    });
 
     return {
       items: usageItems,
-      monthColumns: monthColumns
+      availableMonths: availableMonths,
+      dateRange: dateRange
     };
   }
-
-  getAggregatedWorkflowUsage(product?: Product | Product[]): Observable<AggregatedUsageData> {
-    return this.getAggregatedUsageData('workflow', product);
-  }
-
-  getAggregatedRepoUsage(product?: Product | Product[]): Observable<AggregatedUsageData> {
-    return this.getAggregatedUsageData('repo', product);
-  }
-
-  getAggregatedSkuUsage(product?: Product | Product[]): Observable<AggregatedUsageData> {
-    return this.getAggregatedUsageData('sku', product);
-  }
-
-  getAggregatedUserUsage(product?: Product | Product[]): Observable<AggregatedUsageData> {
-    return this.getAggregatedUsageData('user', product);
+  
+  // Helper method for components to get month columns
+  createMonthColumns(availableMonths: string[], currency: 'minutes' | 'cost', dataSource?: any): UsageColumn[] {
+    return availableMonths.map(month => ({
+      columnDef: month,
+      header: month,
+      cell: (item: any) => item[month] || 0,
+      footer: () => {
+        if (!dataSource?.data) return '';
+        const total = dataSource.data.reduce((acc: number, item: any) => acc + (item[month] || 0), 0);
+        return total;
+      },
+      date: new Date(month)
+    }));
   }
 }

@@ -2,28 +2,10 @@ import { AfterViewInit, Component, Input, OnChanges, ViewChild } from '@angular/
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
-import { CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.service';
+import { UsageReportService, WorkflowUsageItem, RepoUsageItem, SkuUsageItem, UserUsageItem, UsageColumn, AggregatedUsageData } from 'src/app/usage-report.service';
+import { CurrencyPipe, DecimalPipe } from '@angular/common';
 
-interface UsageColumn {
-  columnDef: string;
-  header: string;
-  cell: (element: any) => any;
-  footer?: () => any;
-  sticky?: boolean;
-}
-
-interface CodespacesUsageItem {
-  runs: number;
-  total: number;
-  cost: number;
-  pricePerUnit: number;
-  owner: string;
-  username: string;
-  sku: string;
-  unitType: string;
-  repositorySlug: string;
-  sticky?: boolean;
-}
+type Product = 'git_lfs' | 'packages' | 'copilot' | 'actions' | 'codespaces';
 
 @Component({
     selector: 'app-table-codespaces-usage',
@@ -33,11 +15,12 @@ interface CodespacesUsageItem {
 })
 export class TableCodespacesUsageComponent implements OnChanges, AfterViewInit {
   columns = [] as UsageColumn[];
-  displayedColumns = this.columns.map(c => c.columnDef);
-  @Input() data!: CustomUsageReportLine[];
-  @Input() currency!: string;
-  dataSource: MatTableDataSource<CodespacesUsageItem> = new MatTableDataSource<any>(); // Initialize the dataSource property
-  tableType: 'sku' | 'repo' | 'user' = 'sku';
+  monthColumns = [] as UsageColumn[];
+  displayedColumns: string[] = [];
+  @Input() currency!: 'minutes' | 'cost';
+  @Input() tableType: 'sku' | 'repo' | 'user' = 'sku';
+  @Input() product: Product | Product[] = 'codespaces';
+  dataSource: MatTableDataSource<WorkflowUsageItem | RepoUsageItem | SkuUsageItem | UserUsageItem> = new MatTableDataSource<any>();
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -48,68 +31,54 @@ export class TableCodespacesUsageComponent implements OnChanges, AfterViewInit {
 
   ngOnChanges() {
     this.initializeColumns();
-    let usage: CodespacesUsageItem[] = [];
-    let usageItems: CodespacesUsageItem[] = (usage as CodespacesUsageItem[]);
-    usageItems = this.data.reduce((acc, line) => {
-      const item = acc.find(a => {
-        if (this.tableType === 'sku') {
-          return a.sku === line.sku;
-        } else if (this.tableType === 'repo') {
-          return a.repositorySlug === line.repositoryName;
-        } else if (this.tableType === 'user') {
-          return a.username === line.username;
-        }
-        return false;
-      });
-      const month: string = line.date.toLocaleString('default', { month: 'short' });
-      if (item) {
-        if ((item as any)[month]) {
-          (item as any)[month] += line.value;
-        } else {
-          (item as any)[month] = line.value || 0;
-        }
-        item.total += line.value;
-        if (!this.columns.find(c => c.columnDef === month)) {
-          this.columns.push({
-            columnDef: month,
-            header: month,
-            cell: (workflowItem: any) => this.currency === 'cost' ? currencyPipe.transform(workflowItem[month]) : decimalPipe.transform(workflowItem[month]),
-            footer: () => {
-              const total = this.dataSource.data.reduce((acc, item) => acc + (item as any)[month], 0);
-              return this.currency === 'cost' ? currencyPipe.transform(total) : decimalPipe.transform(total);
-            }
-          });
-        }
-        item.cost += line.quantity * line.pricePerUnit;
-        item.total += line.quantity;
-        item.runs++;
-      } else {
-        acc.push({
-          owner: line.organization,
-          total: line.quantity,
-          cost: line.quantity * line.pricePerUnit,
-          runs: 1,
-          pricePerUnit: line.pricePerUnit || 0,
-          [month]: line.value,
-          sku: line.sku,
-          unitType: line.unitType,
-          repositorySlug: line.repositoryName,
-          username: line.username
-        });
-      }
-      return acc;
-    }, [] as CodespacesUsageItem[]);
-
-    usageItems.forEach((item) => {
-      this.columns.forEach((column: any) => {
-        if (!(item as any)[column.columnDef]) {
-          (item as any)[column.columnDef] = 0;
-        }
-      });
+    
+    // Use the service to get aggregated data
+    this.usageReportService.getAggregatedUsageData(this.tableType, this.product).subscribe((aggregatedData: AggregatedUsageData) => {
+      // Create month columns using the service helper method
+      this.monthColumns = this.usageReportService.createMonthColumns(aggregatedData.availableMonths, this.currency, this.dataSource);
+      this.updateMonthColumnFormatting();
+      this.columns = [...this.columns, ...this.monthColumns];
+      this.columns = this.columns.sort((a, b) => (!a.date || !b.date) ? 0 : a.date.getTime() - b.date.getTime()); 
+      this.displayedColumns = this.columns.map(c => c.columnDef);
+      this.dataSource.data = aggregatedData.items;
     });
-    usage = usageItems
-    this.displayedColumns = this.columns.map(c => c.columnDef);
-    this.dataSource.data = usage;
+  }
+
+  private updateMonthColumnFormatting() {
+    this.monthColumns.forEach(column => {
+      // Update cell formatting based on currency
+      column.cell = (item: any) => 
+        this.currency === 'cost' 
+          ? currencyPipe.transform(item[column.columnDef]) 
+          : decimalPipe.transform(item[column.columnDef]);
+      
+      // Update footer formatting
+      const originalFooter = column.footer;
+      column.footer = () => {
+        const total = originalFooter ? originalFooter() : 0;
+        return this.currency === 'cost' 
+          ? currencyPipe.transform(total) 
+          : decimalPipe.transform(total);
+      };
+
+      // Add tooltip and icon functionality for percentage changes
+      const month = column.columnDef;
+      column.tooltip = (item: any) => {
+        const percentChange = item[month + 'PercentChange'];
+        return percentChange !== undefined ? percentChange.toFixed(2) + '%' : '';
+      };
+      
+      column.icon = (item: any) => {
+        const percentageChanged = item[month + 'PercentChange'];
+        if (percentageChanged > 0) {
+          return 'trending_up';
+        } else if (percentageChanged < 0) {
+          return 'trending_down';
+        } else {
+          return 'trending_flat';
+        }
+      };
+    });
   }
 
   ngAfterViewInit() {
@@ -133,7 +102,7 @@ export class TableCodespacesUsageComponent implements OnChanges, AfterViewInit {
         {
           columnDef: 'sku',
           header: 'Product',
-          cell: (workflowItem: CodespacesUsageItem) => `${workflowItem.sku}`,
+          cell: (item: SkuUsageItem) => `${item.sku}`,
           sticky: true
         }
       ];
@@ -142,7 +111,7 @@ export class TableCodespacesUsageComponent implements OnChanges, AfterViewInit {
         {
           columnDef: 'repo',
           header: 'Repository',
-          cell: (workflowItem: CodespacesUsageItem) => `${workflowItem.repositorySlug}`,
+          cell: (item: RepoUsageItem) => `${item.repo}`,
           sticky: true
         }
       ];
@@ -151,33 +120,42 @@ export class TableCodespacesUsageComponent implements OnChanges, AfterViewInit {
         {
           columnDef: 'username',
           header: 'User',
-          cell: (workflowItem: CodespacesUsageItem) => `${workflowItem.username}`,
+          cell: (item: UserUsageItem) => `${item.username}`,
           sticky: true
         }
       ];
     }
+    
     if (this.currency === 'minutes') {
       columns.push({
         columnDef: 'total',
-        header: 'Total seats',
-        cell: (workflowItem: CodespacesUsageItem) => decimalPipe.transform(Math.floor(workflowItem.total)),
-        footer: () => decimalPipe.transform(this.data.reduce((acc, line) => acc += line.value, 0))
+        header: 'Total hours',
+        cell: (item: any) => decimalPipe.transform(Math.floor(item.total)),
+        footer: () => {
+          if (!this.dataSource?.data) return '';
+          const total = this.dataSource.data.reduce((acc: number, item: any) => acc + (item.total || 0), 0);
+          return decimalPipe.transform(total);
+        }
       });
     } else if (this.currency === 'cost') {
       columns.push({
         columnDef: 'cost',
         header: 'Total cost',
-        cell: (workflowItem: CodespacesUsageItem) => currencyPipe.transform(workflowItem.cost),
-        footer: () => currencyPipe.transform(this.data.reduce((acc, line) => acc += line.value, 0))
+        cell: (item: any) => currencyPipe.transform(item.cost),
+        footer: () => {
+          if (!this.dataSource?.data) return '';
+          const total = this.dataSource.data.reduce((acc: number, item: any) => acc + (item.cost || 0), 0);
+          return currencyPipe.transform(total);
+        }
       });
     }
+    
     this.columns = columns;
     this.displayedColumns = this.columns.map(c => c.columnDef);
   }
 }
 
 import { Pipe, PipeTransform } from '@angular/core';
-import { CurrencyPipe, DecimalPipe } from '@angular/common';
 
 @Pipe({
     name: 'duration',
@@ -194,7 +172,6 @@ export class DurationPipe implements PipeTransform {
       return `${Math.round(seconds / 3600)} hr`;
     }
   }
-
 }
 
 const decimalPipe = new DecimalPipe('en-US');

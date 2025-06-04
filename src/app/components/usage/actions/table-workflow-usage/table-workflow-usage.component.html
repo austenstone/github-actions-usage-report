@@ -1,28 +1,9 @@
 <div class="table-responsive">
   <div class="table-control">
-    <mat-form-field>
-      <mat-label>Grouping</mat-label>
-      <mat-select  [(value)]="tableType" (selectionChange)="tableType = $event.value; ngOnChanges()">
-        <mat-option value="sku">Runner</mat-option>
-        <mat-option value="repo">Repo</mat-option>
-        <mat-option value="workflow">Workflow</mat-option>
-        <mat-option value="user">User</mat-option>
-      </mat-select>
-    </mat-form-field>
-
     <mat-form-field [class.hide]="dataSource.data.length <= 1">
       <mat-label>Filter</mat-label>
       <input matInput (keyup)="applyFilter($event)" placeholder="Ex. .github/workflows/build.yml	" #input>
     </mat-form-field>
-    <!-- <div>
-      <mat-button-toggle-group name="toggleChart" aria-label="Toggle Chart" [value]="tableType"
-        (change)="tableType = $event.value; ngOnChanges()">
-        <mat-button-toggle value="sku">Runner</mat-button-toggle>
-        <mat-button-toggle value="repo">Repo</mat-button-toggle>
-        <mat-button-toggle value="workflow">Workflow</mat-button-toggle>
-        <mat-button-toggle value="user">User</mat-button-toggle>
-      </mat-button-toggle-group>
-    </div> -->
   </div>
 
   <div class="table-container">

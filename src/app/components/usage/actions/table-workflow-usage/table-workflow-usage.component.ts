@@ -14,10 +14,11 @@ type Product = 'git_lfs' | 'packages' | 'copilot' | 'actions' | 'codespaces';
     standalone: false
 })
 export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
-  columns = [] as UsageColumn[];
+  baseColumns = [] as UsageColumn[];
   monthColumns = [] as UsageColumn[];
-  displayedColumns = this.columns.map(c => c.columnDef);
-  @Input() currency!: string;
+  columns = [] as UsageColumn[];
+  displayedColumns: string[] = [];
+  @Input() currency!: 'minutes' | 'cost';
   @Input() tableType: 'workflow' | 'repo' | 'sku' | 'user' = 'sku';
   @Input() product: Product | Product[] = 'actions';
   dataSource: MatTableDataSource<WorkflowUsageItem | RepoUsageItem | SkuUsageItem | UserUsageItem> = new MatTableDataSource<any>();
@@ -34,10 +35,20 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
     
     // Use the service to get aggregated data
     this.usageReportService.getAggregatedUsageData(this.tableType, this.product).subscribe((aggregatedData: AggregatedUsageData) => {
-      this.monthColumns = aggregatedData.monthColumns;
+      // Create month columns using the service helper method
+      this.monthColumns = this.usageReportService.createMonthColumns(aggregatedData.availableMonths, this.currency, this.dataSource);
       this.updateMonthColumnFormatting();
-      this.columns = [...this.columns, ...this.monthColumns];
-      this.columns = this.columns.sort((a, b) => (!a.date || !b.date) ? 0 : a.date.getTime() - b.date.getTime()); 
+      
+      // Combine base columns with month columns and sort them properly
+      const allColumns = [...this.baseColumns, ...this.monthColumns];
+      this.columns = allColumns.sort((a, b) => {
+        // Keep non-date columns first, then sort date columns chronologically
+        if (!a.date && !b.date) return 0;
+        if (!a.date) return -1;
+        if (!b.date) return 1;
+        return a.date.getTime() - b.date.getTime();
+      });
+      
       this.displayedColumns = this.columns.map(c => c.columnDef);
       this.dataSource.data = aggregatedData.items;
     });
@@ -205,9 +216,9 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
       });
     }
     columns[0].footer = () => 'Total';
-    this.columns = columns;
-    this.monthColumns = [];
-    this.displayedColumns = this.columns.map(c => c.columnDef);
+    this.baseColumns = columns;
+    this.monthColumns = []; // Reset month columns
+    this.displayedColumns = this.baseColumns.map(c => c.columnDef);
   }
 }
 

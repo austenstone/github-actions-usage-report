@@ -9,7 +9,8 @@ import { CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.
 })
 export class ActionsComponent implements OnInit {
   @Input() data!: CustomUsageReportLine[];
-  @Input() currency!: string;
+  @Input() currency!: 'cost' | 'minutes';
+  @Input() grouping!: 'workflow' | 'repo' | 'sku' | 'user';
   totalMinutes: number = 0;
   totalCost: number = 0;
 

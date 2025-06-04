@@ -1,13 +1,5 @@
 <div class="table-responsive">
   <div class="table-control">
-    <mat-form-field>
-      <mat-label>Grouping</mat-label>
-      <mat-select [(value)]="tableType" (selectionChange)="tableType = $event.value; ngOnChanges()">
-        <mat-option value="sku">Product</mat-option>
-        <mat-option value="repo">Repository</mat-option>
-        <mat-option value="user">User</mat-option>
-      </mat-select>
-    </mat-form-field>
     <mat-form-field [class.hide]="dataSource.data.length <= 1">
       <mat-label>Filter</mat-label>
       <input matInput (keyup)="applyFilter($event)" placeholder="Ex. .github/workflows/build.yml	" #input>

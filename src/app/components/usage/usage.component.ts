@@ -37,6 +37,7 @@ export class UsageComponent implements OnInit, OnDestroy {
   subscriptions: Subscription[] = [];
   currency: 'minutes' | 'cost' = 'cost';
   tabSelected: 'shared-storage' | 'copilot' | 'actions' = 'actions';
+  groupingControl = new FormControl<'workflow' | 'repo' | 'sku' | 'user'>('sku');
 
   constructor(
     private usageReportService: UsageReportService,
