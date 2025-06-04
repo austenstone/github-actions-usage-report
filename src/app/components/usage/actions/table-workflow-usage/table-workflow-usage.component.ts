@@ -1,51 +1,11 @@
-import { AfterViewInit, Component, Input, OnChanges, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, Input, OnChanges, ViewChild, Pipe, PipeTransform } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
-import { CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.service';
+import { UsageReportService, WorkflowUsageItem, RepoUsageItem, SkuUsageItem, UserUsageItem, UsageColumn, AggregatedUsageData } from 'src/app/usage-report.service';
+import { CurrencyPipe, DecimalPipe } from '@angular/common';
 
-interface WorkflowUsageItem {
-  workflow: string;
-  avgTime: number;
-  avgCost: number;
-  runs: number;
-  repo: string;
-  total: number;
-  cost: number;
-  pricePerUnit: number;
-  sku: string;
-  username: string;
-}
-
-interface RepoUsageItem {
-  avgTime: number;
-  avgCost: number;
-  repo: string;
-  runs: number;
-  total: number;
-  cost: number;
-  sku: string;
-}
-
-interface SkuUsageItem {
-  avgTime: number;
-  avgCost: number;
-  sku: string;
-  runs: number;
-  total: number;
-  cost: number;
-}
-
-interface UsageColumn {
-  sticky?: boolean;
-  columnDef: string;
-  header: string;
-  cell: (element: any) => any;
-  footer?: () => any;
-  tooltip?: (element: any) => any;
-  icon?: (element: any) => string;
-  date?: Date;
-}
+type Product = 'git_lfs' | 'packages' | 'copilot' | 'actions' | 'codespaces';
 
 @Component({
     selector: 'app-table-workflow-usage',
@@ -57,10 +17,10 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
   columns = [] as UsageColumn[];
   monthColumns = [] as UsageColumn[];
   displayedColumns = this.columns.map(c => c.columnDef);
-  @Input() data!: CustomUsageReportLine[];
   @Input() currency!: string;
-  dataSource: MatTableDataSource<WorkflowUsageItem | RepoUsageItem | SkuUsageItem> = new MatTableDataSource<any>(); // Initialize the dataSource property
-  tableType: 'workflow' | 'repo' | 'sku' | 'user' = 'sku';
+  @Input() tableType: 'workflow' | 'repo' | 'sku' | 'user' = 'sku';
+  @Input() product: Product | Product[] = 'actions';
+  dataSource: MatTableDataSource<WorkflowUsageItem | RepoUsageItem | SkuUsageItem | UserUsageItem> = new MatTableDataSource<any>();
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -71,111 +31,67 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
 
   ngOnChanges() {
     this.initializeColumns();
-    let usage: WorkflowUsageItem[] | RepoUsageItem[] | SkuUsageItem[] = [];
-    let usageItems: WorkflowUsageItem[] = (usage as WorkflowUsageItem[]);
-    usageItems = this.data.reduce((acc, line) => {
-      const item = acc.find(a => {
-        if (this.tableType === 'workflow') {
-          return a.workflow === line.workflowName
-        } else if (this.tableType === 'repo') {
-          return a.repo === line.repositoryName;
-        } else if (this.tableType === 'sku') {
-          return a.sku === this.usageReportService.formatSku(line.sku);
-        } else if (this.tableType === 'user') {
-          return a.username === line.username;
-        }
-        return false
-      });
-      const month: string = line.date.toLocaleString('default', { month: 'short', year: '2-digit'});
-      if (item) {
-        if ((item as any)[month]) {
-          (item as any)[month] += line.value;
-        } else {
-          (item as any)[month] = line.value || 0;
-        }
-        if (!this.columns.find(c => c.columnDef === month)) {
-          const column: UsageColumn = {
-            columnDef: month,
-            header: month,
-            cell: (workflowItem: any) => this.currency === 'cost' ? currencyPipe.transform(workflowItem[month]) : decimalPipe.transform(workflowItem[month]),
-            footer: () => {
-              const total = this.dataSource.data.reduce((acc, item) => acc + (item as any)[month], 0);
-              return this.currency === 'cost' ? currencyPipe.transform(total) : decimalPipe.transform(total);
-            },
-            date: new Date(line.date),
-          };
-          const lastMonth: string = new Date(line.date.getFullYear(), line.date.getMonth() - 1).toLocaleString('default', { month: 'short' });
-          const lastMonthValue = (item as any)[lastMonth];
-          if (lastMonthValue) {
-            column.tooltip = (workflowItem: WorkflowUsageItem) => {
-              return (workflowItem as any)[month + 'PercentChange']?.toFixed(2) + '%';
-            };
-            column.icon = (workflowItem: WorkflowUsageItem) => {
-              const percentageChanged = (workflowItem as any)[month + 'PercentChange'];
-              if (percentageChanged > 0) {
-                return 'trending_up';
-              } else if (percentageChanged < 0) {
-                return 'trending_down';
-              } else {
-                return 'trending_flat';
-              }
-            };
-          }
-          this.columns.push(column);
-          this.monthColumns.push(column);
-        }
-        item.cost += line.quantity * line.pricePerUnit;
-        item.total += line.quantity;
-        item.runs++;
-      } else {
-        acc.push({
-          workflow: line.workflowName,
-          repo: line.repositoryName,
-          total: line.quantity,
-          cost: line.quantity * line.pricePerUnit,
-          runs: 1,
-          pricePerUnit: line.pricePerUnit || 0,
-          avgCost: line.quantity * line.pricePerUnit,
-          avgTime: line.value,
-          [month]: line.value,
-          sku: this.usageReportService.formatSku(line.sku),
-          username: line.username,
-        });
-      }
-      return acc;
-    }, [] as WorkflowUsageItem[]);
-
-    usageItems.forEach((item) => {
-      this.monthColumns.forEach((column: UsageColumn) => {
-        const month = column.columnDef;
-        if (!(item as any)[month]) {
-          (item as any)[month] = 0;
-        }
-        const lastMonth: string = new Date(new Date().getFullYear(), this.usageReportService.monthsOrder.indexOf(month) - 1).toLocaleString('default', { month: 'short' });
-        const lastMonthValue = (item as any)[lastMonth];
-        const percentageChanged = this.calculatePercentageChange(lastMonthValue, (item as any)[month]);
-        (item as any)[month + 'PercentChange'] = percentageChanged;
-      });
-
-      item.avgTime = item.total / item.runs;
-      item.avgCost = item.cost / item.runs;
+    
+    // Use the service to get aggregated data
+    this.usageReportService.getAggregatedUsageData(this.tableType, this.product).subscribe((aggregatedData: AggregatedUsageData) => {
+      this.monthColumns = aggregatedData.monthColumns;
+      this.updateMonthColumnFormatting();
+      this.columns = [...this.columns, ...this.monthColumns];
+      this.columns = this.columns.sort((a, b) => (!a.date || !b.date) ? 0 : a.date.getTime() - b.date.getTime()); 
+      this.displayedColumns = this.columns.map(c => c.columnDef);
+      this.dataSource.data = aggregatedData.items;
     });
-    usage = usageItems;
-    this.columns = this.columns.sort((a, b) => (!a.date || !b.date) ? 0 : a.date.getTime() - b.date.getTime()); 
-    this.displayedColumns = this.columns.map(c => c.columnDef);
-    this.dataSource.data = usage;
+  }
+
+  private updateMonthColumnFormatting() {
+    this.monthColumns.forEach(column => {
+      // Update cell formatting based on currency
+      column.cell = (workflowItem: any) => 
+        this.currency === 'cost' 
+          ? currencyPipe.transform(workflowItem[column.columnDef]) 
+          : decimalPipe.transform(workflowItem[column.columnDef]);
+      
+      // Update footer formatting
+      const originalFooter = column.footer;
+      column.footer = () => {
+        const total = originalFooter ? originalFooter() : 0;
+        return this.currency === 'cost' 
+          ? currencyPipe.transform(total) 
+          : decimalPipe.transform(total);
+      };
+
+      // Add tooltip and icon functionality for percentage changes
+      const month = column.columnDef;
+      column.tooltip = (workflowItem: any) => {
+        const percentChange = workflowItem[month + 'PercentChange'];
+        return percentChange !== undefined ? percentChange.toFixed(2) + '%' : '';
+      };
+      
+      column.icon = (workflowItem: any) => {
+        const percentageChanged = workflowItem[month + 'PercentChange'];
+        if (percentageChanged > 0) {
+          return 'trending_up';
+        } else if (percentageChanged < 0) {
+          return 'trending_down';
+        } else {
+          return 'trending_flat';
+        }
+      };
+    });
   }
 
   ngAfterViewInit() {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
     const initial = this.dataSource.sortData;
-    this.dataSource.sortData = (data: (WorkflowUsageItem | RepoUsageItem | SkuUsageItem)[], sort: MatSort) => {
+    this.dataSource.sortData = (data: (WorkflowUsageItem | RepoUsageItem | SkuUsageItem | UserUsageItem)[], sort: MatSort) => {
       switch (sort.active) {
         case 'sku':
-          return data.sort((a, b) => {          
-            const orderA = this.usageReportService.skuOrder.indexOf(a.sku);
-            const orderB = this.usageReportService.skuOrder.indexOf(b.sku);
+          return data.sort((a, b) => {
+            const skuA = 'sku' in a ? a.sku : '';
+            const skuB = 'sku' in b ? b.sku : '';
+            const orderA = this.usageReportService.skuOrder.indexOf(skuA);
+            const orderB = this.usageReportService.skuOrder.indexOf(skuB);
             return sort.direction === 'asc' ? orderA - orderB : orderB - orderA;
           });
         default:
@@ -256,24 +172,36 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
         columnDef: 'avgTime',
         header: 'Avg time',
         cell: (workflowItem: WorkflowUsageItem) => `${durationPipe.transform(workflowItem.avgTime)}`,
-        footer: () => durationPipe.transform(this.dataSource.data.reduce((acc, line) => acc += line.avgTime, 0) / this.dataSource.data.length)
+        footer: () => {
+          const avgTime = this.dataSource.data.reduce((acc: number, line: any) => acc + line.avgTime, 0) / this.dataSource.data.length;
+          return durationPipe.transform(avgTime);
+        }
       }, {
         columnDef: 'total',
         header: 'Total',
         cell: (workflowItem: WorkflowUsageItem) => decimalPipe.transform(Math.floor(workflowItem.total)),
-        footer: () => decimalPipe.transform(this.data.reduce((acc, line) => acc += line.value, 0))
+        footer: () => {
+          const total = this.dataSource.data.reduce((acc: number, line: any) => acc + line.total, 0);
+          return decimalPipe.transform(total);
+        }
       });
     } else if (this.currency === 'cost') {
       columns.push({
         columnDef: 'avgCost',
         header: 'Avg run',
         cell: (workflowItem: WorkflowUsageItem) => currencyPipe.transform(workflowItem.avgCost),
-        footer: () => currencyPipe.transform(this.dataSource.data.reduce((acc, line) => acc += line.cost, 0) / this.dataSource.data.length)
+        footer: () => {
+          const avgCost = this.dataSource.data.reduce((acc: number, line: any) => acc + line.cost, 0) / this.dataSource.data.length;
+          return currencyPipe.transform(avgCost);
+        }
       }, {
         columnDef: 'cost',
         header: 'Total',
         cell: (workflowItem: WorkflowUsageItem) => currencyPipe.transform(workflowItem.cost),
-        footer: () => currencyPipe.transform(this.data.reduce((acc, line) => acc += line.value, 0))
+        footer: () => {
+          const total = this.dataSource.data.reduce((acc: number, line: any) => acc + line.cost, 0);
+          return currencyPipe.transform(total);
+        }
       });
     }
     columns[0].footer = () => 'Total';
@@ -281,14 +209,7 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
     this.monthColumns = [];
     this.displayedColumns = this.columns.map(c => c.columnDef);
   }
-
-  calculatePercentageChange(oldValue: number, newValue: number) {
-    return (oldValue === 0) ? 0 : ((newValue - oldValue) / oldValue) * 100;
-  }
 }
-
-import { Pipe, PipeTransform } from '@angular/core';
-import { CurrencyPipe, DecimalPipe } from '@angular/common';
 
 @Pipe({
     name: 'duration',

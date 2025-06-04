@@ -3,6 +3,8 @@ import { Injectable } from '@angular/core';
 import { ModelUsageReport, readGithubUsageReport, readModelUsageReport, UsageReport, UsageReportLine } from 'github-usage-report';
 import { BehaviorSubject, Observable, map } from 'rxjs';
 
+const titlecasePipe = new TitleCasePipe();
+
 interface Filter {
   startDate: Date;
   endDate: Date;
@@ -19,6 +21,69 @@ export interface CustomUsageReportLine extends UsageReportLine {
 export interface CustomUsageReport extends UsageReport {
   lines: CustomUsageReportLine[];
 }
+
+export interface WorkflowUsageItem {
+  workflow: string;
+  avgTime: number;
+  avgCost: number;
+  runs: number;
+  repo: string;
+  total: number;
+  cost: number;
+  pricePerUnit: number;
+  sku: string;
+  username: string;
+  [month: string]: any; // For dynamic month columns
+}
+
+export interface RepoUsageItem {
+  avgTime: number;
+  avgCost: number;
+  repo: string;
+  runs: number;
+  total: number;
+  cost: number;
+  sku: string;
+  [month: string]: any; // For dynamic month columns
+}
+
+export interface SkuUsageItem {
+  avgTime: number;
+  avgCost: number;
+  sku: string;
+  runs: number;
+  total: number;
+  cost: number;
+  [month: string]: any; // For dynamic month columns
+}
+
+export interface UserUsageItem {
+  avgTime: number;
+  avgCost: number;
+  username: string;
+  runs: number;
+  total: number;
+  cost: number;
+  [month: string]: any; // For dynamic month columns
+}
+
+export interface UsageColumn {
+  sticky?: boolean;
+  columnDef: string;
+  header: string;
+  cell: (element: any) => any;
+  footer?: () => any;
+  tooltip?: (element: any) => any;
+  icon?: (element: any) => string;
+  date?: Date;
+}
+
+export interface AggregatedUsageData {
+  items: WorkflowUsageItem[] | RepoUsageItem[] | SkuUsageItem[] | UserUsageItem[];
+  monthColumns: UsageColumn[];
+}
+
+export type AggregationType = 'workflow' | 'repo' | 'sku' | 'user';
 
 @Injectable({
   providedIn: 'root'
@@ -147,6 +212,7 @@ export class UsageReportService {
     this.usageReportPremiumRequestsData = usageReportData;
     await readModelUsageReport(this.usageReportPremiumRequestsData).then((report) => {
       this.usageReportCopilotPremiumRequests = report;
+      cb?.(this.usageReport, 100);
     });
     return this.usageReportCopilotPremiumRequests;
   }
@@ -257,6 +323,146 @@ export class UsageReportService {
     }
     return formatted;
   }
-}
 
-const titlecasePipe = new TitleCasePipe();
+  calculatePercentageChange(oldValue: number, newValue: number): number {
+    return (oldValue === 0) ? 0 : ((newValue - oldValue) / oldValue) * 100;
+  }
+
+  getAggregatedUsageData(aggregationType: AggregationType, product?: Product | Product[]): Observable<AggregatedUsageData> {
+    const productFilter = product || 'actions';
+    return this.getUsageFilteredByProduct(productFilter).pipe(
+      map(data => this.aggregateUsageData(data, aggregationType))
+    );
+  }
+
+  private aggregateUsageData(data: CustomUsageReportLine[], aggregationType: AggregationType): AggregatedUsageData {
+    const monthColumns: UsageColumn[] = [];
+    const usageItems = data.reduce((acc, line) => {
+      const item = acc.find(a => {
+        switch (aggregationType) {
+          case 'workflow':
+            return (a as WorkflowUsageItem).workflow === line.workflowName;
+          case 'repo':
+            return (a as RepoUsageItem).repo === line.repositoryName;
+          case 'sku':
+            return (a as SkuUsageItem).sku === this.formatSku(line.sku);
+          case 'user':
+            return (a as UserUsageItem).username === line.username;
+          default:
+            return false;
+        }
+      });
+
+      const month: string = line.date.toLocaleString('default', { month: 'short', year: '2-digit'});
+      
+      if (item) {
+        if ((item as any)[month]) {
+          (item as any)[month] += line.value;
+        } else {
+          (item as any)[month] = line.value || 0;
+        }
+        
+        // Add month column if it doesn't exist
+        if (!monthColumns.find(c => c.columnDef === month)) {
+          const column: UsageColumn = {
+            columnDef: month,
+            header: month,
+            cell: (workflowItem: any) => workflowItem[month],
+            footer: () => {
+              const total = acc.reduce((sum, item) => sum + ((item as any)[month] || 0), 0);
+              return total;
+            },
+            date: new Date(line.date),
+          };
+          monthColumns.push(column);
+        }
+
+        item.cost += line.quantity * line.pricePerUnit;
+        item.total += line.quantity;
+        item.runs++;
+      } else {
+        const newItem: any = {
+          total: line.quantity,
+          cost: line.quantity * line.pricePerUnit,
+          runs: 1,
+          pricePerUnit: line.pricePerUnit || 0,
+          avgCost: line.quantity * line.pricePerUnit,
+          avgTime: line.value,
+          [month]: line.value,
+        };
+
+        // Set aggregation-specific properties
+        switch (aggregationType) {
+          case 'workflow':
+            newItem.workflow = line.workflowName;
+            newItem.repo = line.repositoryName;
+            newItem.sku = this.formatSku(line.sku);
+            newItem.username = line.username;
+            break;
+          case 'repo':
+            newItem.repo = line.repositoryName;
+            newItem.sku = this.formatSku(line.sku);
+            break;
+          case 'sku':
+            newItem.sku = this.formatSku(line.sku);
+            break;
+          case 'user':
+            newItem.username = line.username;
+            break;
+        }
+
+        acc.push(newItem);
+      }
+      return acc;
+    }, [] as any[]);
+
+    // Calculate averages and percentage changes
+    usageItems.forEach((item) => {
+      monthColumns.forEach((column: UsageColumn) => {
+        const month = column.columnDef;
+        if (!(item as any)[month]) {
+          (item as any)[month] = 0;
+        }
+        
+        // Calculate percentage change from previous month
+        // Find the previous month in the actual data
+        const currentDate = new Date(column.date || new Date());
+        const previousMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1);
+        const previousMonthKey = previousMonth.toLocaleString('default', { month: 'short', year: '2-digit'});
+        
+        if (monthColumns.find(c => c.columnDef === previousMonthKey)) {
+          const lastMonthValue = (item as any)[previousMonthKey] || 0;
+          const percentageChanged = this.calculatePercentageChange(lastMonthValue, (item as any)[month]);
+          (item as any)[month + 'PercentChange'] = percentageChanged;
+        }
+      });
+
+      item.avgTime = item.runs > 0 ? item.total / item.runs : 0;
+      item.avgCost = item.runs > 0 ? item.cost / item.runs : 0;
+    });
+
+    // Sort month columns by date
+    monthColumns.sort((a, b) => (!a.date || !b.date) ? 0 : a.date.getTime() - b.date.getTime());
+
+    return {
+      items: usageItems,
+      monthColumns: monthColumns
+    };
+  }
+
+  getAggregatedWorkflowUsage(product?: Product | Product[]): Observable<AggregatedUsageData> {
+    return this.getAggregatedUsageData('workflow', product);
+  }
+
+  getAggregatedRepoUsage(product?: Product | Product[]): Observable<AggregatedUsageData> {
+    return this.getAggregatedUsageData('repo', product);
+  }
+
+  getAggregatedSkuUsage(product?: Product | Product[]): Observable<AggregatedUsageData> {
+    return this.getAggregatedUsageData('sku', product);
+  }
+
+  getAggregatedUserUsage(product?: Product | Product[]): Observable<AggregatedUsageData> {
+    return this.getAggregatedUsageData('user', product);
+  }
+}
