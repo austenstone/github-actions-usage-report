@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { CustomUsageReportLine } from 'src/app/usage-report.service';
+import { AggregationType, CustomUsageReportLine } from 'src/app/usage-report.service';
 
 @Component({
     selector: 'app-copilot',
@@ -10,5 +10,5 @@ import { CustomUsageReportLine } from 'src/app/usage-report.service';
 export class CopilotComponent {
   @Input() data!: CustomUsageReportLine[];
   @Input() currency!: 'minutes' | 'cost';
-  @Input() grouping!: 'workflow' | 'repo' | 'sku' | 'user';
+  @Input() grouping!: AggregationType;
 }

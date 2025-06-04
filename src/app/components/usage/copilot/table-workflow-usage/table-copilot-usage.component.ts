@@ -2,7 +2,7 @@ import { AfterViewInit, Component, Input, OnChanges, ViewChild, ChangeDetectorRe
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
-import { UsageReportService, UserUsageItem, UsageColumn, AggregatedUsageData } from 'src/app/usage-report.service';
+import { UsageReportService, UserUsageItem, UsageColumn, AggregatedUsageData, AggregationType } from 'src/app/usage-report.service';
 import { CurrencyPipe, DecimalPipe } from '@angular/common';
 
 type Product = 'git_lfs' | 'packages' | 'copilot' | 'actions' | 'codespaces';
@@ -18,7 +18,7 @@ export class TableCopilotUsageComponent implements OnChanges, AfterViewInit {
   monthColumns = [] as UsageColumn[];
   displayedColumns: string[] = [];
   @Input() currency!: 'minutes' | 'cost';
-  @Input() tableType: 'workflow' | 'repo' | 'sku' | 'user' = 'user'; // Copilot typically aggregates by user/organization
+  @Input() tableType!: AggregationType;
   @Input() product: Product | Product[] = 'copilot';
   dataSource: MatTableDataSource<any> = new MatTableDataSource<any>();
 

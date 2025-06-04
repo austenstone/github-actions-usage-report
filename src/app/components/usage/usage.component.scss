@@ -10,10 +10,13 @@ form {
   top: 0;
   z-index: 999;
   display: flex;
+  align-items: center;
+  background: var(--mat-sys-background);
+      box-sizing: border-box;
+    padding: 10px 0;
   mat-form-field {
     margin-right: 15px;
   }
-  margin-top: 15px;;
   @media screen and (max-width: 767px) {
     flex-wrap: wrap;
   }

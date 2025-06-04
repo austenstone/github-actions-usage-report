@@ -2,7 +2,7 @@ import { AfterViewInit, Component, Input, OnChanges, ViewChild } from '@angular/
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
-import { UsageReportService, WorkflowUsageItem, RepoUsageItem, SkuUsageItem, UserUsageItem, UsageColumn, AggregatedUsageData } from 'src/app/usage-report.service';
+import { UsageReportService, WorkflowUsageItem, RepoUsageItem, SkuUsageItem, UserUsageItem, UsageColumn, AggregatedUsageData, AggregationType } from 'src/app/usage-report.service';
 import { CurrencyPipe, DecimalPipe } from '@angular/common';
 
 type Product = 'git_lfs' | 'packages' | 'copilot' | 'actions' | 'codespaces';
@@ -18,7 +18,7 @@ export class TableCodespacesUsageComponent implements OnChanges, AfterViewInit {
   monthColumns = [] as UsageColumn[];
   displayedColumns: string[] = [];
   @Input() currency!: 'minutes' | 'cost';
-  @Input() tableType: 'sku' | 'repo' | 'user' = 'sku';
+  @Input() tableType!: AggregationType;
   @Input() product: Product | Product[] = 'codespaces';
   dataSource: MatTableDataSource<WorkflowUsageItem | RepoUsageItem | SkuUsageItem | UserUsageItem> = new MatTableDataSource<any>();
 
@@ -106,7 +106,7 @@ export class TableCodespacesUsageComponent implements OnChanges, AfterViewInit {
           sticky: true
         }
       ];
-    } else if (this.tableType === 'repo') {
+    } else if (this.tableType === 'repositoryName') {
       columns = [
         {
           columnDef: 'repo',
@@ -115,7 +115,7 @@ export class TableCodespacesUsageComponent implements OnChanges, AfterViewInit {
           sticky: true
         }
       ];
-    } else if (this.tableType === 'user') {
+    } else if (this.tableType === 'username') {
       columns = [
         {
           columnDef: 'username',

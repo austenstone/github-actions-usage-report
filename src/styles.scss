@@ -911,6 +911,7 @@ h1 {
 
 .logo {
   margin-top: 3rem;
+  width: auto;
 }
 
 .hide {
@@ -950,4 +951,8 @@ mat-cell {
   mat-icon {
     vertical-align: bottom !important;
   }
+}
+
+.spacer {
+  flex: 1 1 auto;
 }

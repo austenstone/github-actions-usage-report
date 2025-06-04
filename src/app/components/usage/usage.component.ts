@@ -1,11 +1,12 @@
-import { OnInit, ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
+import { OnInit, ChangeDetectorRef, Component, OnDestroy, inject, Input } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { UsageReport } from 'github-usage-report/src/types';
 import { Observable, Subscription, debounceTime, map, startWith } from 'rxjs';
-import { CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.service';
+import { AggregationType, CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.service';
 import { DialogBillingNavigateComponent } from './dialog-billing-navigate';
 import { MatDialog } from '@angular/material/dialog';
 import { ModelUsageReport } from 'github-usage-report';
+import { MatBottomSheet, MatBottomSheetRef } from '@angular/material/bottom-sheet';
 
 @Component({
   selector: 'app-usage',
@@ -14,6 +15,7 @@ import { ModelUsageReport } from 'github-usage-report';
   standalone: false
 })
 export class UsageComponent implements OnInit, OnDestroy {
+  @Input() theme!: 'light-theme' | 'dark-theme';
   usage!: UsageReport;
   usageCopilotPremiumRequests!: ModelUsageReport;
   usageLines = {} as {
@@ -28,16 +30,15 @@ export class UsageComponent implements OnInit, OnDestroy {
   });
   minDate!: Date;
   maxDate!: Date;
-  workflows: string[] = [];
   workflow!: string;
-  _filteredWorkflows!: Observable<string[]>;
-  workflowControl = new FormControl('');
   status: string = 'Usage Report';
   progress: number | null = null;
   subscriptions: Subscription[] = [];
+  filter: string = '';
   currency: 'minutes' | 'cost' = 'cost';
   tabSelected: 'shared-storage' | 'copilot' | 'actions' = 'actions';
-  groupingControl = new FormControl<'workflow' | 'repo' | 'sku' | 'user'>('sku');
+  groupingControl = new FormControl<AggregationType>('sku' as AggregationType);
+  private _bottomSheet = inject(MatBottomSheet);
 
   constructor(
     private usageReportService: UsageReportService,
@@ -60,19 +61,6 @@ export class UsageComponent implements OnInit, OnDestroy {
     );
 
     this.subscriptions.push(
-      this.workflowControl.valueChanges.subscribe(value => {
-        if (!value || value === '') value = '';
-        this.usageReportService.applyFilter({
-          workflow: value,
-        });
-      })
-    );
-    this._filteredWorkflows = this.workflowControl.valueChanges.pipe(
-      startWith(''),
-      map(value => this._filterWorkflows(value || '')),
-    );
-
-    this.subscriptions.push(
       this.usageReportService.getUsageFilteredByProduct('actions').subscribe((usageLines) => {
         this.usageLines.actions = usageLines;
       }),
@@ -84,10 +72,7 @@ export class UsageComponent implements OnInit, OnDestroy {
       }),
       this.usageReportService.getUsageFilteredByProduct('codespaces').subscribe((usageLines) => {
         this.usageLines.codespaces = usageLines;
-      }),
-      this.usageReportService.getWorkflowsFiltered().subscribe((workflows) => {
-        this.workflows = workflows;
-      }),
+      })
     );
   }
 
@@ -130,11 +115,6 @@ export class UsageComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
-  private _filterWorkflows(workflow: string): string[] {
-    const filterValue = workflow.toLowerCase();
-    return this.workflows.filter(option => option.toLowerCase().includes(filterValue));
-  }
-
   navigateToBilling() {
     const dialogRef = this.dialog.open(DialogBillingNavigateComponent);
 
@@ -147,6 +127,11 @@ export class UsageComponent implements OnInit, OnDestroy {
         }
       }
     });
+  }
+
+  applyFilter(event: Event) {
+    const filterValue = (event.target as HTMLInputElement).value;
+    this.filter = filterValue.trim().toLowerCase();
   }
 
   changeCurrency(currency: string) {
@@ -193,5 +178,77 @@ export class UsageComponent implements OnInit, OnDestroy {
     document.body.appendChild(a);
     a.click();
     (a as any).parentNode.removeChild(a);
+  }
+  
+  openBottomSheet(): void {
+    this._bottomSheet.open(BottomSheetOverviewExampleSheetComponent, {
+      autoFocus: false
+    });
+  }
+
+  reloadPage() {
+    window.location.reload();
+  }
+}
+
+@Component({
+  selector: 'app-bottom-sheet-overview-example-sheet',
+  standalone: false,
+  // templateUrl: 'bottom-sheet-overview-example-sheet.html',
+  template: `
+    <mat-form-field style="flex: 1; max-width: 500px;" *ngIf="tabSelected === 'actions'">
+      <mat-label>Workflow</mat-label>
+      <input type="text" placeholder="build.yml" aria-label="Number" matInput [formControl]="workflowControl"
+        [matAutocomplete]="auto" name="workflow">
+      <mat-autocomplete #auto="matAutocomplete">
+        @for (option of _filteredWorkflows | async; track option) {
+        <mat-option [value]="option">{{option}}</mat-option>
+        }
+      </mat-autocomplete>
+      @if (workflowControl.value) {
+      <button matSuffix mat-icon-button aria-label="Clear" (click)="workflowControl.setValue('')">
+        <mat-icon>close</mat-icon>
+      </button>
+      }
+    </mat-form-field>
+  `
+})
+export class BottomSheetOverviewExampleSheetComponent {
+  @Input() tabSelected: 'shared-storage' | 'copilot' | 'actions' = 'actions';
+  private _bottomSheetRef =
+    inject<MatBottomSheetRef<BottomSheetOverviewExampleSheetComponent>>(MatBottomSheetRef);
+
+  workflowControl = new FormControl('');
+  _filteredWorkflows!: Observable<string[]>;
+  workflows: string[] = [];
+
+  constructor (
+    private usageReportService: UsageReportService,
+  ) {}
+
+  ngOnInit() {
+    this.usageReportService.getWorkflowsFiltered().subscribe((workflows) => {
+        this.workflows = workflows;
+    });
+    this.workflowControl.valueChanges.subscribe(value => {
+      if (!value || value === '') value = '';
+      this.usageReportService.applyFilter({
+        workflow: value,
+      });
+    })
+    this._filteredWorkflows = this.workflowControl.valueChanges.pipe(
+      startWith(''),
+      map(value => this._filterWorkflows(value || '')),
+    );
+  }
+
+  private _filterWorkflows(workflow: string): string[] {
+    const filterValue = workflow.toLowerCase();
+    return this.workflows.filter(option => option.toLowerCase().includes(filterValue));
+  }
+
+  openLink(event: MouseEvent): void {
+    this._bottomSheetRef.dismiss();
+    event.preventDefault();
   }
 }

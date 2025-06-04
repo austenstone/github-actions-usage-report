@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.service';
+import { AggregationType, CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.service';
 
 @Component({
     selector: 'app-actions',
@@ -10,7 +10,8 @@ import { CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.
 export class ActionsComponent implements OnInit {
   @Input() data!: CustomUsageReportLine[];
   @Input() currency!: 'cost' | 'minutes';
-  @Input() grouping!: 'workflow' | 'repo' | 'sku' | 'user';
+  @Input() grouping!: AggregationType;
+  @Input() filter: string = '';
   totalMinutes: number = 0;
   totalCost: number = 0;
 

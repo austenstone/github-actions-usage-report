@@ -1,8 +1,8 @@
-import { AfterViewInit, Component, Input, OnChanges, ViewChild, Pipe, PipeTransform } from '@angular/core';
+import { AfterViewInit, Component, Input, OnChanges, ViewChild, Pipe, PipeTransform, SimpleChanges } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
-import { UsageReportService, WorkflowUsageItem, RepoUsageItem, SkuUsageItem, UserUsageItem, UsageColumn, AggregatedUsageData } from 'src/app/usage-report.service';
+import { UsageReportService, WorkflowUsageItem, RepoUsageItem, SkuUsageItem, UserUsageItem, UsageColumn, AggregatedUsageData, AggregationType } from 'src/app/usage-report.service';
 import { CurrencyPipe, DecimalPipe } from '@angular/common';
 
 type Product = 'git_lfs' | 'packages' | 'copilot' | 'actions' | 'codespaces';
@@ -19,8 +19,9 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
   columns = [] as UsageColumn[];
   displayedColumns: string[] = [];
   @Input() currency!: 'minutes' | 'cost';
-  @Input() tableType: 'workflow' | 'repo' | 'sku' | 'user' = 'sku';
+  @Input() tableType!: AggregationType;
   @Input() product: Product | Product[] = 'actions';
+  @Input() filter: string = '';
   dataSource: MatTableDataSource<WorkflowUsageItem | RepoUsageItem | SkuUsageItem | UserUsageItem> = new MatTableDataSource<any>();
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -30,9 +31,17 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
     private usageReportService: UsageReportService,
   ) { }
 
-  ngOnChanges() {
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['filter'] && !changes['filter'].isFirstChange()) {
+      this.dataSource.filter = this.filter.trim().toLowerCase();
+
+      if (this.dataSource.paginator) {
+        this.dataSource.paginator.firstPage();
+      }
+      return;
+    }
     this.initializeColumns();
-    
+
     // Use the service to get aggregated data
     this.usageReportService.getAggregatedUsageData(this.tableType, this.product).subscribe((aggregatedData: AggregatedUsageData) => {
       // Create month columns using the service helper method
@@ -111,15 +120,6 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
     };
   }
 
-  applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
-
-    if (this.dataSource.paginator) {
-      this.dataSource.paginator.firstPage();
-    }
-  }
-
   initializeColumns() {
     let columns: UsageColumn[] = [];
     if (this.tableType === 'workflow') {
@@ -131,9 +131,9 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
           sticky: true,
         },
         {
-          columnDef: 'repo',
+          columnDef: 'repositoryName',
           header: 'Repository',
-          cell: (workflowItem: WorkflowUsageItem) => `${workflowItem.repo}`,
+          cell: (workflowItem: WorkflowUsageItem) => `${workflowItem.repositoryName}`,
         },
         {
           columnDef: 'runner',
@@ -141,12 +141,12 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
           cell: (workflowItem: WorkflowUsageItem) => `${workflowItem.sku}`,
         },
       ];
-    } else if (this.tableType === 'repo') {
+    } else if (this.tableType === 'repositoryName') {
       columns = [
         {
-          columnDef: 'repo',
-          header: 'Source repository',
-          cell: (workflowItem: WorkflowUsageItem) => `${workflowItem.repo}`,
+          columnDef: 'repositoryName',
+          header: 'Repository',
+          cell: (workflowItem: WorkflowUsageItem) => `${workflowItem.repositoryName}`,
           sticky: true,
         },
       ];
@@ -159,7 +159,7 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
           sticky: true,
         },
       ];
-    } else if (this.tableType === 'user') {
+    } else if (this.tableType === 'username') {
       columns = [
         {
           columnDef: 'username',
@@ -168,7 +168,35 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
           sticky: true,
         },
       ];
+    } else if (this.tableType === 'organization') {
+      columns = [
+        {
+          columnDef: 'organization',
+          header: 'Organization',
+          cell: (workflowItem: WorkflowUsageItem) => workflowItem.organization,
+          sticky: true,
+        },
+      ];
+    } else if (this.tableType === 'costCenterName') {
+      columns = [
+        {
+          columnDef: 'costCenterName',
+          header: 'Cost Center',
+          cell: (workflowItem: WorkflowUsageItem) => workflowItem.costCenterName,
+          sticky: true,
+        },
+      ];
+    } else if (this.tableType === 'workflowPath') {
+      columns = [
+        {
+          columnDef: 'workflowPath',
+          header: 'Workflow Path',
+          cell: (workflowItem: WorkflowUsageItem) => workflowItem.workflowPath,
+          sticky: true,
+        },
+      ];
     }
+
     columns.push({
       columnDef: 'runs',
       header: 'Runs',

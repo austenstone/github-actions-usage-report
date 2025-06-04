@@ -1,7 +1,7 @@
 import { TitleCasePipe } from '@angular/common';
 import { Injectable } from '@angular/core';
 import { ModelUsageReport, readGithubUsageReport, readModelUsageReport, UsageReport, UsageReportLine } from 'github-usage-report';
-import { BehaviorSubject, Observable, map } from 'rxjs';
+import { BehaviorSubject, Observable, map, tap } from 'rxjs';
 
 const titlecasePipe = new TitleCasePipe();
 
@@ -24,10 +24,13 @@ export interface CustomUsageReport extends UsageReport {
 
 export interface WorkflowUsageItem {
   workflow: string;
+  workflowPath: string;
+  costCenterName: string;
+  organization: string;
   avgTime: number;
   avgCost: number;
   runs: number;
-  repo: string;
+  repositoryName: string;
   total: number;
   cost: number;
   pricePerUnit: number;
@@ -84,7 +87,7 @@ export interface AggregatedUsageData {
   dateRange: { start: Date; end: Date };
 }
 
-export type AggregationType = 'workflow' | 'repo' | 'sku' | 'user';
+export type AggregationType = 'workflow' | 'sku' | 'organization' | 'repositoryName' | 'costCenterName' | 'username' | 'workflowPath';
 
 @Injectable({
   providedIn: 'root'
@@ -253,7 +256,6 @@ export class UsageReportService {
       }
     });
     this.setValueType(this.valueType.value);
-    console.log('Usage Report Loaded:', this.usageReport);
     return this.usageReport;
   }
 
@@ -287,7 +289,15 @@ export class UsageReportService {
   getUsageFilteredByProduct(product: Product | Product[]): Observable<CustomUsageReportLine[]> {
     const _products = Array.isArray(product) ? product : [product];
     return this.getUsageReportFiltered().pipe(
-      map(lines => lines.filter(line => _products.some(p => line.product.includes(p)))),
+      map(lines => lines.filter(line => _products.some(p => {
+        const filtered = line.product.includes(p);
+        if (product === 'actions') {
+          if (line.sku === 'actions_storage') {
+            return false; // Exclude storage from actions
+          }
+        }
+        return filtered;
+      }))),
     );
   }
 
@@ -350,21 +360,27 @@ export class UsageReportService {
     const usageItems = data.reduce((acc, line) => {
       const item = acc.find(a => {
         switch (aggregationType) {
+          case 'sku':
+            return (a as WorkflowUsageItem).sku === this.formatSku(line.sku);
+          case 'organization':
+            return (a as WorkflowUsageItem).organization === line.organization;
+          case 'costCenterName':
+            return (a as WorkflowUsageItem).costCenterName === line.costCenterName;
+          case 'repositoryName':
+            return (a as WorkflowUsageItem).repositoryName === line.repositoryName;
           case 'workflow':
             return (a as WorkflowUsageItem).workflow === line.workflowName;
-          case 'repo':
-            return (a as RepoUsageItem).repo === line.repositoryName;
-          case 'sku':
-            return (a as SkuUsageItem).sku === this.formatSku(line.sku);
-          case 'user':
-            return (a as UserUsageItem).username === line.username;
+          case 'workflowPath':
+            return (a as WorkflowUsageItem).workflowPath === line.workflowPath;
+          case 'username':
+            return (a as WorkflowUsageItem).username === line.username;
           default:
             return false;
         }
       });
 
-      const month: string = line.date.toLocaleString('default', { month: 'short', year: '2-digit'});
-      
+      const month: string = line.date.toLocaleString('default', { month: 'short', year: '2-digit' });
+
       // Track available months
       if (!availableMonths.includes(month)) {
         availableMonths.push(month);
@@ -403,14 +419,33 @@ export class UsageReportService {
             newItem.sku = this.formatSku(line.sku);
             newItem.username = line.username;
             break;
-          case 'repo':
-            newItem.repo = line.repositoryName;
+          case 'workflowPath':
+            newItem.workflow = line.workflowName;
+            newItem.workflowPath = line.workflowPath;
+            newItem.costCenterName = line.costCenterName;
+            newItem.organization = line.organization;
+            newItem.sku = this.formatSku(line.sku);
+            newItem.username = line.username;
+            break;
+          case 'costCenterName':
+            newItem.costCenterName = line.costCenterName;
+            newItem.organization = line.organization;
+            newItem.sku = this.formatSku(line.sku);
+            newItem.username = line.username;
+            break;
+          case 'organization':
+            newItem.organization = line.organization;
+            newItem.sku = this.formatSku(line.sku);
+            newItem.username = line.username;
+            break;
+          case 'repositoryName':
+            newItem.repositoryName = line.repositoryName;
             newItem.sku = this.formatSku(line.sku);
             break;
           case 'sku':
             newItem.sku = this.formatSku(line.sku);
             break;
-          case 'user':
+          case 'username':
             newItem.username = line.username;
             break;
         }

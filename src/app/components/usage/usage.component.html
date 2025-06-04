@@ -1,24 +1,53 @@
-<div *ngIf="!usage" class="full-width">
+<div *ngIf="!usage" class="full-width flex-center-column">
+  <div class="logo" style="user-select: none;margin-bottom:15px;">
+    <ng-container *ngIf="this.theme === 'light-theme'">
+      <svg width="98" height="96" xmlns="http://www.w3.org/2000/svg">
+        <path fill-rule="evenodd" clip-rule="evenodd"
+          d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z"
+          fill="#24292f" />
+      </svg>
+    </ng-container>
+    <ng-container *ngIf="this.theme === 'dark-theme'">
+      <svg width="98" height="96" xmlns="http://www.w3.org/2000/svg">
+        <path fill-rule="evenodd" clip-rule="evenodd"
+          d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z"
+          fill="#fff" />
+      </svg>
+    </ng-container>
+  </div>
   <h1 class="mat-headline-2" style="user-select: none; font-weight: 800; text-align: center;">
     GitHub<br>Usage Report Viewer
   </h1>
   <!-- <h2 class="mat-h2" style="user-select: none; font-weight: 800; text-align: center;">
     <i>Visualize your GitHub Metered Usage!</i>
   </h2> -->
-</div>
-<div class="flex-center-horizontally full-width">
-  <app-file-upload [text]="status" (fileText)="onFileText($event.fileText, $event.type)"></app-file-upload>
-</div>
+  <div class="flex-center-horizontally full-width">
+    <app-file-upload [text]="status" (fileText)="onFileText($event.fileText, $event.type)"></app-file-upload>
+  </div>
 
-<mat-progress-bar *ngIf="progress && progress < 99" mode="determinate" [value]="progress"></mat-progress-bar>
-<mat-progress-bar *ngIf="progress && progress >= 99" mode="indeterminate"></mat-progress-bar>
+  <mat-progress-bar *ngIf="progress && progress < 99" mode="determinate" [value]="progress"></mat-progress-bar>
+  <mat-progress-bar *ngIf="progress && progress >= 99" mode="indeterminate"></mat-progress-bar>
+
+</div>
 
 <div id="usage-report" *ngIf="usageCopilotPremiumRequests">
   <h1>Premium Requests</h1>
 </div>
 <div id="usage-report" *ngIf="usage">
   <form class="mat-app-background">
-    <mat-form-field appearance="fill">
+    <mat-form-field subscriptSizing="dynamic" *ngIf="tabSelected === 'actions' || tabSelected === 'copilot'">
+      <mat-label>Grouping</mat-label>
+      <mat-select [formControl]="groupingControl">
+        <mat-option value="costCenterName">Cost Center</mat-option>
+        <mat-option value="organization">Organization</mat-option>
+        <mat-option value="repositoryName">Repository</mat-option>
+        <mat-option value="username">User</mat-option>
+        <mat-option value="sku">Runner</mat-option>
+        <mat-option value="workflow">Workflow</mat-option>
+        <mat-option value="workflowPath">Workflow Path</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field subscriptSizing="dynamic" appearance="fill">
       <mat-label>Choose a date range</mat-label>
       <mat-date-range-input [rangePicker]="picker" [formGroup]="range" [min]="minDate" [max]="maxDate">
         <input matStartDate placeholder="Start date" formControlName="start">
@@ -31,30 +60,21 @@
         <mat-icon>close</mat-icon>
       </button>
     </mat-form-field>
-    <mat-form-field style="flex: 1; max-width: 500px;" *ngIf="tabSelected === 'actions'">
-      <mat-label>Workflow</mat-label>
-      <input type="text" placeholder="build.yml" aria-label="Number" matInput [formControl]="workflowControl"
-        [matAutocomplete]="auto" name="workflow">
-      <mat-autocomplete #auto="matAutocomplete">
-        @for (option of _filteredWorkflows | async; track option) {
-        <mat-option [value]="option">{{option}}</mat-option>
-        }
-      </mat-autocomplete>
-      @if (workflowControl.value) {
-      <button matSuffix mat-icon-button aria-label="Clear" (click)="workflowControl.setValue('')">
-        <mat-icon>close</mat-icon>
-      </button>
-      }
+    <mat-form-field subscriptSizing="dynamic"  appearance="fill">
+      <mat-label>Filter</mat-label>
+      <input matInput (keyup)="applyFilter($event)" placeholder="Ex. .github/workflows/build.yml	" #input>
     </mat-form-field>
-    <mat-form-field *ngIf="tabSelected === 'actions' || tabSelected === 'copilot'">
-      <mat-label>Grouping</mat-label>
-      <mat-select [formControl]="groupingControl">
-        <mat-option value="sku">Runner</mat-option>
-        <mat-option value="repo">Repo</mat-option>
-        <mat-option value="workflow">Workflow</mat-option>
-        <mat-option value="user">User</mat-option>
-      </mat-select>
-    </mat-form-field>
+
+    <span class="spacer"></span>
+    <button mat-icon-button (click)="openBottomSheet()">
+      <mat-icon>filter_list</mat-icon>
+    </button>
+    <button mat-icon-button *ngIf="usage" (click)="exportHtml()" matTooltip="Download report as HTML">
+      <mat-icon>download</mat-icon>
+    </button>
+    <button mat-icon-button *ngIf="usage" (click)="reloadPage()" matTooltip="Start over with a new report">
+      <mat-icon>refresh</mat-icon>
+    </button>
     <div>
       <mat-button-toggle-group name="toggleCurrency" aria-label="Toggle Chart" [value]="currency"
         (change)="currency = $event.value; changeCurrency($event.value)">
@@ -64,10 +84,6 @@
         <mat-button-toggle value="cost">Cost</mat-button-toggle>
       </mat-button-toggle-group>
     </div>
-    <button mat-button *ngIf="usage" (click)="exportHtml()" style="margin-left: auto;">
-      <mat-icon>download</mat-icon>
-      Export
-    </button>
   </form>
   <mat-tab-group (selectedTabChange)="tabChanged($event)">
     <mat-tab *ngIf="this.usageLines.actions.length > 0">
@@ -77,7 +93,8 @@
       </ng-template>
       <ng-template matTabContent>
         <div style="margin-top: 25px;"></div>
-        <app-actions [data]="this.usageLines.actions" [currency]="currency" [grouping]="groupingControl.value || 'sku'"></app-actions>
+        <app-actions [filter]="filter" [data]="this.usageLines.actions" [currency]="currency"
+          [grouping]="groupingControl.value || 'username'"></app-actions>
       </ng-template>
     </mat-tab>
     <mat-tab *ngIf="this.usageLines.sharedStorage.length > 0">
@@ -107,7 +124,8 @@
       </ng-template>
       <ng-template matTabContent>
         <div style="margin-top: 25px;"></div>
-        <app-copilot [data]="this.usageLines.copilot" [currency]="currency" [grouping]="groupingControl.value || 'user'"></app-copilot>
+        <app-copilot [data]="this.usageLines.copilot" [currency]="currency"
+          [grouping]="groupingControl.value || 'username'"></app-copilot>
       </ng-template>
     </mat-tab>
   </mat-tab-group>
