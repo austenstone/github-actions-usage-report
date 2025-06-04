@@ -13,6 +13,9 @@
 <mat-progress-bar *ngIf="progress && progress < 99" mode="determinate" [value]="progress"></mat-progress-bar>
 <mat-progress-bar *ngIf="progress && progress >= 99" mode="indeterminate"></mat-progress-bar>
 
+<div id="usage-report" *ngIf="usageCopilotPremiumRequests">
+  <h1>Premium Requests</h1>
+</div>
 <div id="usage-report" *ngIf="usage">
   <form class="mat-app-background">
     <mat-form-field appearance="fill">
