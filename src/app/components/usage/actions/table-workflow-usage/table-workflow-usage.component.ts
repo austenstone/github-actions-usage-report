@@ -2,10 +2,8 @@ import { AfterViewInit, Component, Input, OnChanges, ViewChild, Pipe, PipeTransf
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
-import { UsageReportService, WorkflowUsageItem, RepoUsageItem, SkuUsageItem, UserUsageItem, UsageColumn, AggregatedUsageData, AggregationType } from 'src/app/usage-report.service';
+import { UsageReportService, WorkflowUsageItem, RepoUsageItem, SkuUsageItem, UserUsageItem, UsageColumn, AggregatedUsageData, AggregationType, Product } from 'src/app/usage-report.service';
 import { CurrencyPipe, DecimalPipe } from '@angular/common';
-
-type Product = 'git_lfs' | 'packages' | 'copilot' | 'actions' | 'codespaces';
 
 @Component({
     selector: 'app-table-workflow-usage',
@@ -127,7 +125,7 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
         {
           columnDef: 'workflow',
           header: 'Workflow',
-          cell: (workflowItem: WorkflowUsageItem) => `${workflowItem.workflow}`,
+          cell: (workflowItem: WorkflowUsageItem) => `${workflowItem.workflowName}`,
           sticky: true,
         },
         {

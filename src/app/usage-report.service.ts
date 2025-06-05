@@ -12,8 +12,6 @@ interface Filter {
   sku: string;
 }
 
-type Product = 'git_lfs' | 'packages' | 'copilot' | 'actions' | 'codespaces';
-
 export interface CustomUsageReportLine extends UsageReportLine {
   value: number;
 }
@@ -22,8 +20,19 @@ export interface CustomUsageReport extends UsageReport {
   lines: CustomUsageReportLine[];
 }
 
+export interface SharedStorageUsageItem {
+  repositoryName: string;
+  count: number;
+  avgSize: number;
+  total: number;
+  totalCost: number;
+  avgCost: number;
+  pricePerUnit: number;
+  costPerDay: number;
+}
+
 export interface WorkflowUsageItem {
-  workflow: string;
+  workflowName: string;
   workflowPath: string;
   costCenterName: string;
   organization: string;
@@ -37,12 +46,15 @@ export interface WorkflowUsageItem {
   sku: string;
   username: string;
   [month: string]: any; // For dynamic month columns
+  avgSize: number; // For shared storage
+  costPerDay: number; // For shared storage
+  count: number; // For shared storage
 }
 
 export interface RepoUsageItem {
   avgTime: number;
   avgCost: number;
-  repo: string;
+  repositoryName: string;
   runs: number;
   total: number;
   cost: number;
@@ -88,6 +100,7 @@ export interface AggregatedUsageData {
 }
 
 export type AggregationType = 'workflow' | 'sku' | 'organization' | 'repositoryName' | 'costCenterName' | 'username' | 'workflowPath';
+export type Product = 'git_lfs' | 'packages' | 'copilot' | 'actions' | 'codespaces';
 
 @Injectable({
   providedIn: 'root'
@@ -369,7 +382,7 @@ export class UsageReportService {
           case 'repositoryName':
             return (a as WorkflowUsageItem).repositoryName === line.repositoryName;
           case 'workflow':
-            return (a as WorkflowUsageItem).workflow === line.workflowName;
+            return (a as WorkflowUsageItem).workflowName === line.workflowName;
           case 'workflowPath':
             return (a as WorkflowUsageItem).workflowPath === line.workflowPath;
           case 'username':
@@ -401,7 +414,7 @@ export class UsageReportService {
         item.total += line.quantity;
         item.runs++;
       } else {
-        const newItem: any = {
+        const newItem: WorkflowUsageItem = {
           total: line.quantity,
           cost: line.quantity * line.pricePerUnit,
           runs: 1,
@@ -409,18 +422,29 @@ export class UsageReportService {
           avgCost: line.quantity * line.pricePerUnit,
           avgTime: line.value,
           [month]: line.value,
+          workflowName: line.workflowName,
+          workflowPath: line.workflowPath,
+          costCenterName: line.costCenterName,
+          organization: line.organization,
+          repositoryName: line.repositoryName,
+          sku: this.formatSku(line.sku),
+          username: line.username,
+          // shared-storage
+          avgSize: line.value,
+          costPerDay: line.quantity * line.pricePerUnit,
+          count: 1, // For shared storage
         };
 
         // Set aggregation-specific properties
         switch (aggregationType) {
           case 'workflow':
-            newItem.workflow = line.workflowName;
-            newItem.repo = line.repositoryName;
+            newItem.workflowName = line.workflowName;
+            newItem.repositoryName = line.repositoryName;
             newItem.sku = this.formatSku(line.sku);
             newItem.username = line.username;
             break;
           case 'workflowPath':
-            newItem.workflow = line.workflowName;
+            newItem.workflowName = line.workflowName;
             newItem.workflowPath = line.workflowPath;
             newItem.costCenterName = line.costCenterName;
             newItem.organization = line.organization;

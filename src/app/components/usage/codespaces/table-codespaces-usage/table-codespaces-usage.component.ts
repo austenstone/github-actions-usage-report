@@ -111,7 +111,7 @@ export class TableCodespacesUsageComponent implements OnChanges, AfterViewInit {
         {
           columnDef: 'repo',
           header: 'Repository',
-          cell: (item: RepoUsageItem) => `${item.repo}`,
+          cell: (item: RepoUsageItem) => `${item.repositoryName}`,
           sticky: true
         }
       ];

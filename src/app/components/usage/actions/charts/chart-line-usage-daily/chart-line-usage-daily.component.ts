@@ -1,7 +1,7 @@
 import { Component, Input, OnChanges, ViewChild } from '@angular/core';
 import * as Highcharts from 'highcharts';
 import { ThemingService } from 'src/app/theme.service';
-import { CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.service';
+import { AggregationType, CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.service';
 
 @Component({
     selector: 'app-chart-line-usage-daily',
@@ -51,7 +51,7 @@ export class ChartLineUsageDailyComponent implements OnChanges {
     },
   };
   updateFromInput: boolean = false;
-  chartType: 'repo' | 'total' | 'sku' | 'user' | 'workflow' = 'sku';
+  chartType: AggregationType = 'sku';
   timeType: 'total' | 'run' | 'daily' | 'weekly' | 'monthly' | 'rolling30' | 'rolling7' = 'rolling30';
   rollingDays = 30;
 
@@ -71,6 +71,7 @@ export class ChartLineUsageDailyComponent implements OnChanges {
       (acc, line, index) => {
         let name = 'Total';
         let timeKey = 'total';
+
         if (this.timeType === 'run') {
           timeKey = `${line.workflowName}${line.date}${index}`;
         } else if (this.timeType === 'daily') {
@@ -78,25 +79,23 @@ export class ChartLineUsageDailyComponent implements OnChanges {
         } else if (this.timeType === 'weekly') {
           timeKey = this.getWeekOfYear(line.date).toString();
         } else if (this.timeType === 'monthly') {
-          // get key in format YYYY-MM
           timeKey = line.date.toISOString().split('T')[0].slice(0, 7);
         } else if (this.timeType.startsWith('rolling')) {
-          // get key in format YYYY-MM
           timeKey = line.date.toISOString().split('T')[0];
         } else if (this.timeType === 'total') {
           timeKey = 'total'
         }
+
         if (this.chartType === 'sku') {
           name = this.usageReportService.formatSku(line.sku);
-        } else if (this.chartType === 'user') {
+        } else if (this.chartType === 'username') {
           name = line.username;
-        } else if (this.chartType === 'repo') {
+        } else if (this.chartType === 'repositoryName') {
           name = line.repositoryName;
         } else if (this.chartType === 'workflow') {
           name = line.workflowName;
-        } else if (this.chartType === 'total') {
-          name = 'total';
         }
+
         const series = acc.find((s) => s.name === name);
         if (series) {
           if (!series.data[timeKey]) series.data[timeKey] = [];
@@ -124,6 +123,7 @@ export class ChartLineUsageDailyComponent implements OnChanges {
     ).sort((a: any, b: any) => {
       return b.total - a.total;
     }).slice(0, 50);
+
     (this.options.series as { name: string; data: [number, number][] }[]) = seriesDays.map((series) => {
       let data: [number, number][] = [];
       if (this.timeType === 'total') {
@@ -161,7 +161,7 @@ export class ChartLineUsageDailyComponent implements OnChanges {
         data
       }
     });
-    if (this.options.legend) this.options.legend.enabled = this.chartType === 'total' ? false : true;
+    // if (this.options.legend) this.options.legend.enabled = this.chartType === 'total' ? false : true;
     this.options.yAxis = {
       ...this.options.yAxis,
       title: {
