@@ -5,8 +5,8 @@
       <mat-select  [(value)]="tableType" (selectionChange)="tableType = $event.value; ngOnChanges()">
         <mat-option value="sku">Runner</mat-option>
         <mat-option value="repo">Repo</mat-option>
-        <mat-option value="workflow">Workflow</mat-option>
-        <mat-option value="user">User</mat-option>
+        <mat-option value="workflow" [disabled]="!hasWorkflowData" [matTooltip]="!hasWorkflowData ? 'Workflow data not available in summarized reports' : ''">Workflow</mat-option>
+        <mat-option value="user" [disabled]="!hasUsernameData" [matTooltip]="!hasUsernameData ? 'User data not available in summarized reports' : ''">User</mat-option>
       </mat-select>
     </mat-form-field>
 

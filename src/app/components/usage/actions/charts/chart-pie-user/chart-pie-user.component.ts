@@ -30,6 +30,7 @@ export class ChartPieUserComponent implements OnChanges {
     }]
   };
   updateFromInput: boolean = false;
+  hasUsernameData: boolean = false;
 
   constructor(
     private themeService: ThemingService,
@@ -42,12 +43,19 @@ export class ChartPieUserComponent implements OnChanges {
   }
 
   ngOnChanges() {
+    this.hasUsernameData = this.usageReportService.hasUsernameData;
+    
+    // If no username data, show usage by repository instead
+    const groupByField = this.hasUsernameData ? 'username' : 'repositoryName';
+    const chartTitle = this.hasUsernameData ? 'username' : 'repository';
+    
     this.data = this.data.filter((line) => line.unitType === 'minutes');
 
     const aggregatedData = this.data.reduce((acc, line) => {
-        const index = acc.findIndex((item) => item[0] === line.username);
+        const fieldValue = (line as any)[groupByField] || 'Unknown';
+        const index = acc.findIndex((item) => item[0] === fieldValue);
         if (index === -1) {
-          acc.push([line.username, line.value]);
+          acc.push([fieldValue, line.value]);
         } else {
           acc[index][1] += line.value;
         }
@@ -72,7 +80,7 @@ export class ChartPieUserComponent implements OnChanges {
       data
     }];
     this.options.title = {
-      text: `${this.currency === 'minutes' ? 'Usage' : 'Cost'} by username`
+      text: `${this.currency === 'minutes' ? 'Usage' : 'Cost'} by ${chartTitle}`
     };
     this.options.tooltip = {
       ...this.options.tooltip,

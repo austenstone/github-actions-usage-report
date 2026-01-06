@@ -1,8 +1,7 @@
 import { OnInit, ChangeDetectorRef, Component, OnDestroy, isDevMode } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
-import { UsageReport } from 'github-usage-report/src/types';
 import { Observable, Subscription, debounceTime, map, startWith } from 'rxjs';
-import { CustomUsageReportLine, UsageReportService } from 'src/app/usage-report.service';
+import { CustomUsageReportLine, UsageReport, UsageReportService } from 'src/app/usage-report.service';
 import { DialogBillingNavigateComponent } from './dialog-billing-navigate';
 import { MatDialog } from '@angular/material/dialog';
 import { ModelUsageReport } from 'github-usage-report';
@@ -38,6 +37,8 @@ export class UsageComponent implements OnInit, OnDestroy {
   subscriptions: Subscription[] = [];
   currency: 'minutes' | 'cost' = 'cost';
   tabSelected: 'shared-storage' | 'copilot' | 'actions' = 'actions';
+  hasWorkflowData: boolean = false;
+  formatType: 'legacy' | 'summarized' | null = null;
 
   constructor(
     private usageReportService: UsageReportService,
@@ -106,6 +107,10 @@ export class UsageComponent implements OnInit, OnDestroy {
       }),
       this.usageReportService.getWorkflowsFiltered().subscribe((workflows) => {
         this.workflows = workflows;
+      }),
+      this.usageReportService.formatType.subscribe((formatType) => {
+        this.formatType = formatType;
+        this.hasWorkflowData = this.usageReportService.hasWorkflowData;
       }),
     );
   }

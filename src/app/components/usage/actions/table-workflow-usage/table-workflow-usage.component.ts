@@ -61,15 +61,31 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
   @Input() currency!: string;
   dataSource: MatTableDataSource<WorkflowUsageItem | RepoUsageItem | SkuUsageItem> = new MatTableDataSource<any>(); // Initialize the dataSource property
   tableType: 'workflow' | 'repo' | 'sku' | 'user' = 'sku';
+  
+  // Track available grouping options based on CSV format
+  hasWorkflowData: boolean = false;
+  hasUsernameData: boolean = false;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
   constructor(
-    private usageReportService: UsageReportService,
+    public usageReportService: UsageReportService,
   ) { }
 
   ngOnChanges() {
+    // Update available grouping options based on the data
+    this.hasWorkflowData = this.usageReportService.hasWorkflowData;
+    this.hasUsernameData = this.usageReportService.hasUsernameData;
+    
+    // Reset table type if current selection is not available
+    if (this.tableType === 'workflow' && !this.hasWorkflowData) {
+      this.tableType = 'sku';
+    }
+    if (this.tableType === 'user' && !this.hasUsernameData) {
+      this.tableType = 'sku';
+    }
+    
     this.initializeColumns();
     let usage: WorkflowUsageItem[] | RepoUsageItem[] | SkuUsageItem[] = [];
     let usageItems: WorkflowUsageItem[] = (usage as WorkflowUsageItem[]);
@@ -82,7 +98,7 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
         } else if (this.tableType === 'sku') {
           return a.sku === this.usageReportService.formatSku(line.sku);
         } else if (this.tableType === 'user') {
-          return a.username === line.username;
+          return a.username === (line.username || 'Unknown');
         }
         return false
       });
@@ -130,7 +146,7 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
       } else {
         acc.push({
           workflow: line.workflowName || line.workflowPath || 'Unknown Workflow',
-          repo: line.repositoryName,
+          repo: line.repositoryName || 'Unknown Repository',
           total: line.quantity,
           cost: line.quantity * line.pricePerUnit,
           runs: 1,
@@ -139,7 +155,7 @@ export class TableWorkflowUsageComponent implements OnChanges, AfterViewInit {
           avgTime: line.value,
           [month]: line.value,
           sku: this.usageReportService.formatSku(line.sku),
-          username: line.username,
+          username: line.username || 'Unknown',
         });
       }
       return acc;

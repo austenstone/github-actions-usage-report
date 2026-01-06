@@ -31,7 +31,7 @@
         <mat-icon>close</mat-icon>
       </button>
     </mat-form-field>
-    <mat-form-field style="flex: 1; max-width: 500px;" *ngIf="tabSelected === 'actions'">
+    <mat-form-field style="flex: 1; max-width: 500px;" *ngIf="tabSelected === 'actions' && hasWorkflowData">
       <mat-label>Workflow</mat-label>
       <input type="text" placeholder="build.yml" aria-label="Number" matInput [formControl]="workflowControl"
         [matAutocomplete]="auto" name="workflow">
@@ -46,6 +46,12 @@
       </button>
       }
     </mat-form-field>
+    <span *ngIf="tabSelected === 'actions' && !hasWorkflowData && formatType === 'summarized'" 
+          class="format-notice" 
+          matTooltip="The summarized report format doesn't include workflow details. Use the detailed usage report for workflow-level data.">
+      <mat-icon>info</mat-icon>
+      Summarized report
+    </span>
     <div>
       <mat-button-toggle-group name="toggleCurrency" aria-label="Toggle Chart" [value]="currency"
         (change)="currency = $event.value; changeCurrency($event.value)">
