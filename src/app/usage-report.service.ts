@@ -258,7 +258,7 @@ export class UsageReportService {
   valueType: BehaviorSubject<'minutes' | 'cost'> = new BehaviorSubject<'minutes' | 'cost'>('cost');
   formatType: BehaviorSubject<'legacy' | 'summarized' | null> = new BehaviorSubject<'legacy' | 'summarized' | null>(null);
   hasWorkflowData: boolean = false;
-  hasUsernameData: boolean = false
+  hasUsernameData: boolean = false;
   skuMapping: { [key: string]: string } = {
     "actions_linux": 'Ubuntu 2',
     "actions_linux_16_core": 'Ubuntu 16',

@@ -52,7 +52,7 @@ export class ChartPieUserComponent implements OnChanges {
     this.data = this.data.filter((line) => line.unitType === 'minutes');
 
     const aggregatedData = this.data.reduce((acc, line) => {
-        const fieldValue = (line as any)[groupByField] || 'Unknown';
+        const fieldValue = groupByField === 'username' ? (line.username || 'Unknown') : (line.repositoryName || 'Unknown');
         const index = acc.findIndex((item) => item[0] === fieldValue);
         if (index === -1) {
           acc.push([fieldValue, line.value]);
