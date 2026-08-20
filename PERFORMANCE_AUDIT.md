@@ -6,7 +6,7 @@
 
 ## Audit 1: Empty State (No Data Loaded)
 
-**URL:** `http://localhost:5174/tbb/?period=2026-02`
+**URL:** `http://localhost:5174/github-actions-usage-report/?period=2026-02`
 
 ### Lighthouse Scores
 
@@ -56,7 +56,7 @@ index.html (11ms)
 
 ## Audit 2: Loaded State (Data with Charts)
 
-**URL:** `http://localhost:5174/tbb/?groupBy=sku&period=2026-02`
+**URL:** `http://localhost:5174/github-actions-usage-report/?groupBy=sku&period=2026-02`
 **Data:** 30,541 rows across 22 SKU groups (Feb 1 to Mar 28, 2026)
 
 ### Lighthouse Scores
