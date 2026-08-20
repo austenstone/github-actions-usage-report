@@ -366,10 +366,13 @@ export function resolveGroupByColumn(
   const schema = getReportSchema(report.type);
   if (!currentColumn) return schema.defaultGroupBy;
 
-  const rows = report.rows as Array<Record<string, unknown>>;
+  const readColumn = (row: unknown): unknown =>
+    (row as Record<string, unknown> | undefined)?.[currentColumn];
+
+  const rows: readonly unknown[] = report.rows;
   const stride = Math.max(1, Math.floor(rows.length / GROUP_BY_SAMPLE_SIZE));
   for (let i = 0; i < rows.length; i += stride) {
-    const value = rows[i]?.[currentColumn];
+    const value = readColumn(rows[i]);
     if (value !== undefined && value !== null && value !== '') return currentColumn;
   }
   return schema.defaultGroupBy;
