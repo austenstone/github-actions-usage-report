@@ -19,14 +19,16 @@ export default defineConfig({
       exclude: [
         'src/lib/sample-data.ts', // dynamic imports only, untestable
         'src/lib/local-storage.ts', // IndexedDB not available in jsdom
-        'src/lib/zip.ts', // File.arrayBuffer() not available in jsdom
+        // fflate's zipSync can't build an archive under jsdom (its Uint8Array
+        // check fails across realms); the read path is covered via import.test.ts
+        'src/lib/zip.ts',
       ],
       reporter: ['text', 'lcov'],
       thresholds: {
-        lines: 74,
-        functions: 67,
-        statements: 72,
-        branches: 64,
+        lines: 80,
+        functions: 70,
+        statements: 80,
+        branches: 65,
       },
     },
   },

@@ -364,18 +364,20 @@ export function resolveGroupByColumn(
   currentColumn: string,
 ): string {
   const schema = getReportSchema(report.type);
-  if (!currentColumn) return schema.defaultGroupBy;
-
-  const readColumn = (row: unknown): unknown =>
-    (row as Record<string, unknown> | undefined)?.[currentColumn];
-
   const rows: readonly unknown[] = report.rows;
-  const stride = Math.max(1, Math.floor(rows.length / GROUP_BY_SAMPLE_SIZE));
-  for (let i = 0; i < rows.length; i += stride) {
-    const value = readColumn(rows[i]);
-    if (value !== undefined && value !== null && value !== '') return currentColumn;
-  }
-  return schema.defaultGroupBy;
+
+  const hasValues = (column: string): boolean => {
+    if (!column) return false;
+    const stride = Math.max(1, Math.floor(rows.length / GROUP_BY_SAMPLE_SIZE));
+    for (let i = 0; i < rows.length; i += stride) {
+      const value = (rows[i] as Record<string, unknown> | undefined)?.[column];
+      if (value !== undefined && value !== null && value !== '') return true;
+    }
+    return false;
+  };
+
+  const candidates = [currentColumn, schema.defaultGroupBy, schema.primaryDimension];
+  return candidates.find(hasValues) ?? schema.defaultGroupBy;
 }
 
 /** Sidebar nav page identifiers derived from report types */

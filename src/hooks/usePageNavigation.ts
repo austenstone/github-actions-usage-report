@@ -5,6 +5,7 @@ import {
   PAGE_REPORT_TYPES,
   pageTypeForReport,
   getReportSchema,
+  resolveGroupByColumn,
   type PageType,
 } from '../lib/report-schema';
 import { readURLFilterState, writeURLFilterState } from '../lib/url-state';
@@ -51,13 +52,13 @@ export function usePageNavigation({
     // Files page has no report types
     const reportTypes = PAGE_REPORT_TYPES[page];
     if (!reportTypes || reportTypes.length === 0) return;
-    const targetReportType = reportTypes[0];
-    const schema = getReportSchema(targetReportType);
-    setGroupByColumn(schema.defaultGroupBy);
     const matchIndex = reports.findIndex((r) => reportTypes.includes(r.type));
     if (matchIndex !== -1) {
       setActiveReport(matchIndex);
+      setGroupByColumn(resolveGroupByColumn(reports[matchIndex], ''));
+      return;
     }
+    setGroupByColumn(getReportSchema(reportTypes[0]).defaultGroupBy);
   }, [setGroupByColumn, reports, setActiveReport]);
 
   // Sync active page to URL

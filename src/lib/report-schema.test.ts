@@ -107,6 +107,11 @@ describe('resolveGroupByColumn', () => {
     expect(resolveGroupByColumn(report(REPORT_TYPES.ENTERPRISE_MEMBERS, []), '')).toBe('licenseType');
   });
 
+  it('skips a schema default that is also absent, as in org-level seat exports', () => {
+    const rows = Array.from({ length: 50 }, () => ({ login: 'ana-reyes', lastSurfaceUsed: 'vscode' }));
+    expect(resolveGroupByColumn(report(REPORT_TYPES.COPILOT_SEAT_ACTIVITY, rows), '')).toBe('login');
+  });
+
   it('falls back for an empty report rather than keeping an unusable column', () => {
     expect(resolveGroupByColumn(report(REPORT_TYPES.DORMANT_USERS, []), 'username')).toBe('role');
   });
