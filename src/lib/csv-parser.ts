@@ -16,24 +16,32 @@ import type {
 } from './types';
 import { REPORT_TYPES } from './types';
 
-/** CSV header → report type mapping. Order matters — check most specific first. */
-const HEADER_SIGNATURES: Record<ReportType, string[]> = {
-  [REPORT_TYPES.TOKEN_USAGE]: ['total_input_tokens', 'total_output_tokens'],
-  [REPORT_TYPES.PREMIUM_REQUEST]: ['aic_quantity', 'aic_gross_amount'],
-  [REPORT_TYPES.USAGE_REPORT]: ['repository', 'workflow_path'],
-  [REPORT_TYPES.GHAS_ACTIVE_COMMITTERS]: ['user login', 'organization / repository', 'last pushed date'],
-  [REPORT_TYPES.COPILOT_SEAT_ACTIVITY]: ['report time', 'last authenticated at', 'last activity at', 'last surface used'],
-  [REPORT_TYPES.ENTERPRISE_MEMBERS]: ['github com login', 'license type', 'github com enterprise roles', 'total user accounts'],
-  [REPORT_TYPES.DORMANT_USERS]: ['login', 'role', '2fa_enabled?', 'outside_collaborator'],
-};
+/**
+ * CSV header signatures → report type. Evaluated in array order, most specific
+ * first, because several reports share the billing column prefix.
+ *
+ * Signatures list only columns that are structurally guaranteed for that report.
+ * The metered usage report ships in two flavours — detailed (31 days, includes
+ * `username` and `workflow_path`) and summarized (up to a year, omits both) — so
+ * it keys off `repository`, which no Copilot report has.
+ */
+const HEADER_SIGNATURES: ReadonlyArray<readonly [ReportType, readonly string[]]> = [
+  [REPORT_TYPES.TOKEN_USAGE, ['total_input_tokens', 'total_output_tokens']],
+  [REPORT_TYPES.PREMIUM_REQUEST, ['model', 'exceeds_quota', 'total_monthly_quota']],
+  [REPORT_TYPES.USAGE_REPORT, ['date', 'product', 'sku', 'net_amount', 'repository']],
+  [REPORT_TYPES.GHAS_ACTIVE_COMMITTERS, ['user login', 'organization / repository', 'last pushed date']],
+  [REPORT_TYPES.COPILOT_SEAT_ACTIVITY, ['report time', 'last authenticated at', 'last activity at', 'last surface used']],
+  [REPORT_TYPES.ENTERPRISE_MEMBERS, ['github com login', 'license type', 'github com enterprise roles', 'total user accounts']],
+  [REPORT_TYPES.DORMANT_USERS, ['login', 'role', '2fa_enabled?', 'outside_collaborator']],
+];
 
 /** Detect report type from CSV headers */
 export function detectReportType(headers: string[]): ReportType {
   const lowerHeaders = headers.map((h) => h.toLowerCase().trim());
 
-  for (const [type, signatures] of Object.entries(HEADER_SIGNATURES)) {
+  for (const [type, signatures] of HEADER_SIGNATURES) {
     if (signatures.every((sig) => lowerHeaders.includes(sig))) {
-      return type as ReportType;
+      return type;
     }
   }
 
@@ -61,7 +69,7 @@ function mapPremiumRequestRow(raw: Record<string, string>): PremiumRequestRow {
     sku: (raw['sku'] ?? '') as PremiumRequestSku,
     model: raw['model'] ?? '',
     quantity: parseNum(raw['quantity']),
-    unitType: (raw['unit_type'] ?? '') as 'requests' | 'ai-units',
+    unitType: (raw['unit_type'] ?? '') as 'requests' | 'ai-units' | 'ai-credits',
     appliedCostPerQuantity: parseNum(raw['applied_cost_per_quantity']),
     grossAmount: parseNum(raw['gross_amount']),
     discountAmount: parseNum(raw['discount_amount']),
@@ -84,7 +92,7 @@ function mapTokenUsageRow(raw: Record<string, string>): TokenUsageRow {
     sku: (raw['sku'] ?? '') as PremiumRequestSku,
     model: raw['model'] ?? '',
     quantity: parseNum(raw['quantity']),
-    unitType: (raw['unit_type'] ?? '') as 'requests' | 'ai-units',
+    unitType: (raw['unit_type'] ?? '') as 'requests' | 'ai-units' | 'ai-credits',
     appliedCostPerQuantity: parseNum(raw['applied_cost_per_quantity']),
     grossAmount: parseNum(raw['gross_amount']),
     discountAmount: parseNum(raw['discount_amount']),
