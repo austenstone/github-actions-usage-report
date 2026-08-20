@@ -1,5 +1,10 @@
-import { describe, it, expect } from 'vitest';
-import { buildColorMap, getModelIconUrl, GITHUB_COLORS_RESOLVED } from './chart-theme';
+import { afterEach, describe, it, expect } from 'vitest';
+import {
+  buildColorMap,
+  buildGitHubChartTheme,
+  getModelIconUrl,
+  GITHUB_COLORS_RESOLVED,
+} from './chart-theme';
 
 describe('buildColorMap', () => {
   it('assigns distinct branded colors per AI model family', () => {
@@ -47,5 +52,40 @@ describe('getModelIconUrl', () => {
 
   it('is case insensitive', () => {
     expect(getModelIconUrl('CLAUDE')).toBe(getModelIconUrl('claude'));
+  });
+});
+
+describe('buildGitHubChartTheme', () => {
+  afterEach(() => {
+    document.querySelector('[data-color-mode]')?.remove();
+  });
+
+  it('falls back to the bundled palette when no Primer root is mounted', () => {
+    const theme = buildGitHubChartTheme() as { colors: string[] };
+
+    expect(theme.colors).toEqual(GITHUB_COLORS_RESOLVED.slice(0, theme.colors.length));
+  });
+
+  it('reads live CSS variables from the Primer root when one exists', () => {
+    const root = document.createElement('div');
+    root.setAttribute('data-color-mode', 'dark');
+    root.style.setProperty('--data-blue-color-emphasis', 'rgb(1, 2, 3)');
+    document.body.appendChild(root);
+
+    const theme = buildGitHubChartTheme() as { colors: string[] };
+
+    expect(theme.colors[0]).toBe('rgb(1, 2, 3)');
+  });
+
+  it('disables credits, accessibility, and animation for deterministic rendering', () => {
+    const theme = buildGitHubChartTheme() as {
+      credits: { enabled: boolean };
+      accessibility: { enabled: boolean };
+      chart: { animation: boolean };
+    };
+
+    expect(theme.credits.enabled).toBe(false);
+    expect(theme.accessibility.enabled).toBe(false);
+    expect(theme.chart.animation).toBe(false);
   });
 });
