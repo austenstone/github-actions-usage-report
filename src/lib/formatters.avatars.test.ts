@@ -124,6 +124,57 @@ describe('bot avatar resolution', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
+  it('does not re-request a bot the API had no avatar for', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: false } as Response);
+    vi.stubGlobal('fetch', fetchMock);
+    const { resolveBotAvatar } = await freshFormatters();
+
+    await expect(resolveBotAvatar('gone[bot]')).resolves.toBeNull();
+    await expect(resolveBotAvatar('gone[bot]')).resolves.toBeNull();
+    await expect(resolveBotAvatar('gone[bot]')).resolves.toBeNull();
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not re-request a bot whose lookup threw', async () => {
+    const fetchMock = vi.fn().mockRejectedValue(new Error('offline'));
+    vi.stubGlobal('fetch', fetchMock);
+    const { resolveBotAvatar } = await freshFormatters();
+
+    await expect(resolveBotAvatar('flaky[bot]')).resolves.toBeNull();
+    await expect(resolveBotAvatar('flaky[bot]')).resolves.toBeNull();
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('skips known-unresolvable bots on later preload passes', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: false } as Response);
+    vi.stubGlobal('fetch', fetchMock);
+    const { preloadBotAvatars } = await freshFormatters();
+
+    await preloadBotAvatars(['a[bot]', 'b[bot]']);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+
+    await preloadBotAvatars(['a[bot]', 'b[bot]']);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('keeps failures out of storage so a reload retries them', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false } as Response));
+    const first = await freshFormatters();
+    await first.resolveBotAvatar('later[bot]');
+    expect(storage.getItem(AVATAR_STORAGE_KEY)).toBeNull();
+
+    const fetchMock = vi.fn().mockResolvedValue(okResponse('https://example.test/late.png'));
+    vi.stubGlobal('fetch', fetchMock);
+    const second = await freshFormatters();
+
+    await expect(second.resolveBotAvatar('later[bot]')).resolves.toBe(
+      'https://example.test/late.png',
+    );
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it('queues requests beyond the concurrency cap but still resolves them all', async () => {
     const fetchMock = vi.fn().mockResolvedValue(okResponse('https://example.test/c.png'));
     vi.stubGlobal('fetch', fetchMock);

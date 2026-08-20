@@ -368,6 +368,12 @@ const HARDCODED_BOTS = new Set(botAvatarCache.keys());
 /** In-flight fetch promises to avoid duplicate API calls */
 const pendingFetches = new Map<string, Promise<string | null>>();
 
+// Usernames the API had no avatar for. Kept in memory only, never persisted, so
+// a reload retries a bot that has since been created or renamed. Without this
+// every failed lookup repeats on each dataset change and exhausts the 60/hr
+// unauthenticated rate limit, after which no avatars resolve at all.
+const unresolvedAvatars = new Set<string>();
+
 /** Simple throttle: max concurrent GitHub API requests */
 const MAX_CONCURRENT_FETCHES = 3;
 let activeFetchCount = 0;
@@ -407,6 +413,7 @@ function throttledFetch(url: string): Promise<Response> {
  */
 export async function resolveBotAvatar(username: string): Promise<string | null> {
   if (botAvatarCache.has(username)) return botAvatarCache.get(username)!;
+  if (unresolvedAvatars.has(username)) return null;
   if (!isBot(username)) return null;
 
   // Deduplicate in-flight requests
@@ -423,10 +430,15 @@ export async function resolveBotAvatar(username: string): Promise<string | null>
       if (url) {
         botAvatarCache.set(username, url);
         persistAvatarCache();
+      } else {
+        unresolvedAvatars.add(username);
       }
       return url;
     })
-    .catch(() => null)
+    .catch(() => {
+      unresolvedAvatars.add(username);
+      return null;
+    })
     .finally(() => pendingFetches.delete(username));
 
   pendingFetches.set(username, promise);
@@ -439,7 +451,9 @@ export async function resolveBotAvatar(username: string): Promise<string | null>
  * Caps at 10 API lookups per batch to avoid rate limits.
  */
 export async function preloadBotAvatars(usernames: string[]): Promise<boolean> {
-  const bots = usernames.filter((u) => isBot(u) && !botAvatarCache.has(u));
+  const bots = usernames.filter(
+    (u) => isBot(u) && !botAvatarCache.has(u) && !unresolvedAvatars.has(u),
+  );
   if (bots.length === 0) return false;
   // Cap lookups to avoid hammering the API with many unknown bots
   const batch = bots.slice(0, 10);
