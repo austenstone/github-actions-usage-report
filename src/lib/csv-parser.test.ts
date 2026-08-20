@@ -94,13 +94,88 @@ describe('detectReportType', () => {
   });
 
   it('handles case-insensitive headers', () => {
-    const headers = ['Date', 'AIC_QUANTITY', 'AIC_Gross_Amount', 'username'];
+    const headers = ['Date', 'MODEL', 'Exceeds_Quota', 'TOTAL_monthly_quota'];
     expect(detectReportType(headers)).toBe(REPORT_TYPES.PREMIUM_REQUEST);
   });
 
   it('handles headers with whitespace padding', () => {
-    const headers = ['  date  ', '  aic_quantity ', ' aic_gross_amount', 'username'];
+    const headers = ['  date  ', '  model ', ' exceeds_quota', 'total_monthly_quota  '];
     expect(detectReportType(headers)).toBe(REPORT_TYPES.PREMIUM_REQUEST);
+  });
+
+  it('detects the summarized usage report, which omits username and workflow_path', () => {
+    const headers = [
+      'date',
+      'product',
+      'sku',
+      'quantity',
+      'unit_type',
+      'applied_cost_per_quantity',
+      'gross_amount',
+      'discount_amount',
+      'net_amount',
+      'organization',
+      'repository',
+      'cost_center_name',
+    ];
+    expect(detectReportType(headers)).toBe(REPORT_TYPES.USAGE_REPORT);
+  });
+
+  it('detects a premium request report that has no aic_ columns', () => {
+    const headers = [
+      'date',
+      'username',
+      'product',
+      'sku',
+      'model',
+      'quantity',
+      'unit_type',
+      'applied_cost_per_quantity',
+      'gross_amount',
+      'discount_amount',
+      'net_amount',
+      'exceeds_quota',
+      'total_monthly_quota',
+      'organization',
+      'cost_center_name',
+    ];
+    expect(detectReportType(headers)).toBe(REPORT_TYPES.PREMIUM_REQUEST);
+  });
+
+  it('does not mistake a Copilot report for a metered usage report', () => {
+    const headers = [
+      'date',
+      'username',
+      'product',
+      'sku',
+      'model',
+      'quantity',
+      'unit_type',
+      'applied_cost_per_quantity',
+      'gross_amount',
+      'discount_amount',
+      'net_amount',
+      'exceeds_quota',
+      'total_monthly_quota',
+      'organization',
+      'cost_center_name',
+      'total_input_tokens',
+      'total_output_tokens',
+      'total_cache_creation_tokens',
+      'total_cache_read_tokens',
+    ];
+    expect(detectReportType(headers)).toBe(REPORT_TYPES.TOKEN_USAGE);
+  });
+
+  it('detects the org-level seat activity export, which has no Organization column', () => {
+    const headers = [
+      'report time',
+      'login',
+      'last authenticated at',
+      'last activity at',
+      'last surface used',
+    ];
+    expect(detectReportType(headers)).toBe(REPORT_TYPES.COPILOT_SEAT_ACTIVITY);
   });
 
   it('throws on unknown headers', () => {
@@ -893,5 +968,60 @@ describe('cross-report: all 6 report types are uniquely detectable', () => {
       const report = parseCSV(csvText, file);
       expect(report.type).toBe(expected);
     }
+  });
+});
+
+// ─── Billing Format Drift Regressions ──────────────────────────────────────────
+
+describe('parseCSV — billing format drift', () => {
+  it('parses a summarized metered usage report end to end', () => {
+    const csv = [
+      '"date","product","sku","quantity","unit_type","applied_cost_per_quantity","gross_amount","discount_amount","net_amount","organization","repository","cost_center_name"',
+      '"2026-02-01","actions","actions_linux","1200","minutes","0.008","9.6","0","9.6","acme-platform","acme-platform/api",""',
+      '"2026-02-02","actions","actions_macos","30","minutes","0.08","2.4","0","2.4","acme-platform","acme-platform/ios","engineering"',
+    ].join('\n');
+
+    const report = parseCSV(csv, 'summarized.csv');
+
+    expect(report.type).toBe(REPORT_TYPES.USAGE_REPORT);
+    expect(report.rowCount).toBe(2);
+    expect(report.dateRange).toEqual({ start: '2026-02-01', end: '2026-02-02' });
+
+    const rows = report.rows as UsageReportRow[];
+    expect(rows[0].quantity).toBe(1200);
+    expect(rows[0].repository).toBe('acme-platform/api');
+    // Columns absent from the summarized export fall back to empty strings.
+    expect(rows[0].username).toBe('');
+    expect(rows[0].workflowPath).toBe('');
+  });
+
+  it('parses AI-credit billed Copilot rows', () => {
+    const csv = [
+      '"date","username","product","sku","model","quantity","unit_type","applied_cost_per_quantity","gross_amount","discount_amount","net_amount","exceeds_quota","total_monthly_quota","organization","cost_center_name","aic_quantity","aic_gross_amount"',
+      '"2026-07-01","gray-oak","copilot","copilot_ai_credit","Claude Opus 4.6","250","ai-credits","0.01","2.5","0","2.5","False","1000","alder-labs","","250","2.5"',
+    ].join('\n');
+
+    const report = parseCSV(csv, 'ai-credits.csv');
+
+    expect(report.type).toBe(REPORT_TYPES.PREMIUM_REQUEST);
+    const rows = report.rows as PremiumRequestRow[];
+    expect(rows[0].sku).toBe('copilot_ai_credit');
+    expect(rows[0].unitType).toBe('ai-credits');
+    expect(rows[0].quantity).toBe(250);
+    expect(rows[0].aicQuantity).toBe(250);
+  });
+
+  it('parses an org-level seat activity export with no Organization column', () => {
+    const csv = [
+      'Report Time,Login,Last Authenticated At,Last Activity At,Last Surface Used',
+      '2026-03-28T06:54:33Z,val-wynn,2026-02-25T10:12:31Z,2026-02-07T17:13:59Z,vscode/1.112.0',
+    ].join('\n');
+
+    const report = parseCSV(csv, 'seat-activity-org.csv');
+
+    expect(report.type).toBe(REPORT_TYPES.COPILOT_SEAT_ACTIVITY);
+    const rows = report.rows as CopilotSeatActivityRow[];
+    expect(rows[0].login).toBe('val-wynn');
+    expect(rows[0].organization).toBe('');
   });
 });

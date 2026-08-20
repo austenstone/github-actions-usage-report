@@ -52,7 +52,10 @@ export type PremiumRequestSku =
   | 'spark_premium_request'
   | 'copilot_ai_unit'
   | 'coding_agent_ai_unit'
-  | 'spark_ai_unit';
+  | 'spark_ai_unit'
+  | 'copilot_ai_credit'
+  | 'coding_agent_ai_credit'
+  | 'spark_ai_credit';
 
 // ─── Usage Report Product & SKU ────────────────────────────────────────────────
 
@@ -97,7 +100,14 @@ export type UsageSku =
   | (string & {});
 
 /** Unit types for metered usage */
-export type UsageUnitType = 'minutes' | 'gigabyte-hours' | 'gigabytes' | 'requests' | 'user-months' | 'ai-units';
+export type UsageUnitType =
+  | 'minutes'
+  | 'gigabyte-hours'
+  | 'gigabytes'
+  | 'requests'
+  | 'user-months'
+  | 'ai-units'
+  | 'ai-credits';
 
 // ─── CSV Column Name Mappings (raw header → camelCase) ─────────────────────────
 
@@ -201,8 +211,8 @@ interface BaseCopilotReportRow {  /** ISO date string (YYYY-MM-DD) */
   model: CopilotModelValue;
   /** Number of premium requests or AI units consumed */
   quantity: number;
-  /** "requests" for premium request billing, "ai-units" for AIU billing */
-  unitType: 'requests' | 'ai-units';
+  /** "requests" for PRU billing, "ai-units"/"ai-credits" for AI credit billing */
+  unitType: 'requests' | 'ai-units' | 'ai-credits';
   /** Cost per request (typically 0.04) */
   appliedCostPerQuantity: number;
   /** Total cost before discounts */

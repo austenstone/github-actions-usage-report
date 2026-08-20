@@ -414,7 +414,10 @@ export const PRODUCT_METRIC_OPTIONS: Record<string, MetricOption[]> = {
   copilot: [
     { key: 'grossAmount', label: 'Spend', isCurrency: true },
     { key: 'seats', label: 'Seats', isCurrency: false, valueField: 'quantity', rowFilter: (r) => r.unitType === 'user-months' },
-    { key: 'usage', label: 'Usage (PRUs)', isCurrency: false, valueField: 'quantity', rowFilter: (r) => r.unitType === 'requests' },
+    // Anything not billed per seat is consumption. Matching on "not user-months"
+    // rather than an allow-list keeps this working across the PRU → AI credits
+    // billing change, which introduced new unit types (ai-units, ai-credits).
+    { key: 'usage', label: 'Usage', isCurrency: false, valueField: 'quantity', rowFilter: (r) => r.unitType !== 'user-months' },
   ],
   spark: [
     { key: 'grossAmount', label: 'Spend', isCurrency: true },
