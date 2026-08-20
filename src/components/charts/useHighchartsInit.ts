@@ -31,7 +31,7 @@ async function initAndApplyTheme(updateExisting = false) {
 
   // Only re-apply to existing charts on theme change (not first init)
   if (updateExisting) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+     
     const { title: _t, subtitle: _s, series: _sr, ...safeTheme } = theme;
     Highcharts.charts.forEach((chart) => {
       if (chart) {
