@@ -1,28 +1,34 @@
+import usageReportUrl from '../../examples/usageReport_1_7f2ed6006ee54fb8af73f5cbb7ac1f1d.csv?url';
+import premiumRequestUrl from '../../examples/premiumRequestUsageReport_1_c6fca30f0acd458098a95808eaf43399.csv?url';
+import tokenUsageUrl from '../../examples/Token.Usage.Report.csv?url';
+import seatActivityUrl from '../../examples/octodemo-seat-activity-1774680875.csv?url';
+import ghasCommittersUrl from '../../examples/ghas_active_committers_octodemo_2026-03-27T1521.csv?url';
+import dormantUsersUrl from '../../examples/export-octodemo-1774679438.csv?url';
+import enterpriseMembersUrl from '../../examples/export-octodemo-1774709193.csv?url';
+
+const SAMPLES = [
+  { name: 'usageReport.csv', url: usageReportUrl },
+  { name: 'premiumRequestUsageReport.csv', url: premiumRequestUrl },
+  { name: 'Token.Usage.Report.csv', url: tokenUsageUrl },
+  { name: 'seat-activity.csv', url: seatActivityUrl },
+  { name: 'ghas-active-committers.csv', url: ghasCommittersUrl },
+  { name: 'dormant-users.csv', url: dormantUsersUrl },
+  { name: 'enterprise-members.csv', url: enterpriseMembersUrl },
+] as const;
+
 /**
- * Lazily load example CSV files. These are code-split by Vite
- * and only fetched when explicitly requested (e.g. from the tour prompt).
- * Zero impact on normal users' bundle size.
+ * Load the example CSVs. These are emitted as static assets rather than
+ * imported with `?raw`, which would inline all 15 MB of them into a JS chunk
+ * the browser must download and parse as source before it can be a string.
  */
 export async function loadSampleData(): Promise<Array<{ name: string; content: string }>> {
-  const samples = await Promise.all([
-    import('../../examples/usageReport_1_7f2ed6006ee54fb8af73f5cbb7ac1f1d.csv?raw').then(
-      (m) => ({ name: 'usageReport.csv', content: m.default }),
-    ),
-    import('../../examples/premiumRequestUsageReport_1_c6fca30f0acd458098a95808eaf43399.csv?raw').then(
-      (m) => ({ name: 'premiumRequestUsageReport.csv', content: m.default }),
-    ),
-    import('../../examples/Token.Usage.Report.csv?raw').then(
-      (m) => ({ name: 'Token.Usage.Report.csv', content: m.default }),
-    ),
-    import('../../examples/octodemo-seat-activity-1774680875.csv?raw').then(
-      (m) => ({ name: 'seat-activity.csv', content: m.default }),
-    ),
-    import('../../examples/ghas_active_committers_octodemo_2026-03-27T1521.csv?raw').then(
-      (m) => ({ name: 'ghas-active-committers.csv', content: m.default }),
-    ),
-    import('../../examples/export-octodemo-1774679438.csv?raw').then(
-      (m) => ({ name: 'enterprise-members.csv', content: m.default }),
-    ),
-  ]);
-  return samples;
+  return Promise.all(
+    SAMPLES.map(async ({ name, url }) => {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Failed to load sample ${name}: ${response.status} ${response.statusText}`);
+      }
+      return { name, content: await response.text() };
+    }),
+  );
 }

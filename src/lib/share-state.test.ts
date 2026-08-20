@@ -8,7 +8,7 @@ describe('share URL round-trip', () => {
   it('buildShareURL → readShareData preserves filter state and CSV data', async () => {
     const { buildShareURL, readShareData } = await import('./share-state');
     Object.defineProperty(window, 'location', {
-      value: { origin: 'http://localhost:5174', pathname: '/tbb/' },
+      value: { origin: 'http://localhost:5174', pathname: '/github-actions-usage-report/' },
       writable: true,
     });
 
@@ -37,7 +37,7 @@ describe('share URL round-trip', () => {
   it('returns null for oversized payloads', async () => {
     const { buildShareURL } = await import('./share-state');
     Object.defineProperty(window, 'location', {
-      value: { origin: 'http://localhost:5174', pathname: '/tbb/' },
+      value: { origin: 'http://localhost:5174', pathname: '/github-actions-usage-report/' },
       writable: true,
     });
 
@@ -62,16 +62,16 @@ describe('clearShareHash', () => {
 
   it('strips share hash and preserves search params', () => {
     Object.defineProperty(window, 'location', {
-      value: { hash: '#data=xyz', pathname: '/tbb/', search: '?tab=table' },
+      value: { hash: '#data=xyz', pathname: '/github-actions-usage-report/', search: '?tab=table' },
       writable: true,
     });
     clearShareHash();
-    expect(replaceStateSpy).toHaveBeenCalledWith(null, '', '/tbb/?tab=table');
+    expect(replaceStateSpy).toHaveBeenCalledWith(null, '', '/github-actions-usage-report/?tab=table');
   });
 
   it('ignores non-share hashes', () => {
     Object.defineProperty(window, 'location', {
-      value: { hash: '#section', pathname: '/tbb/', search: '' },
+      value: { hash: '#section', pathname: '/github-actions-usage-report/', search: '' },
       writable: true,
     });
     clearShareHash();

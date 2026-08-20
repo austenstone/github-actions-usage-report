@@ -10,7 +10,7 @@ Auto-detects the report type from CSV headers. Drop one file or a whole zip.
 
 | Report | What you get |
 |---|---|
-| **Metered Usage** | Actions minutes, runner SKU breakdown, Copilot seats, Packages, LFS, storage costs |
+| **Metered Usage** | Actions minutes, runner SKU breakdown, Copilot seats, Packages, LFS, storage costs. Detailed and summarized exports both supported |
 | **Copilot Premium Requests** | Per-user PRU consumption, model breakdown, quota tracking, AI credit costs |
 | **Copilot Token Usage** | Input/output tokens, cache creation/read, per-model cost with token-level granularity |
 | **GHAS Active Committers** | Advanced Security license consumption by user and repository |
@@ -51,9 +51,10 @@ Auto-detects the report type from CSV headers. Drop one file or a whole zip.
 - Falls back to clipboard if URL exceeds 8,000 characters
 
 **Privacy**
-- 100% client-side. No server, no uploads, no telemetry
+- Your CSVs never leave the browser. No server, no uploads, no telemetry
 - Reports cached in IndexedDB across sessions
 - Sample data auto-removed when real data is imported
+- The one outbound request is an avatar lookup to `api.github.com` for names matching a bot pattern (`*[bot]`). Human usernames are never sent anywhere
 
 ## Quick Start
 
@@ -66,7 +67,19 @@ Drop a CSV onto the upload area, or append `?demo=auto` to load sample data inst
 
 ### Where to Get the CSVs
 
-GitHub billing admins can export usage reports from **Settings → Billing → Usage report → Download CSV**. The app auto-detects the report type from headers.
+Each report lives in a different part of GitHub's billing and admin UI. The app auto-detects the type from the headers, so you never have to say which one you're uploading.
+
+| Report | Where to export it |
+|---|---|
+| **Metered Usage** | Billing & Licensing → Usage → Metered Usage → **Get usage report** |
+| **Copilot Premium Requests** | Billing & Licensing → Usage → Premium request analytics → **Get usage report** |
+| **Copilot Token Usage** | Billing & Licensing → Usage → Premium request analytics → **Get usage report** |
+| **GHAS Active Committers** | Licensing → GitHub Advanced Security → **Download CSV Report** |
+| **Copilot Seat Activity** | AI Controls → Copilot → Access Management → **Download CSV report** |
+| **Dormant Users** | Settings → Compliance → **Export** |
+| **Enterprise Members** | Licensing → **Export** (next to GitHub Enterprise) |
+
+Metered usage exports come in two shapes and both work: **detailed** (up to 31 days, includes the user and workflow that incurred the cost) and **summarized** (up to a year, drops those columns). Pick summarized for long-range trends, detailed when you need to attribute spend to a person or workflow.
 
 ## Tech Stack
 

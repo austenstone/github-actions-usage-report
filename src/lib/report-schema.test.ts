@@ -5,6 +5,7 @@ import {
   PAGE_TYPES,
   PAGE_REPORT_TYPES,
   PRODUCT_METRIC_OPTIONS,
+  resolveGroupByColumn,
 } from './report-schema';
 import { REPORT_TYPES } from './types';
 
@@ -75,5 +76,38 @@ describe('product metric options', () => {
   it('actions product has minutes metric', () => {
     const actions = PRODUCT_METRIC_OPTIONS['actions'];
     expect(actions.some(o => o.label === 'Minutes')).toBe(true);
+  });
+});
+
+describe('resolveGroupByColumn', () => {
+  const report = (type: string, rows: Array<Record<string, unknown>>) =>
+    ({ type, rows, fileName: 'f.csv', rowCount: rows.length, dateRange: { start: '', end: '' } }) as never;
+
+  it('keeps the current column when the report has data for it', () => {
+    const r = report(REPORT_TYPES.USAGE_REPORT, [{ username: 'ana-reyes', sku: 'actions_linux' }]);
+    expect(resolveGroupByColumn(r, 'username')).toBe('username');
+  });
+
+  it('falls back to the schema default when the column is blank for every row', () => {
+    const rows = Array.from({ length: 50 }, () => ({ username: '', sku: 'actions_linux' }));
+    expect(resolveGroupByColumn(report(REPORT_TYPES.USAGE_REPORT, rows), 'username')).toBe('sku');
+  });
+
+  it('falls back when the column is missing entirely, as in summarized exports', () => {
+    const rows = Array.from({ length: 50 }, () => ({ sku: 'actions_linux' }));
+    expect(resolveGroupByColumn(report(REPORT_TYPES.USAGE_REPORT, rows), 'username')).toBe('sku');
+  });
+
+  it('keeps a column that is blank early but populated later', () => {
+    const rows = Array.from({ length: 500 }, (_, i) => ({ username: i < 400 ? '' : 'kai-nakamura' }));
+    expect(resolveGroupByColumn(report(REPORT_TYPES.USAGE_REPORT, rows), 'username')).toBe('username');
+  });
+
+  it('uses the schema default when there is no current column', () => {
+    expect(resolveGroupByColumn(report(REPORT_TYPES.ENTERPRISE_MEMBERS, []), '')).toBe('licenseType');
+  });
+
+  it('falls back for an empty report rather than keeping an unusable column', () => {
+    expect(resolveGroupByColumn(report(REPORT_TYPES.DORMANT_USERS, []), 'username')).toBe('role');
   });
 });
