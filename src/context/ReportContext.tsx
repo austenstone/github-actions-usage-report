@@ -4,7 +4,7 @@ import { ReportContext } from './report-context';
 import type { CombinedGroup, DateRange } from './report-context';
 import { getCachedParsedReports, getCachedRawCSV, setCachedCSV, removeCachedCSV, clearCachedCSVs } from '../lib/local-storage';
 import { readURLFilterState, writeURLFilterState } from '../lib/url-state';
-import { getReportSchema } from '../lib/report-schema';
+import { getReportSchema, resolveGroupByColumn } from '../lib/report-schema';
 import { formatDateRangeCompact } from '../lib/formatters';
 
 /** Fast FNV-1a hash for dedup — not crypto-grade, just collision-resistant enough for CSV content */
@@ -202,7 +202,8 @@ export function ReportProvider({ children }: { children: ReactNode }) {
         reports: nextReports,
         rawCsvs: nextRawCsvs,
         fileHashes: nextHashes,
-        activeReportIndex: prev.reports.length,
+        activeReportIndex: baseReports.length,
+        groupByColumn: resolveGroupByColumn(report, prev.groupByColumn),
         periodKey: 'all',
         dateRange: null,
         searchQuery: '',

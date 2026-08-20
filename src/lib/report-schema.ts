@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react';
-import type { ReportType } from './types';
+import type { ParsedReport, ReportType } from './types';
 import { REPORT_TYPES } from './types';
 import {
   CopilotIcon,
@@ -345,6 +345,34 @@ export function getReportSchema(type: ReportType | string): ReportSchema {
 /** All available schemas (for sidebar nav generation) */
 export function getAllSchemas(): ReportSchema[] {
   return Object.values(SCHEMA_REGISTRY);
+}
+
+const GROUP_BY_SAMPLE_SIZE = 200;
+
+/**
+ * Pick a group-by column that the report actually has data for.
+ *
+ * Reports of the same type don't always carry the same columns — the
+ * summarized metered usage export drops `username` and `workflow_path`, and
+ * org-level seat activity has no `organization`. Keeping a column that is
+ * blank for every row renders an empty chart, so fall back to the schema
+ * default. Rows are sampled with a stride rather than from the head, since
+ * columns like `username` are legitimately blank for leading storage rows.
+ */
+export function resolveGroupByColumn(
+  report: ParsedReport,
+  currentColumn: string,
+): string {
+  const schema = getReportSchema(report.type);
+  if (!currentColumn) return schema.defaultGroupBy;
+
+  const rows = report.rows as Array<Record<string, unknown>>;
+  const stride = Math.max(1, Math.floor(rows.length / GROUP_BY_SAMPLE_SIZE));
+  for (let i = 0; i < rows.length; i += stride) {
+    const value = rows[i]?.[currentColumn];
+    if (value !== undefined && value !== null && value !== '') return currentColumn;
+  }
+  return schema.defaultGroupBy;
 }
 
 /** Sidebar nav page identifiers derived from report types */
