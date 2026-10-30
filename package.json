@@ -22,7 +22,7 @@
     "@tanstack/react-virtual": "^3.14.9",
     "clsx": "^2.1.1",
     "fflate": "^0.8.3",
-    "highcharts": "^12.5.0",
+    "highcharts": "^12.6.2",
     "highcharts-react-official": "^3.2.3",
     "lz-string": "^1.5.0",
     "papaparse": "^5.6.0",
